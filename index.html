@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校園生態系：五大自然科探索系統</title>
+    <!-- 引入 Tailwind CSS 進行快速且美觀的排版 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Font Awesome 提供可愛的圖示 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- 引入適合兒童的圓潤字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Nunito', 'Microsoft JhengHei', 'sans-serif'],
+                        title: ['ZCOOL KuaiLe', 'cursive'],
+                    },
+                    colors: {
+                        wood: { light: '#dcfce7', main: '#22c55e', dark: '#166534' },
+                        water: { light: '#e0f2fe', main: '#0ea5e9', dark: '#075985' },
+                        earth: { light: '#fef3c7', main: '#f59e0b', dark: '#92400e' },
+                        fire: { light: '#fee2e2', main: '#ef4444', dark: '#991b1b' },
+                        metal: { light: '#f3f4f6', main: '#9ca3af', dark: '#374151', gold: '#fbbf24' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            /* 可愛背景圖案 */
+            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .bounce-anim {
+            animation: bounce-soft 2s infinite;
+        }
+        @keyframes bounce-soft {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        /* 隱藏捲軸但保留功能 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+
+    <!-- 頁首標題區 -->
+    <header class="text-center pt-12 pb-8 px-4">
+        <div class="inline-block bg-white p-4 rounded-3xl shadow-xl border-4 border-dashed border-indigo-400 mb-4 bounce-anim">
+            <h1 class="font-title text-4xl md:text-6xl text-indigo-600 tracking-wide">
+                <i class="fa-solid fa-leaf mr-2 text-green-500"></i>校園生態系
+            </h1>
+            <h2 class="font-title text-2xl md:text-3xl text-orange-500 mt-2">五大自然科學習系統</h2>
+        </div>
+        <p class="text-gray-600 text-lg md:text-xl font-bold mt-2">點擊各區塊卡片，進入你的專屬自學遊戲與虛擬實驗室！</p>
+    </header>
+
+    <!-- 五大關卡主選單 (Grid 排版) -->
+    <main class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        <!-- 金系 (1.html) -->
+        <div onclick="openModal('metal')" class="cursor-pointer card-hover bg-metal-light border-4 border-metal-main rounded-3xl p-6 flex flex-col items-center text-center shadow-lg relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-metal-main opacity-20 rounded-full"></div>
+            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center border-4 border-metal-main mb-4 shadow-inner">
+                <i class="fa-solid fa-magnet text-5xl text-metal-dark"></i>
+            </div>
+            <h3 class="font-title text-3xl text-metal-dark mb-2">物質探測區</h3>
+            <p class="text-gray-700 font-bold mb-4">探索物質的特性、磁性、導電與生鏽的秘密！</p>
+            <button class="mt-auto bg-metal-main text-white px-6 py-2 rounded-full font-bold text-lg hover:bg-metal-dark transition">查看說明 <i class="fa-solid fa-arrow-right ml-1"></i></button>
+        </div>
+
+        <!-- 木系 (2.html) -->
+        <div onclick="openModal('wood')" class="cursor-pointer card-hover bg-wood-light border-4 border-wood-main rounded-3xl p-6 flex flex-col items-center text-center shadow-lg relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-wood-main opacity-20 rounded-full"></div>
+            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center border-4 border-wood-main mb-4 shadow-inner">
+                <i class="fa-solid fa-tree text-5xl text-wood-main"></i>
+            </div>
+            <h3 class="font-title text-3xl text-wood-dark mb-2">植物生態區</h3>
+            <p class="text-gray-700 font-bold mb-4">發現種子的奇妙旅程，看看它們如何傳播！</p>
+            <button class="mt-auto bg-wood-main text-white px-6 py-2 rounded-full font-bold text-lg hover:bg-wood-dark transition">查看說明 <i class="fa-solid fa-arrow-right ml-1"></i></button>
+        </div>
+
+        <!-- 水系 (3.html) -->
+        <div onclick="openModal('water')" class="cursor-pointer card-hover bg-water-light border-4 border-water-main rounded-3xl p-6 flex flex-col items-center text-center shadow-lg relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-water-main opacity-20 rounded-full"></div>
+            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center border-4 border-water-main mb-4 shadow-inner">
+                <i class="fa-solid fa-droplet text-5xl text-water-main"></i>
+            </div>
+            <h3 class="font-title text-3xl text-water-dark mb-2">水資源應用區</h3>
+            <p class="text-gray-700 font-bold mb-4">挑戰毛細現象關卡，畫出美麗的水之藝術！</p>
+            <button class="mt-auto bg-water-main text-white px-6 py-2 rounded-full font-bold text-lg hover:bg-water-dark transition">查看說明 <i class="fa-solid fa-arrow-right ml-1"></i></button>
+        </div>
+
+        <!-- 火系 (4.html) -->
+        <div onclick="openModal('fire')" class="cursor-pointer card-hover bg-fire-light border-4 border-fire-main rounded-3xl p-6 flex flex-col items-center text-center shadow-lg relative overflow-hidden lg:col-start-1 lg:col-end-3">
+            <div class="absolute -right-4 -top-4 w-32 h-32 bg-fire-main opacity-20 rounded-full"></div>
+            <div class="flex flex-col md:flex-row items-center w-full">
+                <div class="w-28 h-28 shrink-0 bg-white rounded-full flex items-center justify-center border-4 border-fire-main mb-4 md:mb-0 md:mr-6 shadow-inner">
+                    <i class="fa-solid fa-fire text-6xl text-fire-main"></i>
+                </div>
+                <div class="text-center md:text-left flex-1">
+                    <h3 class="font-title text-3xl text-fire-dark mb-2">燃燒與空氣實驗室</h3>
+                    <p class="text-gray-700 font-bold text-lg">觀察長短蠟燭的氣流秘密、認識燃燒三要素、挑戰虛擬滅火與探究粉塵爆炸！<br><span class="text-fire-main text-sm">🔥 結合安全教育的經典必學單元！</span></p>
+                </div>
+                <div class="mt-4 md:mt-0">
+                    <button class="bg-fire-main text-white px-8 py-3 rounded-full font-bold text-xl hover:bg-fire-dark transition shadow-lg bounce-anim">進入實驗 <i class="fa-solid fa-flask ml-2"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 土系 (5.html) -->
+        <div onclick="openModal('earth')" class="cursor-pointer card-hover bg-earth-light border-4 border-earth-main rounded-3xl p-6 flex flex-col items-center text-center shadow-lg relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-earth-main opacity-20 rounded-full"></div>
+            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center border-4 border-earth-main mb-4 shadow-inner">
+                <i class="fa-solid fa-mountain text-5xl text-earth-main"></i>
+            </div>
+            <h3 class="font-title text-3xl text-earth-dark mb-2">地質探索區</h3>
+            <p class="text-gray-700 font-bold mb-4">化身地質學家，認識岩石的種類與硬度比較！</p>
+            <button class="mt-auto bg-earth-main text-white px-6 py-2 rounded-full font-bold text-lg hover:bg-earth-dark transition">查看說明 <i class="fa-solid fa-arrow-right ml-1"></i></button>
+        </div>
+
+    </main>
+
+    <!-- 彈出視窗 Modal (隱藏狀態) -->
+    <div id="courseModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white w-full max-w-3xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden transform scale-95 transition-transform" id="modalContentBox">
+            
+            <!-- Modal 標題區 -->
+            <div id="modalHeader" class="p-6 text-white flex justify-between items-center relative">
+                <div class="flex items-center gap-4">
+                    <div id="modalIconBox" class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-3xl shadow-md">
+                        <i id="modalIcon" class="fa-solid fa-star"></i>
+                    </div>
+                    <h2 id="modalTitle" class="font-title text-3xl tracking-wide">關卡名稱</h2>
+                </div>
+                <button onclick="closeModal()" class="text-white hover:text-gray-200 text-4xl w-12 h-12 flex items-center justify-center rounded-full bg-black bg-opacity-20 hover:bg-opacity-40 transition">
+                    &times;
+                </button>
+            </div>
+
+            <!-- Modal 內容區 -->
+            <div class="p-8 overflow-y-auto no-scrollbar flex-1 bg-[#fdfdfd]" id="modalBody">
+                <!-- JS 動態寫入內容 -->
+            </div>
+
+            <!-- Modal 底部按鈕 -->
+            <div class="p-4 bg-gray-50 border-t flex justify-end gap-4 rounded-b-3xl">
+                <button onclick="closeModal()" class="px-6 py-2 rounded-full font-bold text-gray-600 bg-gray-200 hover:bg-gray-300 transition">返回地圖</button>
+                <a href="#" id="modalActionLink" class="inline-block px-8 py-2 rounded-full font-bold text-white shadow-md transition bounce-anim text-center">開始自學遊戲</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript 邏輯：處理 Modal 內容切換 -->
+    <script>
+        // 定義各系關卡的詳細教學內容與遊戲設定
+        const courseData = {
+            metal: {
+                title: "物質探測區",
+                linkUrl: "1.html", // 金系對應 1.html
+                headerColor: "bg-metal-main",
+                btnColor: "bg-metal-dark hover:bg-metal-main",
+                iconText: "text-metal-main",
+                iconClass: "fa-magnet",
+                content: `
+                    <div class="space-y-6">
+                        <p class="text-lg text-gray-700 font-bold bg-gray-100 p-4 rounded-xl border-l-4 border-metal-main">統整各年級重要的物質特性，透過闖關分辨各種金屬與物質！</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="border-2 border-metal-light p-4 rounded-2xl">
+                                <h4 class="font-bold text-metal-dark text-xl mb-2"><i class="fa-solid fa-magnet mr-2"></i>三年級：神奇的磁鐵</h4>
+                                <p class="text-gray-600">操作虛擬磁鐵，探索相吸與相斥，尋找校園中被磁鐵吸引的物品。</p>
+                            </div>
+                            <div class="border-2 border-yellow-100 p-4 rounded-2xl">
+                                <h4 class="font-bold text-yellow-600 text-xl mb-2"><i class="fa-solid fa-lightbulb mr-2"></i>四年級：燈泡亮了</h4>
+                                <p class="text-gray-600">化身水電工！測試不同金屬物品的導電性，完成斷掉的電路讓燈泡發光。</p>
+                            </div>
+                            <div class="border-2 border-red-100 p-4 rounded-2xl">
+                                <h4 class="font-bold text-red-600 text-xl mb-2"><i class="fa-solid fa-shield-halved mr-2"></i>六年級：物質的變化</h4>
+                                <p class="text-gray-600">時光加速器遊戲：觀察水分與空氣如何讓鐵生鏽，並嘗試塗油、油漆等防鏽策略。</p>
+                            </div>
+                            <div class="border-2 border-blue-100 p-4 rounded-2xl bg-blue-50">
+                                <h4 class="font-bold text-blue-700 text-xl mb-2"><i class="fa-solid fa-microscope mr-2"></i>六年級綜合：物質特性與分類</h4>
+                                <p class="text-gray-600 text-sm">【期末魔王關卡】<br>綜合運用「硬度、導電性、磁性」三大檢測工具，將散落的神秘物質正確分類！</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            wood: {
+                title: "植物生態區",
+                linkUrl: "2.html", // 木系對應 2.html
+                headerColor: "bg-wood-main",
+                btnColor: "bg-wood-dark hover:bg-wood-main",
+                iconText: "text-wood-main",
+                iconClass: "fa-tree",
+                content: `
+                    <div class="space-y-4">
+                        <p class="text-lg text-gray-700 font-bold bg-green-50 p-4 rounded-xl border-l-4 border-wood-main">快來幫助植物寶寶們找到適合生長的新家！</p>
+                        <h4 class="font-title text-2xl text-wood-dark mt-4 border-b-2 border-green-200 pb-2">🌿 單元：種子的傳播</h4>
+                        <ul class="space-y-4 mt-4">
+                            <li class="flex items-start">
+                                <div class="bg-green-100 p-3 rounded-full mr-4"><i class="fa-solid fa-wind text-green-600 text-xl"></i></div>
+                                <div>
+                                    <strong class="text-lg text-gray-800">風力傳播 (如蒲公英、昭和草)</strong>
+                                    <p class="text-gray-600">自學遊戲：操控風向與風力大小，幫助蒲公英種子飛越障礙物抵達肥沃的土壤。</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-blue-100 p-3 rounded-full mr-4"><i class="fa-solid fa-water text-blue-600 text-xl"></i></div>
+                                <div>
+                                    <strong class="text-lg text-gray-800">水力傳播 (如椰子、棋盤腳)</strong>
+                                    <p class="text-gray-600">觀察植物果實內部的中空構造如何幫助它們漂浮。</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-orange-100 p-3 rounded-full mr-4"><i class="fa-solid fa-paw text-orange-600 text-xl"></i></div>
+                                <div>
+                                    <strong class="text-lg text-gray-800">動物傳播 (如鬼針草、雀榕)</strong>
+                                    <p class="text-gray-600">自學遊戲：設計「倒鉤」或「美味果肉」吸引小動物，搭乘順風車！</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                `
+            },
+            water: {
+                title: "水資源應用區",
+                linkUrl: "3.html", // 水系對應 3.html
+                headerColor: "bg-water-main",
+                btnColor: "bg-water-dark hover:bg-water-main",
+                iconText: "text-water-main",
+                iconClass: "fa-droplet",
+                content: `
+                    <div class="space-y-4">
+                        <div class="bg-blue-50 p-6 rounded-2xl border-2 border-water-light flex items-center justify-between">
+                            <div>
+                                <h4 class="font-title text-2xl text-water-dark mb-2">💧 毛細現象藝術畫布</h4>
+                                <p class="text-gray-700 font-bold">用水的魔法，挑戰成為小小藝術家！</p>
+                            </div>
+                            <i class="fa-solid fa-palette text-5xl text-water-main opacity-50"></i>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <h5 class="font-bold text-gray-800 text-xl mb-3">🎮 教學模式與遊戲關卡：</h5>
+                            <div class="space-y-3 text-gray-600">
+                                <div class="p-3 bg-white border rounded-xl shadow-sm">
+                                    <span class="bg-water-main text-white px-2 py-1 rounded text-sm mr-2">知識點</span> 認識水如何沿著細縫向上或向四周移動（毛細現象）。
+                                </div>
+                                <div class="p-3 bg-white border rounded-xl shadow-sm">
+                                    <span class="bg-orange-400 text-white px-2 py-1 rounded text-sm mr-2">比較材質</span> 測試衛生紙、報紙、塑膠尺、抹布，看看誰的細縫多、吸水快！
+                                </div>
+                                <div class="p-4 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl shadow-sm border border-blue-200">
+                                    <strong class="text-blue-800 text-lg"><i class="fa-solid fa-gamepad mr-2"></i>創作遊戲：魔法紙花開</strong>
+                                    <p class="mt-1">在螢幕上摺疊紙花，選擇不同顏色的水池。觀察水因為毛細現象慢慢爬升，讓螢幕上的紙花自動綻放並染上美麗的混色漸層！</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            fire: {
+                title: "燃燒與空氣實驗室",
+                linkUrl: "4.html", // 火系對應 4.html
+                headerColor: "bg-fire-main",
+                btnColor: "bg-fire-dark hover:bg-fire-main",
+                iconText: "text-fire-main",
+                iconClass: "fa-fire-flame-curved",
+                content: `
+                    <div class="space-y-6">
+                        <p class="text-lg text-gray-700 font-bold bg-red-50 p-4 rounded-xl border-l-4 border-fire-main">
+                            免除真實危險！透過高互動視覺化模擬，看見肉眼看不見的氣流與氣體！
+                        </p>
+
+                        <!-- 重點實驗：長短蠟燭 -->
+                        <div class="border-2 border-red-200 rounded-2xl overflow-hidden shadow-sm">
+                            <div class="bg-red-100 p-3 flex items-center justify-between">
+                                <h4 class="font-bold text-fire-dark text-xl"><i class="fa-solid fa-flask mr-2"></i>經典實驗：長短蠟燭之謎</h4>
+                                <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">解決教學痛點</span>
+                            </div>
+                            <div class="p-4 bg-white text-gray-700">
+                                <p class="mb-3">真實實驗常因瓶子大小，熱空氣上升或冷卻下降造成不同結果。本單元網頁提供<strong>「熱氣流透視眼鏡」</strong>功能：</p>
+                                <ul class="list-disc pl-5 space-y-1 text-sm">
+                                    <li><strong>大瓶子模擬：</strong>清楚展示蠟燭燃燒產生的熱二氧化碳如何上升累積在頂部，導致<span class="text-red-600 font-bold">長蠟燭先熄滅</span>。</li>
+                                    <li><strong>小瓶子模擬：</strong>展示氣流受限冷卻較快，二氧化碳直接沉降，導致結果可能不同。</li>
+                                    <li><strong>動手調參數：</strong>學生可自由調整「容器容量」與「蠟燭高低差」，觀察氣流粒子動畫的變化。</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- 燃燒三要素 -->
+                            <div class="bg-white border-2 border-orange-100 p-4 rounded-2xl shadow-sm">
+                                <h4 class="font-bold text-orange-600 text-lg mb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i>燃燒三要素</h4>
+                                <p class="text-gray-600 text-sm">操作「可燃物、助燃物(氧氣)、達到燃點」的拉桿。觀察生態系中森林大火的發生條件，學習如何移除其中一個要素來滅火。</p>
+                            </div>
+                            <!-- 粉塵爆炸 -->
+                            <div class="bg-white border-2 border-yellow-200 p-4 rounded-2xl shadow-sm">
+                                <h4 class="font-bold text-yellow-600 text-lg mb-2"><i class="fa-solid fa-burst mr-2"></i>粉塵大爆炸</h4>
+                                <p class="text-gray-600 text-sm">認識麵粉、玉米粉等粉塵。模擬在密閉空間中，粉塵揚起並遇到火源的連鎖反應，建立深刻的安全觀念。</p>
+                            </div>
+                        </div>
+
+                        <!-- 安全教育 -->
+                        <div class="bg-gray-800 text-white p-4 rounded-2xl flex items-center shadow-md">
+                            <i class="fa-solid fa-fire-extinguisher text-4xl text-red-400 mr-4"></i>
+                            <div>
+                                <h4 class="font-bold text-xl text-red-300">安全教育：虛擬消防員</h4>
+                                <p class="text-gray-300 text-sm mt-1">面對油鍋起火、電線走火、森林火災，選擇「蓋鍋蓋(窒息法)」、「水(降溫)」或「滅火器」，選錯會給予安全提示喔！</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            earth: {
+                title: "地質探索區",
+                linkUrl: "5.html", // 土系對應 5.html
+                headerColor: "bg-earth-main",
+                btnColor: "bg-earth-dark hover:bg-earth-main",
+                iconText: "text-earth-main",
+                iconClass: "fa-gem", // Using gem/rock icon
+                content: `
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 bg-orange-50 p-4 rounded-xl border border-earth-light">
+                            <img src="https://api.iconify.design/twemoji:rock.svg" class="w-16 h-16" alt="Rock">
+                            <div>
+                                <h4 class="font-title text-2xl text-earth-dark">認識岩石與礦物</h4>
+                                <p class="text-gray-600 font-bold">我們腳下的土地藏著什麼秘密？</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white border-2 border-gray-200 rounded-2xl p-5 mt-4">
+                            <h5 class="font-bold text-xl text-gray-800 mb-4 pb-2 border-b"><i class="fa-solid fa-hammer mr-2 text-gray-500"></i>互動檢測站：比較硬度</h5>
+                            <p class="text-gray-600 mb-4">在虛擬實驗室中，使用不同的工具互相刻劃，找出誰最硬！</p>
+                            
+                            <div class="flex justify-between items-center bg-gray-100 p-4 rounded-xl">
+                                <div class="text-center">
+                                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow mb-2 mx-auto">
+                                        <i class="fa-solid fa-hand text-orange-400 text-xl"></i>
+                                    </div>
+                                    <span class="text-sm font-bold">指甲</span>
+                                </div>
+                                <i class="fa-solid fa-less-than text-gray-400"></i>
+                                <div class="text-center">
+                                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow mb-2 mx-auto">
+                                        <i class="fa-solid fa-coins text-yellow-500 text-xl"></i>
+                                    </div>
+                                    <span class="text-sm font-bold">一元硬幣</span>
+                                </div>
+                                <i class="fa-solid fa-less-than text-gray-400"></i>
+                                <div class="text-center">
+                                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow mb-2 mx-auto">
+                                        <i class="fa-solid fa-scissors text-gray-600 text-xl"></i>
+                                    </div>
+                                    <span class="text-sm font-bold">鐵釘</span>
+                                </div>
+                            </div>
+                            
+                            <p class="text-sm text-gray-500 mt-4 text-center">💡 遊戲任務：利用上述工具測試滑石、方解石、石英，建立摩氏硬度概念。</p>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        // DOM 元素選取
+        const modal = document.getElementById('courseModal');
+        const modalContentBox = document.getElementById('modalContentBox');
+        const modalHeader = document.getElementById('modalHeader');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalIconBox = document.getElementById('modalIconBox');
+        const modalBody = document.getElementById('modalBody');
+        const modalActionLink = document.getElementById('modalActionLink'); // 改為 <a> 標籤
+
+        // 打開彈出視窗
+        function openModal(elementKey) {
+            const data = courseData[elementKey];
+            if (!data) return;
+
+            // 更新內容
+            modalTitle.innerText = data.title;
+            modalBody.innerHTML = data.content;
+            
+            // 更新樣式 (Icon)
+            modalIcon.className = `fa-solid ${data.iconClass} ${data.iconText}`;
+            
+            // 更新樣式 (Header & Button)
+            modalHeader.className = `p-6 text-white flex justify-between items-center relative ${data.headerColor}`;
+            
+            // 更新按鈕連結與樣式
+            modalActionLink.href = data.linkUrl;
+            modalActionLink.className = `inline-block px-8 py-2 rounded-full font-bold text-white shadow-md transition bounce-anim text-center ${data.btnColor}`;
+
+            // 顯示 Modal
+            modal.classList.remove('hidden');
+            // 延遲一點點加入動畫效果
+            setTimeout(() => {
+                modalContentBox.classList.remove('scale-95');
+                modalContentBox.classList.add('scale-100');
+            }, 10);
+        }
+
+        // 關閉彈出視窗
+        function closeModal() {
+            modalContentBox.classList.remove('scale-100');
+            modalContentBox.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200); // 等待縮小動畫完成
+        }
+
+        // 點擊背景空白處也能關閉
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
