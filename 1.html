@@ -1,0 +1,725 @@
+import React, { useState, useEffect } from 'react';
+import { Compass, Zap, Magnet, Droplets, Trophy, User, BookOpen, ChevronRight, RefreshCw, AlertTriangle, BatteryMedium, Lightbulb, Play, CheckCircle2, XCircle, FileText, Database, Check, Clock, TableProperties, Info, Music, Mic, Volume2, SkipForward } from 'lucide-react';
+
+const App = () => {
+  const [mode, setMode] = useState('menu'); // menu, rap, learning, competition
+  const [activeTab, setActiveTab] = useState('conductivity'); 
+  const [score, setScore] = useState(0);
+  
+  const [testedItems, setTestedItems] = useState({
+    conductivity: [],
+    magnetism: [],
+    rust: []
+  });
+
+  const [timeLeft, setTimeLeft] = useState(300); 
+  const [gameOver, setGameOver] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(null);
+
+  const [benchItem, setBenchItem] = useState(null);
+  const [testPhase, setTestPhase] = useState('idle');
+
+  const [quizState, setQuizState] = useState({
+    isLoading: true,
+    loadingLog: [],
+    answers: {},
+    isSubmitted: false
+  });
+
+  // Rap 教學狀態
+  const [rapState, setRapState] = useState({
+    isPlaying: false,
+    lyricIndex: 0
+  });
+
+  const campusItems = [
+    { id: 1, name: '鋁窗框', material: '鋁', isMetal: true, conductive: true, magnetic: false, rustable: false, icon: '🪟' },
+    { id: 2, name: '老舊鐵門', material: '鐵', isMetal: true, conductive: true, magnetic: true, rustable: true, icon: '🚪' },
+    { id: 3, name: '木製課桌', material: '木頭', isMetal: false, conductive: false, magnetic: false, rustable: false, icon: '🪑' },
+    { id: 4, name: '銅板', material: '銅', isMetal: true, conductive: true, magnetic: false, rustable: false, icon: '🪙' },
+    { id: 5, name: '迴紋針', material: '鋼/鐵', isMetal: true, conductive: true, magnetic: true, rustable: true, icon: '📎' },
+    { id: 6, name: '塑膠尺', material: '塑膠', isMetal: false, conductive: false, magnetic: false, rustable: false, icon: '📏' },
+    { id: 7, name: '單槓', material: '鋼鐵', isMetal: true, conductive: true, magnetic: true, rustable: true, icon: '🏋️' },
+    { id: 8, name: '不鏽鋼水壺', material: '不鏽鋼', isMetal: true, conductive: true, magnetic: false, rustable: false, icon: '🍼' },
+  ];
+
+  const quizQuestions = [
+    { id: 'q1', text: '從實驗中發現，下列哪一種物品可以「導電」，但「不能」被磁鐵吸引？', options: ['老舊鐵門', '銅板', '塑膠尺', '迴紋針'], answer: 1, explanation: '銅板是金屬，具備良好的導電性。但它不是鐵、鈷、鎳等磁性物質，所以磁鐵吸不住它。' },
+    { id: 'q2', text: '關於金屬的磁性，下列敘述何者正確？', options: ['所有的金屬都可以被磁鐵吸引', '只有鐵、鋼等特定金屬能被吸引', '銅和鋁都有很強的磁性', '生鏽的金屬會失去導電性'], answer: 1, explanation: '這是常見的迷思！並非所有金屬都有磁性，日常生活中最常見會被磁鐵吸引的金屬主要是鐵和鋼。' },
+    { id: 'q3', text: '校園中的「鋁窗框」經過風吹雨打，卻沒有像鐵門一樣產生紅褐色鐵鏽，主要原因是：', options: ['鋁不是金屬', '鋁表面會形成緻密的氧化層保護內部', '雨水只會讓鐵生鏽', '鋁完全不會跟氧氣反應'], answer: 1, explanation: '鋁其實很容易和氧氣反應，但反應後會在表面形成一層薄薄的「氧化鋁」，這層膜非常緻密，能阻止內部的鋁繼續氧化（生鏽）。' },
+    { id: 'q4', text: '如果要在校園中尋找能導電的材料來完成緊急電路，最「不適合」選擇哪一個？', options: ['單槓', '銅板', '木製課桌', '鋁窗框'], answer: 2, explanation: '木頭是非金屬物質，無法導電，因此絕對不能用來連接電路。' },
+    { id: 'q5', text: '發現一個不明物品，它「不能導電、沒有磁性、不會生鏽」，最可能是下列何者？', options: ['銅板', '迴紋針', '塑膠尺', '老舊鐵門'], answer: 2, explanation: '不導電且無磁性通常是非金屬的特徵。塑膠尺完全符合這三個條件。' },
+    { id: 'q6', text: '為什麼戶外的單槓通常會塗上一層厚厚的油漆？', options: ['為了導電', '為了增加磁性', '隔絕水與氧氣防鏽', '為了讓單槓變輕'], answer: 2, explanation: '單槓多為鐵或鋼製，暴露在空氣和水分中極易生鏽。塗漆可以物理性地隔絕氧氣與水分，達到防鏽效果。' },
+    { id: 'q7', text: '迴紋針掉進裝滿水的塑膠杯裡，如果不把手伸進水裡，該怎麼拿出來？', options: ['用電池通電', '用磁鐵隔著杯壁吸', '滴更多水', '敲擊杯子'], answer: 1, explanation: '磁力可以穿透非磁性的物質（如塑膠杯壁和水），因此可以直接在杯外用磁鐵將鐵製的迴紋針吸上來。' },
+    { id: 'q8', text: '「不鏽鋼水壺」和「老舊鐵門」在生鏽實驗中有什麼不同結果？', options: ['兩者都會產生大量紅鏽', '鐵門會生紅鏽，不鏽鋼幾乎不生鏽', '兩者都不會生鏽', '不鏽鋼生紅鏽，鐵門不生鏽'], answer: 1, explanation: '不鏽鋼在製造時加入了鉻等元素，使其表面能產生防鏽的保護膜；而一般鐵門則容易與水、氧氣反應產生紅褐色的氧化鐵（鐵鏽）。' },
+    { id: 'q9', text: '實驗桌上的測試中，哪一種方法可以「最快」分辨出「鋁窗框」與「鐵門」的材質差異？', options: ['滴水等生鏽', '用電池測導電', '拿磁鐵靠近', '秤重量'], answer: 2, explanation: '鐵有磁性而鋁沒有。只要拿磁鐵靠近，會被吸住的就是鐵門，一秒鐘就能分辨。滴水生鏽則需要較長的等待時間。' },
+    { id: 'q10', text: '綜合以上實驗，如果我們想製作一個「會導電，但絕對不能被磁鐵吸住，且放在戶外不易生紅鏽」的物品，適合選用什麼材質？', options: ['純鐵', '鋼', '鋁或銅', '木頭'], answer: 2, explanation: '鋁和銅都能導電、都不具磁性，且鋁有緻密氧化層、銅不易生紅鏽，非常符合這些條件。木頭不導電，鐵與鋼則有磁性且易生鏽。' }
+  ];
+
+  // Rap 歌詞與節奏設定
+  const rapLyrics = [
+    { text: "Yo! Yo! 金屬小偵探，Check it out!", type: "intro" },
+    { text: "⚡【導電篇】⚡", type: "title", color: "text-yellow-400" },
+    { text: "金屬家族亮晶晶，導電導熱最拿手！", type: "verse" },
+    { text: "鋁窗銅板和鐵門，接上電線燈泡閃！", type: "verse" },
+    { text: "🧲【磁性篇】🧲", type: "title", color: "text-red-400" },
+    { text: "磁鐵靠近誰被吸？注意聽好這秘密！", type: "verse" },
+    { text: "不是金屬都可以，只有「鐵類」才神氣！", type: "highlight" },
+    { text: "銅板鋁窗吸不起，塑膠木頭更別提！", type: "verse" },
+    { text: "💧【防鏽篇】💧", type: "title", color: "text-blue-400" },
+    { text: "風吹雨打誰怕水？鐵門單槓生紅鏽！", type: "verse" },
+    { text: "不鏽鋼裡加了鉻 (ㄍㄜˋ)，鋁生薄膜來防守！", type: "highlight" },
+    { text: "🎤【結尾】🎤", type: "title", color: "text-purple-400" },
+    { text: "導電、磁性、和生鏽，三大特徵記腦中！", type: "verse" },
+    { text: "準備好你的放大鏡，實驗挑戰 Let's GO！", type: "outro" }
+  ];
+
+  // Rap 自動播放邏輯
+  useEffect(() => {
+    let rapInterval;
+    if (mode === 'rap' && rapState.isPlaying) {
+      rapInterval = setInterval(() => {
+        setRapState(prev => {
+          if (prev.lyricIndex < rapLyrics.length - 1) {
+            return { ...prev, lyricIndex: prev.lyricIndex + 1 };
+          } else {
+            clearInterval(rapInterval);
+            return { ...prev, isPlaying: false };
+          }
+        });
+      }, 2500); // 每 2.5 秒換一句
+    }
+    return () => clearInterval(rapInterval);
+  }, [mode, rapState.isPlaying]);
+
+  // 遊戲計時器邏輯
+  useEffect(() => {
+    let timer;
+    if (mode === 'competition' && timeLeft > 0 && !gameOver) {
+      timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+    } else if (timeLeft === 0) {
+      setGameOver(true);
+    }
+    return () => clearInterval(timer);
+  }, [mode, timeLeft, gameOver]);
+
+  // 模擬連接試算表的特效
+  useEffect(() => {
+    if (activeTab === 'quiz' && quizState.isLoading) {
+      const logs = [
+        "連線至 Google Sheets API...",
+        "尋找試算表 ID: 1aB2c3D4...",
+        "讀取工作表 [金屬與生活題庫]...",
+        "發現 10 筆題目資料...",
+        "下載選項與解析資料...",
+        "資料處理完成，準備渲染 UI !"
+      ];
+      
+      let currentLog = 0;
+      const logInterval = setInterval(() => {
+        if (currentLog < logs.length) {
+          setQuizState(prev => ({ ...prev, loadingLog: [...prev.loadingLog, logs[currentLog]] }));
+          currentLog++;
+        } else {
+          clearInterval(logInterval);
+          setTimeout(() => setQuizState(prev => ({ ...prev, isLoading: false })), 500);
+        }
+      }, 400);
+
+      return () => clearInterval(logInterval);
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    setBenchItem(null);
+    setTestPhase('idle');
+  }, [activeTab]);
+
+  const handleItemSelect = (item) => {
+    if (testedItems[activeTab]?.includes(item.id)) return;
+    setBenchItem(item);
+    setTestPhase('idle');
+    setShowFeedback(null);
+  };
+
+  const executeTest = () => {
+    if (!benchItem || testPhase !== 'idle') return;
+    
+    setTestPhase('animating');
+
+    setTimeout(() => {
+      setTestPhase('result');
+      
+      const isCorrect = 
+        (activeTab === 'conductivity' && benchItem.conductive) || 
+        (activeTab === 'magnetism' && benchItem.magnetic) || 
+        (activeTab === 'rust' && benchItem.rustable);
+
+      if (isCorrect) {
+        setScore(prev => prev + 10);
+        setShowFeedback({ success: true, message: `觀察正確！${benchItem.name} 具有這項性質。` });
+      } else {
+        setScore(prev => Math.max(0, prev - 5));
+        setShowFeedback({ success: false, message: `不對喔，${benchItem.name} 沒有這項特徵。` });
+      }
+
+      setTestedItems(prev => ({
+        ...prev,
+        [activeTab]: [...prev[activeTab], benchItem.id]
+      }));
+
+    }, activeTab === 'rust' ? 2500 : 1500);
+  };
+
+  const handleQuizAnswer = (qId, optionIndex) => {
+    if (quizState.isSubmitted) return;
+    setQuizState(prev => ({
+      ...prev,
+      answers: { ...prev.answers, [qId]: optionIndex }
+    }));
+  };
+
+  const submitQuiz = () => {
+    let newScore = score;
+    quizQuestions.forEach(q => {
+      if (quizState.answers[q.id] === q.answer) {
+        newScore += 10;
+      }
+    });
+    setScore(newScore);
+    setQuizState(prev => ({ ...prev, isSubmitted: true }));
+  };
+
+  const resetGame = () => {
+    setScore(0);
+    setTestedItems({ conductivity: [], magnetism: [], rust: [] });
+    setTimeLeft(300);
+    setGameOver(false);
+    setBenchItem(null);
+    setTestPhase('idle');
+    setQuizState({ isLoading: true, loadingLog: [], answers: {}, isSubmitted: false });
+    setMode('menu');
+  };
+
+  const startRap = () => {
+    setMode('rap');
+    setRapState({ isPlaying: true, lyricIndex: 0 });
+  };
+
+  // --- Rap 教學畫面 ---
+  const renderRapIntro = () => {
+    const currentLyric = rapLyrics[rapState.lyricIndex];
+    const progress = ((rapState.lyricIndex + 1) / rapLyrics.length) * 100;
+
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 p-6 relative overflow-hidden">
+        {/* 背景光影與裝飾 */}
+        <div className="absolute top-10 left-10 w-32 h-32 bg-purple-600 rounded-full blur-[100px] opacity-60 animate-pulse"></div>
+        <div className="absolute bottom-10 right-10 w-48 h-48 bg-blue-600 rounded-full blur-[120px] opacity-60 animate-pulse"></div>
+        
+        <div className="max-w-3xl w-full z-10 flex flex-col items-center">
+          
+          <div className="flex items-center gap-6 mb-12">
+            <Volume2 size={48} className={`text-green-400 ${rapState.isPlaying ? 'animate-bounce' : ''}`} />
+            <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-cyan-400 tracking-widest text-center drop-shadow-lg">
+              金屬特性 RAP 口訣
+            </h1>
+            <Music size={48} className={`text-pink-400 ${rapState.isPlaying ? 'animate-bounce' : ''}`} style={{animationDelay: '0.2s'}} />
+          </div>
+
+          {/* 歌詞顯示區 */}
+          <div className="bg-slate-900/80 border-2 border-slate-700 p-8 md:p-12 rounded-[3rem] w-full min-h-[300px] flex flex-col items-center justify-center shadow-[0_0_50px_rgba(0,0,0,0.5)] backdrop-blur-md relative">
+            <Mic size={100} className="absolute opacity-5 text-slate-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+            
+            <p className={`text-3xl md:text-5xl font-black text-center leading-tight transition-all duration-500 transform ${rapState.isPlaying ? 'scale-110 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]' : 'scale-100'} 
+              ${currentLyric.type === 'title' ? currentLyric.color : ''}
+              ${currentLyric.type === 'highlight' ? 'text-yellow-300' : ''}
+              ${currentLyric.type === 'verse' || currentLyric.type === 'intro' || currentLyric.type === 'outro' ? 'text-white' : ''}
+            `}>
+              {currentLyric.text}
+            </p>
+            
+            {/* 下一句預覽 */}
+            {rapState.lyricIndex < rapLyrics.length - 1 && (
+              <p className="text-slate-500 font-bold text-xl mt-8 absolute bottom-8 opacity-70">
+                Next: {rapLyrics[rapState.lyricIndex + 1].text}
+              </p>
+            )}
+          </div>
+
+          {/* 進度條 */}
+          <div className="w-full max-w-lg h-3 bg-slate-800 rounded-full mt-10 overflow-hidden border border-slate-700">
+            <div className="h-full bg-gradient-to-r from-green-400 to-cyan-400 transition-all duration-500 ease-out" style={{ width: `${progress}%` }}></div>
+          </div>
+
+          {/* 控制按鈕 */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-10">
+            {rapState.isPlaying ? (
+              <button 
+                onClick={() => setRapState(prev => ({ ...prev, isPlaying: false }))}
+                className="px-8 py-3 bg-slate-800 text-white rounded-full font-bold text-lg hover:bg-slate-700 flex items-center gap-2 border border-slate-600"
+              >
+                暫停 Beat
+              </button>
+            ) : (
+              <button 
+                onClick={() => {
+                  if (rapState.lyricIndex >= rapLyrics.length - 1) {
+                    setRapState({ isPlaying: true, lyricIndex: 0 });
+                  } else {
+                    setRapState(prev => ({ ...prev, isPlaying: true }));
+                  }
+                }}
+                className="px-8 py-3 bg-green-500 text-white rounded-full font-bold text-lg hover:bg-green-400 flex items-center gap-2 shadow-[0_0_20px_rgba(34,197,94,0.4)]"
+              >
+                <Play size={20} fill="currentColor" /> {rapState.lyricIndex >= rapLyrics.length - 1 ? '再聽一次' : '繼續播放'}
+              </button>
+            )}
+            
+            <button 
+              onClick={() => setMode('menu')}
+              className="px-8 py-3 bg-indigo-600 text-white rounded-full font-bold text-lg hover:bg-indigo-500 flex items-center gap-2 shadow-[0_0_20px_rgba(79,70,229,0.4)]"
+            >
+              <SkipForward size={20} /> 結束特訓，前往遊戲
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // --- 主選單 ---
+  const renderMenu = () => (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-6 relative overflow-hidden">
+      
+      {/* 裝飾背景 */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-200 rounded-full blur-[80px] opacity-40"></div>
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-200 rounded-full blur-[100px] opacity-40"></div>
+
+      <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-2xl max-w-md w-full text-center border-t-8 border-yellow-400 relative z-10">
+        <div className="flex justify-center mb-6">
+          <div className="relative">
+            <div className="absolute inset-0 bg-yellow-400 blur-xl opacity-50 rounded-full"></div>
+            <div className="p-6 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full text-yellow-600 relative z-10 shadow-inner">
+              <Compass size={64} className="animate-[spin_4s_linear_infinite]" />
+            </div>
+          </div>
+        </div>
+        <h1 className="text-4xl font-black text-slate-800 mb-3 tracking-wide drop-shadow-sm">校園金屬偵探</h1>
+        <p className="text-slate-500 mb-8 font-medium text-lg">虛擬實驗室 × 雲端試算表題庫</p>
+        
+        <div className="space-y-4">
+          {/* 新增：Rap 口訣教學入口按鈕 (特別顯眼) */}
+          <button onClick={startRap} className="w-full py-5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl font-black text-xl flex items-center justify-center gap-3 transition-all shadow-[0_10px_20px_rgba(168,85,247,0.3)] hover:-translate-y-1 animate-pulse border-2 border-purple-300">
+            <Mic size={24} /> 戰前特訓：Rap 口訣教學
+          </button>
+
+          <div className="relative py-4">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200"></div></div>
+            <div className="relative flex justify-center"><span className="bg-white px-4 text-sm text-slate-400 font-bold">選擇挑戰模式</span></div>
+          </div>
+
+          <button onClick={() => setMode('learning')} className="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-blue-500/30 hover:-translate-y-1">
+            <BookOpen size={20} /> 自學實驗模式
+          </button>
+          <button onClick={() => setMode('competition')} className="w-full py-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-yellow-500/30 hover:-translate-y-1">
+            <Trophy size={20} /> 限時挑戰模式 (5分鐘)
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderExperimentVisuals = () => {
+    if (!benchItem) {
+      return <div className="text-slate-400 text-lg flex items-center gap-3 animate-pulse"><Zap size={24}/> 請點選下方物品放上實驗桌</div>;
+    }
+
+    if (activeTab === 'conductivity') {
+      const isGlowing = testPhase === 'result' && benchItem.conductive;
+      const isAnimating = testPhase === 'animating';
+      
+      return (
+        <div className="flex items-center justify-center gap-4 w-full px-8 relative">
+          <BatteryMedium size={64} className={`${isAnimating ? 'text-yellow-400 animate-bounce' : 'text-slate-300'}`} />
+          
+          <div className="h-2 flex-grow relative overflow-hidden bg-slate-600 rounded-full">
+            {(isAnimating || isGlowing) && (
+              <div className="absolute inset-0 bg-yellow-400 animate-[translateX_1s_infinite]"></div>
+            )}
+          </div>
+          
+          <div className={`text-7xl p-4 bg-slate-700 rounded-2xl shadow-inner relative z-10 transition-transform ${isAnimating && benchItem.conductive ? 'animate-wiggle' : ''}`}>
+            {benchItem.icon}
+            {(isAnimating || isGlowing) && benchItem.conductive && (
+              <Zap size={32} className="absolute -top-4 -right-4 text-yellow-300 animate-ping" />
+            )}
+          </div>
+
+          <div className="h-2 flex-grow relative overflow-hidden bg-slate-600 rounded-full">
+            {(isAnimating || isGlowing) && (
+              <div className="absolute inset-0 bg-yellow-400 animate-[translateX_1s_infinite]"></div>
+            )}
+          </div>
+
+          <Lightbulb size={64} className={`transition-all duration-300 ${isGlowing ? 'text-yellow-400 fill-yellow-400 drop-shadow-[0_0_30px_rgba(250,204,21,1)] scale-125' : 'text-slate-500'}`} />
+        </div>
+      );
+    }
+
+    if (activeTab === 'magnetism') {
+      const isAttracted = testPhase === 'result' && benchItem.magnetic;
+      const isAnimating = testPhase === 'animating';
+      
+      return (
+        <div className="flex items-center justify-center gap-16 relative w-full px-12 h-32">
+          <div className={`transition-all duration-700 z-10 flex items-center justify-center relative ${testPhase !== 'idle' ? 'translate-x-20 scale-110' : ''}`}>
+            {isAnimating && (
+              <div className="absolute -right-8 flex gap-1">
+                <div className="w-1 h-8 bg-blue-400 rounded-full animate-ping"></div>
+                <div className="w-1 h-12 bg-blue-400 rounded-full animate-ping" style={{animationDelay: '0.1s'}}></div>
+                <div className="w-1 h-16 bg-blue-400 rounded-full animate-ping" style={{animationDelay: '0.2s'}}></div>
+              </div>
+            )}
+            <Magnet size={80} className="text-red-500 transform -rotate-90 drop-shadow-2xl z-20" />
+          </div>
+          
+          <div className={`text-7xl p-4 bg-slate-700 rounded-2xl shadow-inner transition-all duration-[400ms] ${isAttracted ? '-translate-x-14 scale-110 drop-shadow-2xl rotate-12' : ''} ${isAnimating && !benchItem.magnetic ? 'animate-pulse' : ''}`}>
+            {benchItem.icon}
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === 'rust') {
+      const isRusted = testPhase === 'result' && benchItem.rustable;
+      const isAnimating = testPhase === 'animating';
+      
+      return (
+        <div className="flex flex-col items-center justify-center gap-4 relative w-full">
+          <div className="absolute -top-16 flex gap-2">
+            {[1,2,3].map(i => (
+              <Droplets key={i} size={30} className={`text-blue-400 transition-all duration-1000 ${isAnimating ? `translate-y-20 opacity-0 delay-${i*100}` : 'opacity-100'}`} />
+            ))}
+          </div>
+
+          <div className={`text-8xl p-6 bg-slate-700 rounded-3xl shadow-inner transition-all duration-1000 z-10 ${isRusted ? 'sepia-[.8] contrast-150 hue-rotate-15 brightness-75 drop-shadow-[0_10px_10px_rgba(153,71,0,0.5)]' : ''}`}>
+            {benchItem.icon}
+          </div>
+
+          {isAnimating && (
+            <div className="absolute inset-0 flex items-center justify-center z-20 bg-slate-900/40 rounded-3xl backdrop-blur-sm">
+              <div className="flex flex-col items-center text-white">
+                <Clock size={48} className="animate-spin text-blue-300 mb-2" style={{animationDuration: '0.5s'}} />
+                <span className="font-bold tracking-widest text-lg animate-pulse">時間加速中...</span>
+              </div>
+            </div>
+          )}
+
+          {isRusted && <div className="absolute -bottom-10 text-orange-400 font-black text-xl animate-bounce drop-shadow-md">產生紅褐色鐵鏽！</div>}
+        </div>
+      );
+    }
+  };
+
+  const renderQuizPanel = () => {
+    if (quizState.isLoading) {
+      return (
+        <div className="bg-slate-900 p-8 rounded-2xl shadow-xl min-h-[450px] flex flex-col font-mono text-green-400">
+          <div className="flex items-center gap-3 mb-6 border-b border-green-800 pb-4">
+            <TableProperties className="animate-pulse" />
+            <h3 className="text-xl font-bold">Google Sheets Data Fetcher</h3>
+          </div>
+          <div className="space-y-2 flex-grow">
+            {quizState.loadingLog.map((log, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="text-green-600">{`>`}</span> {log}
+              </div>
+            ))}
+            <span className="animate-pulse">_</span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-white p-6 rounded-2xl shadow-md space-y-6 border-t-8 border-green-500">
+        <div className="flex items-center justify-between border-b pb-4 sticky top-0 bg-white z-10">
+          <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2">
+            <FileText className="text-green-500" /> 雲端試算表測驗 ({Object.keys(quizState.answers).length}/10)
+          </h2>
+          <span className="text-xs font-mono bg-slate-100 text-slate-500 px-3 py-1 rounded-full border border-slate-200 shadow-inner">
+            Sheet ID: meta_quiz_01
+          </span>
+        </div>
+
+        <div className="space-y-8 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+          {quizQuestions.map((q, qIndex) => {
+            const isSelectedCorrectly = quizState.answers[q.id] === q.answer;
+
+            return (
+              <div key={q.id} className={`p-5 rounded-2xl transition-all ${quizState.isSubmitted ? (isSelectedCorrectly ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200') : 'bg-slate-50'}`}>
+                <p className="font-bold text-slate-800 mb-4 text-lg">
+                  <span className="bg-slate-800 text-white px-2 py-1 rounded-md mr-2 text-sm">Q{qIndex + 1}</span> 
+                  {q.text}
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {q.options.map((opt, optIndex) => {
+                    const isSelected = quizState.answers[q.id] === optIndex;
+                    const isCorrect = quizState.isSubmitted && q.answer === optIndex;
+                    const isWrong = quizState.isSubmitted && isSelected && q.answer !== optIndex;
+                    
+                    return (
+                      <button
+                        key={optIndex}
+                        onClick={() => handleQuizAnswer(q.id, optIndex)}
+                        disabled={quizState.isSubmitted}
+                        className={`
+                          text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between font-medium
+                          ${isSelected && !quizState.isSubmitted ? 'border-green-500 bg-green-100 text-green-800 shadow-inner' : 'border-slate-200 bg-white hover:border-green-300 hover:bg-green-50'}
+                          ${isCorrect ? 'border-green-500 bg-green-500 text-white shadow-md scale-[1.02]' : ''}
+                          ${isWrong ? 'border-red-500 bg-red-500 text-white shadow-md' : ''}
+                          ${quizState.isSubmitted && !isCorrect && !isWrong ? 'opacity-40 grayscale' : ''}
+                        `}
+                      >
+                        <span>{String.fromCharCode(65 + optIndex)}. {opt}</span>
+                        {isCorrect && <CheckCircle2 size={20} />}
+                        {isWrong && <XCircle size={20} />}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {quizState.isSubmitted && (
+                  <div className="mt-4 p-4 bg-yellow-50 rounded-xl border border-yellow-200 flex items-start gap-3">
+                    <Info className="text-yellow-600 shrink-0 mt-0.5" size={20} />
+                    <div>
+                      <span className="font-bold text-yellow-800 block mb-1">老師解析：</span>
+                      <span className="text-yellow-900 leading-relaxed">{q.explanation}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {!quizState.isSubmitted ? (
+          <button 
+            onClick={submitQuiz}
+            disabled={Object.keys(quizState.answers).length !== quizQuestions.length}
+            className="w-full py-5 bg-green-500 disabled:bg-slate-300 text-white rounded-2xl font-black text-xl hover:bg-green-600 transition-all flex justify-center items-center gap-2 shadow-lg hover:shadow-green-500/40 disabled:shadow-none mt-4"
+          >
+            <Check size={24} /> 提交答案並看解析
+          </button>
+        ) : (
+          <button 
+            onClick={() => setGameOver(true)}
+            className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-xl hover:bg-blue-700 transition-all flex justify-center items-center gap-2 shadow-lg hover:shadow-blue-500/40 mt-4 animate-bounce"
+          >
+            觀看最終實驗報告 <ChevronRight size={24} />
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  const renderGame = () => (
+    <div className="min-h-screen bg-slate-100 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 gap-4">
+        <div className="flex items-center gap-4">
+          <button onClick={resetGame} className="p-3 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors">
+            <RefreshCw size={20} className="text-slate-600" />
+          </button>
+          <div className="bg-blue-50 px-4 py-2 rounded-xl">
+            <span className="text-xs text-blue-500 font-bold block">總積分</span>
+            <span className="text-2xl font-black text-blue-700">{score}</span>
+          </div>
+        </div>
+
+        {mode === 'competition' && (
+          <div className={`px-6 py-3 rounded-2xl font-black text-xl flex items-center gap-2 shadow-inner border ${timeLeft < 60 ? 'bg-red-50 border-red-200 text-red-600 animate-pulse' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
+            <Clock size={24} /> {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+          </div>
+        )}
+      </div>
+
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-3 space-y-4">
+          <div className="bg-white p-5 rounded-3xl shadow-md border border-slate-100">
+            <h3 className="font-black text-slate-800 mb-4 flex items-center gap-2 text-lg">
+              <Zap size={20} className="text-yellow-500" /> 選擇模式
+            </h3>
+            <div className="space-y-3">
+              {[
+                { id: 'conductivity', label: '1. 導電性測試', icon: <Lightbulb size={20}/>, color: 'yellow', theme: 'from-yellow-400 to-orange-400' },
+                { id: 'magnetism', label: '2. 磁性觀察', icon: <Magnet size={20}/>, color: 'red', theme: 'from-red-400 to-rose-500' },
+                { id: 'rust', label: '3. 生鏽反應', icon: <Droplets size={20}/>, color: 'blue', theme: 'from-blue-400 to-cyan-500' },
+                { id: 'quiz', label: '4. 試算表測驗庫', icon: <FileText size={20}/>, color: 'green', theme: 'from-green-400 to-emerald-500' },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full text-left p-4 rounded-2xl flex items-center gap-3 transition-all font-bold text-lg
+                    ${activeTab === tab.id 
+                      ? `bg-gradient-to-r ${tab.theme} text-white shadow-lg shadow-${tab.color}-500/30 scale-[1.02]` 
+                      : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'}`}
+                >
+                  {tab.icon} {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {activeTab !== 'quiz' && (
+            <div className="bg-orange-50 border border-orange-200 p-5 rounded-3xl">
+              <h4 className="font-bold text-orange-800 flex items-center gap-2 mb-2">
+                <AlertTriangle size={18} /> 實驗任務
+              </h4>
+              <p className="text-sm text-orange-700 leading-relaxed font-medium">
+                {activeTab === 'conductivity' && '點選物品放上實驗桌，測試它們能不能讓電流通過，使燈泡發光！'}
+                {activeTab === 'magnetism' && '不是所有金屬都有磁性喔！看看哪些物品會被強力的 U 型磁鐵吸過去。'}
+                {activeTab === 'rust' && '模擬時間加速與水氣影響，觀察哪些材質最容易產生紅褐色的鐵鏽。'}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="lg:col-span-9 space-y-6">
+          {activeTab === 'quiz' ? renderQuizPanel() : (
+            <>
+              <div className="bg-slate-800 p-6 rounded-[2rem] shadow-2xl flex flex-col items-center justify-between min-h-[320px] border-b-[12px] border-slate-900 relative overflow-hidden">
+                <div className="absolute top-5 left-6 text-slate-400 font-bold tracking-widest text-sm flex items-center gap-2">
+                  <Activity size={16} className="text-green-400" /> VIRTUAL LAB 2.0
+                </div>
+                
+                <div className="flex-grow flex items-center w-full justify-center mt-8">
+                  {renderExperimentVisuals()}
+                </div>
+                
+                <div className="h-20 mt-8 flex items-center justify-center w-full">
+                  {benchItem && testPhase === 'idle' && (
+                    <button 
+                      onClick={executeTest} 
+                      className="bg-green-500 hover:bg-green-400 text-white px-10 py-4 rounded-full font-black text-xl shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 transition-all flex items-center gap-3"
+                    >
+                      <Play size={24} fill="currentColor" /> 開始測試
+                    </button>
+                  )}
+                  {testPhase === 'result' && showFeedback && (
+                    <div className={`px-8 py-4 rounded-full font-black text-lg flex items-center gap-3 shadow-lg animate-bounce ${showFeedback.success ? 'bg-green-500 text-white' : 'bg-rose-500 text-white'}`}>
+                      {showFeedback.success ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
+                      {showFeedback.message}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-black text-slate-800">校園物品儲藏櫃</h2>
+                  <span className="text-sm bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full font-bold">
+                    已測試: {testedItems[activeTab]?.length || 0} / {campusItems.length}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {campusItems.map(item => {
+                    const isTested = testedItems[activeTab]?.includes(item.id);
+                    const isSelected = benchItem?.id === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleItemSelect(item)}
+                        disabled={isTested || testPhase === 'animating'}
+                        className={`relative p-5 rounded-2xl border-2 flex flex-col items-center transition-all duration-300
+                          ${isTested ? 'bg-slate-50 border-slate-200 opacity-60 cursor-not-allowed grayscale-[0.5]' : 
+                            isSelected ? 'bg-blue-50 border-blue-500 shadow-lg shadow-blue-500/20 scale-105 -translate-y-1' : 
+                            'bg-white border-slate-200 hover:border-blue-300 hover:shadow-md hover:-translate-y-1'}
+                        `}
+                      >
+                        <span className="text-5xl mb-3 drop-shadow-sm">{item.icon}</span>
+                        <span className="font-black text-slate-700 text-lg">{item.name}</span>
+                        <span className="text-xs text-slate-500 font-bold bg-slate-100 px-2 py-1 rounded mt-1">{item.material}</span>
+                        {isTested && <div className="absolute top-3 right-3 text-green-500 bg-green-100 rounded-full p-1"><CheckCircle2 size={18} /></div>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {gameOver && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-[2rem] p-10 max-w-3xl w-full shadow-2xl my-8 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-blue-400 via-green-400 to-yellow-400"></div>
+            
+            <div className="text-center mb-8 mt-4">
+              <Trophy size={80} className="mx-auto text-yellow-400 mb-6 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]" />
+              <h2 className="text-4xl font-black mb-3 text-slate-800 tracking-tight">實驗與測驗完成！</h2>
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 p-6 rounded-3xl inline-block mt-4 shadow-inner">
+                <span className="text-slate-500 font-bold block mb-1">最終科學家總積分</span>
+                <span className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">{score}</span>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 p-8 rounded-3xl mb-8 border border-slate-200">
+              <h3 className="text-2xl font-black text-slate-800 mb-6 flex items-center gap-3 border-b-2 border-slate-200 pb-4">
+                <BookOpen className="text-blue-500" size={28} /> 最終實驗報告總結
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="bg-white p-4 rounded-2xl shadow-sm border-l-[6px] border-yellow-400 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex items-center gap-2 font-black text-slate-700 w-48 shrink-0">
+                    <div className="p-2 bg-yellow-100 rounded-lg text-yellow-600"><Lightbulb size={20}/></div> 能導電的物質
+                  </div>
+                  <p className="text-slate-600 font-medium text-lg">
+                    {campusItems.filter(i => i.conductive).map(i => `${i.icon} ${i.name}`).join('、')}
+                  </p>
+                </div>
+                
+                <div className="bg-white p-4 rounded-2xl shadow-sm border-l-[6px] border-red-400 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex items-center gap-2 font-black text-slate-700 w-48 shrink-0">
+                    <div className="p-2 bg-red-100 rounded-lg text-red-600"><Magnet size={20}/></div> 有磁性 (含鐵/鋼)
+                  </div>
+                  <p className="text-slate-600 font-medium text-lg">
+                    {campusItems.filter(i => i.magnetic).map(i => `${i.icon} ${i.name}`).join('、')}
+                  </p>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl shadow-sm border-l-[6px] border-blue-400 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex items-center gap-2 font-black text-slate-700 w-48 shrink-0">
+                    <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><Droplets size={20}/></div> 易生鏽的物質
+                  </div>
+                  <p className="text-slate-600 font-medium text-lg">
+                    {campusItems.filter(i => i.rustable).map(i => `${i.icon} ${i.name}`).join('、')}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button onClick={resetGame} className="w-full py-5 bg-slate-800 text-white rounded-2xl font-black text-xl hover:bg-slate-900 transition-all flex justify-center items-center gap-3 shadow-xl hover:shadow-slate-900/30">
+              返回主選單重新挑戰 <RefreshCw size={24} />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="font-sans antialiased text-slate-800">
+      {mode === 'menu' && renderMenu()}
+      {mode === 'rap' && renderRapIntro()}
+      {(mode === 'learning' || mode === 'competition') && renderGame()}
+    </div>
+  );
+};
+
+const Activity = ({ size, className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+);
+
+export default App;
