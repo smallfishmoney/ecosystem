@@ -1,0 +1,863 @@
+import React, { useState, useEffect } from 'react';
+import { Flame, Wind, Droplet, Triangle, AlertTriangle, Play, RotateCcw, ShieldAlert, BookOpen } from 'lucide-react';
+
+// 主應用程式組件
+export default function App() {
+  const [activeTab, setActiveTab] = useState('candles');
+
+  const tabs = [
+    { id: 'candles', title: '長短蠟燭實驗', icon: <Flame className="w-5 h-5" /> },
+    { id: 'triangle', title: '燃燒三要素', icon: <Triangle className="w-5 h-5" /> },
+    { id: 'dust', title: '粉塵起火實驗', icon: <Wind className="w-5 h-5" /> },
+    { id: 'safety', title: '滅火與安全', icon: <ShieldAlert className="w-5 h-5" /> },
+  ];
+
+  return (
+    <div className="min-h-screen bg-orange-50 font-sans text-gray-800">
+      {/* 頂部導航 */}
+      <header className="bg-orange-600 text-white p-4 shadow-md">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Flame className="w-8 h-8 text-yellow-300" />
+            校園生態系：火系 - 空氣與燃燒
+          </h1>
+          <div className="text-sm bg-orange-700 px-3 py-1 rounded-full">
+            國小自然 五年級
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto p-4 md:p-6 flex flex-col md:flex-row gap-6">
+        {/* 側邊欄選單 */}
+        <div className="w-full md:w-64 flex flex-col gap-2 shrink-0">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-200 text-left font-bold text-lg shadow-sm
+                ${activeTab === tab.id 
+                  ? 'bg-orange-500 text-white shadow-orange-300 translate-x-2' 
+                  : 'bg-white text-gray-600 hover:bg-orange-100 hover:text-orange-600'}`}
+            >
+              {tab.icon}
+              {tab.title}
+            </button>
+          ))}
+          
+          <div className="mt-6 bg-yellow-100 p-4 rounded-xl border border-yellow-300">
+            <h3 className="font-bold flex items-center gap-2 text-yellow-800 mb-2">
+              <BookOpen className="w-5 h-5" /> 教師提示
+            </h3>
+            <p className="text-sm text-yellow-800 leading-relaxed">
+              可讓學生先預測結果，再進行模擬。觀察二氧化碳（灰色粒子）的流動方向是解開長短蠟燭謎題的關鍵！
+            </p>
+          </div>
+        </div>
+
+        {/* 內容顯示區 */}
+        <div className="flex-1 bg-white rounded-2xl shadow-xl p-6 min-h-[600px] border-4 border-orange-100">
+          {activeTab === 'candles' && <CandleExperiment />}
+          {activeTab === 'triangle' && <FireTriangle />}
+          {activeTab === 'dust' && <DustExperiment />}
+          {activeTab === 'safety' && <SafetyEscape />}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// 模組 1: 長短蠟燭實驗
+function CandleExperiment() {
+  const [jarSize, setJarSize] = useState('large'); // 'large' 或 'small'
+  const [status, setStatus] = useState('idle'); // 'idle', 'burning', 'finished'
+  const [co2Level, setCo2Level] = useState(0); // 0 到 100
+  const [longCandleLit, setLongCandleLit] = useState(true);
+  const [shortCandleLit, setShortCandleLit] = useState(true);
+
+  useEffect(() => {
+    let timer;
+    if (status === 'burning') {
+      timer = setInterval(() => {
+        setCo2Level((prev) => {
+          const nextLevel = prev + (jarSize === 'large' ? 1.5 : 3.5); // 小瓶子累積與消耗更快
+          
+          // 邏輯判定：
+          if (jarSize === 'large') {
+            // 大瓶子：熱二氧化碳上升，從頂部往下累積。長蠟燭先碰到 CO2 (約 40% 時熄滅)，短蠟燭後碰到 (約 80% 時熄滅)
+            if (nextLevel >= 40) setLongCandleLit(false);
+            if (nextLevel >= 80) setShortCandleLit(false);
+          } else {
+            // 小瓶子：空間太小，對流不佳或氧氣迅速耗盡，有時短蠟燭先熄滅 (設定短蠟燭 50% 熄滅，長蠟燭 70% 熄滅)
+            if (nextLevel >= 50) setShortCandleLit(false);
+            if (nextLevel >= 70) setLongCandleLit(false);
+          }
+
+          if (nextLevel >= 100) {
+            setStatus('finished');
+            clearInterval(timer);
+            return 100;
+          }
+          return nextLevel;
+        });
+      }, 100);
+    }
+    return () => clearInterval(timer);
+  }, [status, jarSize]);
+
+  const handleStart = () => {
+    setStatus('burning');
+    setCo2Level(0);
+    setLongCandleLit(true);
+    setShortCandleLit(true);
+  };
+
+  const handleReset = () => {
+    setStatus('idle');
+    setCo2Level(0);
+    setLongCandleLit(true);
+    setShortCandleLit(true);
+  };
+
+  const o2Level = Math.max(0, 100 - co2Level);
+
+  return (
+    <div className="flex flex-col h-full">
+      <h2 className="text-2xl font-bold text-orange-700 mb-4 border-b-2 border-orange-200 pb-2">觀察：長短蠟燭與氣體變化</h2>
+      
+      <div className="flex gap-4 mb-6">
+        <button 
+          onClick={() => {if(status==='idle') setJarSize('large')}}
+          className={`px-4 py-2 rounded-lg font-bold transition-colors shadow-sm ${jarSize === 'large' ? 'bg-orange-500 text-white shadow-orange-300' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'} ${status !== 'idle' && 'opacity-50 cursor-not-allowed'}`}
+        >
+          使用 大廣口瓶
+        </button>
+        <button 
+          onClick={() => {if(status==='idle') setJarSize('small')}}
+          className={`px-4 py-2 rounded-lg font-bold transition-colors shadow-sm ${jarSize === 'small' ? 'bg-orange-500 text-white shadow-orange-300' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'} ${status !== 'idle' && 'opacity-50 cursor-not-allowed'}`}
+        >
+          使用 小廣口瓶
+        </button>
+      </div>
+
+      <div className="flex-1 flex flex-col lg:flex-row gap-8 items-center justify-center relative">
+        
+        {/* 氣體數據儀表板 */}
+        <div className="absolute top-0 right-0 lg:relative bg-gray-50 p-4 rounded-xl border-2 border-gray-200 w-48 shadow-sm">
+          <h4 className="font-bold text-gray-700 mb-3 text-center border-b pb-1">瓶內氣體濃度</h4>
+          
+          <div className="mb-4">
+            <div className="flex justify-between text-sm font-bold text-blue-600 mb-1">
+              <span>氧氣 (O₂)</span>
+              <span>{Math.round(o2Level)}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div className="bg-blue-500 h-2.5 rounded-full transition-all duration-100 ease-linear" style={{ width: `${o2Level}%` }}></div>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">助燃物，逐漸消耗</p>
+          </div>
+
+          <div>
+            <div className="flex justify-between text-sm font-bold text-gray-600 mb-1">
+              <span>二氧化碳 (CO₂)</span>
+              <span>{Math.round(co2Level)}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div className="bg-gray-500 h-2.5 rounded-full transition-all duration-100 ease-linear" style={{ width: `${co2Level}%` }}></div>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">{jarSize === 'large' ? '受熱上升，由上往下累積' : '空間小，快速沉降積累'}</p>
+          </div>
+        </div>
+
+        {/* 實驗視覺區 */}
+        <div 
+          onClick={() => { if(status === 'idle') handleStart(); }}
+          className={`relative flex items-end justify-center bg-blue-50/20 rounded-t-3xl border-4 border-b-8 border-gray-400 overflow-hidden transition-all duration-500 group
+            ${jarSize === 'large' ? 'w-72 h-80' : 'w-48 h-56'}
+            ${status === 'idle' ? 'cursor-pointer hover:border-orange-400 hover:bg-blue-50/40 shadow-[0_0_15px_rgba(251,146,60,0.3)]' : ''}
+          `}
+        >
+          {/* 蓋子 */}
+          <div className={`absolute top-0 left-0 right-0 h-4 bg-slate-600 transition-all duration-300 z-20 ${status !== 'idle' ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-6'}`}></div>
+          
+          {/* 點擊提示 (僅在 idle 時顯示) */}
+          {status === 'idle' && (
+            <div className="absolute top-1/3 text-orange-600 font-bold bg-white/80 px-4 py-2 rounded-full animate-bounce pointer-events-none z-30 shadow-sm border border-orange-200">
+              👇 點擊瓶子蓋上瓶蓋
+            </div>
+          )}
+
+          {/* 二氧化碳可視化 (灰色氣體) */}
+          {jarSize === 'large' ? (
+            <div 
+              className="absolute top-0 left-0 right-0 bg-gray-500/50 transition-all duration-100 ease-linear backdrop-blur-[2px] z-10 border-b-2 border-gray-400/50" 
+              style={{ height: `${co2Level}%` }}
+            >
+              <div className="w-full h-full flex items-end justify-center pb-2 text-sm text-white font-bold drop-shadow-md">
+                熱 CO₂ 往下累積 ↓
+              </div>
+            </div>
+          ) : (
+             <div 
+              className="absolute bottom-0 left-0 right-0 bg-gray-600/60 transition-all duration-100 ease-linear backdrop-blur-[2px] z-10 border-t-2 border-gray-400/50" 
+              style={{ height: `${co2Level}%` }}
+            >
+              <div className="w-full h-full flex items-start justify-center pt-2 text-sm text-white font-bold drop-shadow-md">
+                ↑ CO₂ 沉積 / O₂ 耗盡
+              </div>
+            </div>
+          )}
+
+          {/* 蠟燭們 */}
+          <div className={`flex items-end pb-4 z-0 ${jarSize === 'large' ? 'gap-10' : 'gap-4'}`}>
+            {/* 短蠟燭 */}
+            <div className="relative flex flex-col items-center">
+              {shortCandleLit && (
+                <div className="absolute -top-6 animate-pulse text-orange-500 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] z-10">
+                  <Flame className="w-8 h-8 fill-yellow-400" />
+                </div>
+              )}
+              {/* 熄滅時的煙 */}
+              {!shortCandleLit && status === 'burning' && (
+                <div className="absolute -top-8 text-gray-400 animate-pulse z-10"><Wind className="w-6 h-6" /></div>
+              )}
+              <div className="w-6 h-12 bg-red-500 rounded-sm border-x border-t border-red-700 shadow-inner"></div>
+            </div>
+            
+            {/* 長蠟燭 */}
+            <div className="relative flex flex-col items-center">
+              {longCandleLit && (
+                <div className="absolute -top-6 animate-pulse text-orange-500 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] z-10">
+                  <Flame className="w-8 h-8 fill-yellow-400" />
+                </div>
+              )}
+              {/* 熄滅時的煙 */}
+              {!longCandleLit && status === 'burning' && (
+                <div className="absolute -top-8 text-gray-400 animate-pulse z-10"><Wind className="w-6 h-6" /></div>
+              )}
+              <div className="w-6 h-28 bg-red-500 rounded-sm border-x border-t border-red-700 shadow-inner"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* 控制與解說區 */}
+        <div className="flex flex-col gap-4 w-full lg:w-72">
+          <div className="flex gap-2">
+            <button 
+              onClick={handleReset}
+              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 p-3 rounded-xl font-bold flex justify-center items-center gap-2 transition-colors"
+            >
+              <RotateCcw className="w-5 h-5" /> 重新設定實驗
+            </button>
+          </div>
+
+          <div className="bg-orange-50 p-4 rounded-xl border border-orange-200 shadow-sm">
+            <h3 className="font-bold text-orange-800 mb-2 flex items-center gap-2">
+              <BookOpen className="w-4 h-4"/> 原理說明：
+            </h3>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              {jarSize === 'large' 
+                ? '在大廣口瓶中，燃燒產生的二氧化碳受熱體積膨脹而上升，碰到瓶蓋後開始由上往下累積，因此較高的長蠟燭會先接觸到二氧化碳而熄滅。' 
+                : '在小廣口瓶中，空間狹小，熱對流不明顯，且氧氣迅速被消耗，底部的短蠟燭會因為氧氣不足或二氧化碳快速沉降而先熄滅。'}
+            </p>
+          </div>
+
+          {status === 'finished' && (
+            <div className="animate-bounce bg-yellow-100 text-yellow-800 p-3 rounded-lg text-center font-bold border border-yellow-300 shadow-sm">
+              實驗結束！{jarSize === 'large' ? '長蠟燭先熄滅！' : '短蠟燭先熄滅！'}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 模組 2: 燃燒三要素 (全新互動遊戲版)
+function FireTriangle() {
+  const [phase, setPhase] = useState('build'); // 'build' (生火階段), 'burn' (燃燒中), 'success' (滅火成功)
+  const [selection, setSelection] = useState({ fuel: null, oxygen: null, heat: null });
+  const [feedback, setFeedback] = useState('');
+
+  // 遊戲物品資料庫
+  const ITEMS = {
+    fuel: [
+      { id: 'wood', name: '乾燥木柴', emoji: '🪵', isCorrect: true, desc: '優良的可燃物。' },
+      { id: 'stone', name: '石頭', emoji: '🪨', isCorrect: false, desc: '石頭不是可燃物，無法燃燒。' },
+      { id: 'wet', name: '濕樹葉', emoji: '🍂', isCorrect: false, desc: '水分太多，很難達到燃點。' },
+    ],
+    oxygen: [
+      { id: 'wind', name: '通風的空地', emoji: '🏕️', isCorrect: true, desc: '有源源不絕的氧氣(助燃物)。' },
+      { id: 'box', name: '密閉的鐵箱', emoji: '📦', isCorrect: false, desc: '沒有新鮮空氣，缺乏助燃物。' },
+    ],
+    heat: [
+      { id: 'match', name: '點燃的火柴', emoji: '🧨', isCorrect: true, desc: '提供足夠熱量達到燃點。' },
+      { id: 'sun', name: '放大鏡聚光', emoji: '🔍', isCorrect: true, desc: '能將陽光熱能聚集達到燃點。' },
+      { id: 'ice', name: '冰塊', emoji: '🧊', isCorrect: false, desc: '溫度太低，無法達到燃點！' },
+    ]
+  };
+
+  // 滅火物品資料庫
+  const EXTINGUISH_ITEMS = [
+    { id: 'water', name: '大量澆水', emoji: '🪣', target: 'heat', targetName: '燃點', desc: '水能吸收大量熱能，讓溫度降到「燃點」以下！' },
+    { id: 'blanket', name: '蓋上滅火毯', emoji: '🧥', target: 'oxygen', targetName: '助燃物', desc: '毯子能完全隔絕空氣，讓火失去「助燃物(氧氣)」！' },
+    { id: 'remove', name: '移走剩餘木柴', emoji: '🧹', target: 'fuel', targetName: '可燃物', desc: '抽薪止沸！沒有了「可燃物」，火就無法繼續燃燒！' },
+  ];
+
+  const handleSelect = (category, item) => {
+    setSelection(prev => ({ ...prev, [category]: item }));
+    setFeedback(''); // 清除之前的提示
+  };
+
+  const handleIgnite = () => {
+    if (!selection.fuel || !selection.oxygen || !selection.heat) {
+      setFeedback('請先從右側挑選齊全三個條件的物品喔！');
+      return;
+    }
+
+    if (!selection.fuel.isCorrect) {
+      setFeedback(`❌ 生火失敗：${selection.fuel.desc}`);
+      return;
+    }
+    if (!selection.oxygen.isCorrect) {
+      setFeedback(`❌ 生火失敗：${selection.oxygen.desc}`);
+      return;
+    }
+    if (!selection.heat.isCorrect) {
+      setFeedback(`❌ 生火失敗：${selection.heat.desc}`);
+      return;
+    }
+
+    // 全部正確，生火成功！
+    setPhase('burn');
+    setFeedback('🔥 成功湊齊三要素，營火熊熊燃燒起來了！');
+  };
+
+  const handleExtinguish = (item) => {
+    setPhase('success');
+    setFeedback(`✅ 滅火成功！\n你使用了「${item.name}」，成功破壞了【${item.targetName}】這個條件！\n原理：${item.desc}`);
+  };
+
+  const resetGame = () => {
+    setPhase('build');
+    setSelection({ fuel: null, oxygen: null, heat: null });
+    setFeedback('');
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex justify-between items-end mb-4 border-b-2 border-orange-200 pb-2">
+        <h2 className="text-2xl font-bold text-orange-700">燃燒三要素：野營生火與滅火挑戰</h2>
+        {phase !== 'build' && (
+          <button onClick={resetGame} className="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-lg font-bold flex items-center gap-1">
+            <RotateCcw className="w-4 h-4" /> 重新挑戰
+          </button>
+        )}
+      </div>
+
+      <div className="flex-1 flex flex-col lg:flex-row gap-6">
+        {/* 左側：營火合成展示區 */}
+        <div className="w-full lg:w-1/2 bg-slate-800 rounded-3xl p-6 flex flex-col items-center justify-center relative min-h-[300px] border-8 border-slate-700 overflow-hidden shadow-inner">
+          
+          {/* 背景情境 */}
+          <div className="absolute top-4 left-4 text-slate-500 opacity-50 font-bold tracking-widest">
+            CAMPING AREA
+          </div>
+          
+          {/* 營火動畫區 */}
+          <div className="relative mt-12 w-48 h-48 flex items-center justify-center">
+            {/* 底部石頭圈 */}
+            <div className="absolute bottom-0 w-32 h-12 border-[6px] border-dashed border-slate-600 rounded-[50%] opacity-50"></div>
+            
+            {/* 顯示選擇的物品 (僅在 build 階段) */}
+            {phase === 'build' && (
+              <div className="flex gap-2 absolute bottom-4 z-10 transition-all">
+                {selection.fuel && <span className="text-5xl animate-fade-in-up drop-shadow-lg">{selection.fuel.emoji}</span>}
+                {selection.oxygen && <span className="text-5xl animate-fade-in-up drop-shadow-lg">{selection.oxygen.emoji}</span>}
+                {selection.heat && <span className="text-5xl animate-fade-in-up drop-shadow-lg">{selection.heat.emoji}</span>}
+              </div>
+            )}
+
+            {/* 燃燒動畫 */}
+            {phase === 'burn' && (
+              <div className="absolute bottom-2 z-20 flex flex-col items-center">
+                <div className="relative flex justify-center items-end">
+                  <Flame className="w-32 h-32 text-red-500 fill-orange-500 animate-pulse absolute bottom-4 drop-shadow-[0_0_25px_rgba(239,68,68,0.8)]" />
+                  <Flame className="w-20 h-20 text-orange-400 fill-yellow-400 animate-bounce relative z-10 drop-shadow-md mb-2" />
+                </div>
+                <span className="text-5xl drop-shadow-lg z-0">🪵</span>
+              </div>
+            )}
+
+            {/* 滅火成功動畫 */}
+            {phase === 'success' && (
+              <div className="absolute bottom-4 z-20 flex flex-col items-center opacity-70">
+                <Wind className="w-16 h-16 text-gray-400 animate-pulse mb-2" />
+                <div className="flex">
+                  <span className="text-4xl drop-shadow-lg grayscale">🪵</span>
+                  <span className="text-4xl drop-shadow-lg grayscale -ml-4">🪵</span>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* 反饋訊息區 */}
+          <div className={`mt-auto w-full p-3 rounded-xl font-bold text-center text-sm md:text-base transition-all
+            ${!feedback ? 'opacity-0' : 'opacity-100'} 
+            ${feedback.includes('❌') ? 'bg-red-100 text-red-700 border-2 border-red-300' : 
+              feedback.includes('🔥') ? 'bg-orange-100 text-orange-700 border-2 border-orange-400 animate-pulse' : 
+              'bg-green-100 text-green-800 border-2 border-green-400'}`}
+          >
+            {feedback.split('\n').map((line, i) => <p key={i}>{line}</p>)}
+          </div>
+        </div>
+
+        {/* 右側：操作面板區 */}
+        <div className="w-full lg:w-1/2 flex flex-col gap-4">
+          
+          {/* --- 階段 1：生火 --- */}
+          {phase === 'build' && (
+            <>
+              <div className="bg-orange-50 p-4 rounded-xl border border-orange-200">
+                <p className="font-bold text-orange-800 mb-1">任務一：尋找燃燒三要素生火！</p>
+                <p className="text-sm text-gray-600">請從下方三個類別中，各自挑選出正確的物品放入營火圈。</p>
+              </div>
+
+              {/* 類別 1: 可燃物 */}
+              <div className="bg-white border-2 border-gray-100 rounded-xl p-3 shadow-sm">
+                <h4 className="font-bold text-gray-700 mb-2 flex items-center gap-2"><BookOpen className="w-4 h-4 text-green-600"/> 1. 尋找【可燃物】</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {ITEMS.fuel.map(item => (
+                    <button key={item.id} onClick={() => handleSelect('fuel', item)}
+                      className={`flex flex-col items-center p-2 rounded-lg border-2 transition-all hover:bg-green-50
+                        ${selection.fuel?.id === item.id ? 'border-green-500 bg-green-50 shadow-md transform scale-105' : 'border-gray-200 bg-gray-50'}`}>
+                      <span className="text-2xl mb-1">{item.emoji}</span>
+                      <span className="text-xs font-bold text-gray-700">{item.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 類別 2: 助燃物 */}
+              <div className="bg-white border-2 border-gray-100 rounded-xl p-3 shadow-sm">
+                <h4 className="font-bold text-gray-700 mb-2 flex items-center gap-2"><Wind className="w-4 h-4 text-blue-600"/> 2. 提供【助燃物】環境</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {ITEMS.oxygen.map(item => (
+                    <button key={item.id} onClick={() => handleSelect('oxygen', item)}
+                      className={`flex flex-col items-center p-2 rounded-lg border-2 transition-all hover:bg-blue-50
+                        ${selection.oxygen?.id === item.id ? 'border-blue-500 bg-blue-50 shadow-md transform scale-105' : 'border-gray-200 bg-gray-50'}`}>
+                      <span className="text-2xl mb-1">{item.emoji}</span>
+                      <span className="text-xs font-bold text-gray-700">{item.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 類別 3: 達到燃點 */}
+              <div className="bg-white border-2 border-gray-100 rounded-xl p-3 shadow-sm">
+                <h4 className="font-bold text-gray-700 mb-2 flex items-center gap-2"><Flame className="w-4 h-4 text-red-600"/> 3. 提供熱源【達到燃點】</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {ITEMS.heat.map(item => (
+                    <button key={item.id} onClick={() => handleSelect('heat', item)}
+                      className={`flex flex-col items-center p-2 rounded-lg border-2 transition-all hover:bg-red-50
+                        ${selection.heat?.id === item.id ? 'border-red-500 bg-red-50 shadow-md transform scale-105' : 'border-gray-200 bg-gray-50'}`}>
+                      <span className="text-2xl mb-1">{item.emoji}</span>
+                      <span className="text-xs font-bold text-gray-700">{item.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button 
+                onClick={handleIgnite}
+                className="mt-2 w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl shadow-lg flex justify-center items-center gap-2 text-lg transition-transform active:scale-95"
+              >
+                <Play className="w-5 h-5 fill-white" /> 開始生火測試！
+              </button>
+            </>
+          )}
+
+          {/* --- 階段 2：燃燒中 (要求滅火) --- */}
+          {phase === 'burn' && (
+            <div className="animate-fade-in-up flex flex-col gap-4 h-full">
+               <div className="bg-red-100 p-5 rounded-2xl border-2 border-red-300 shadow-md">
+                <h3 className="text-xl font-bold text-red-700 flex items-center gap-2 mb-2">
+                  <AlertTriangle className="w-6 h-6 animate-pulse" /> 危險！火勢太大了！
+                </h3>
+                <p className="text-gray-800 font-bold mb-4">
+                  任務二：請選擇一種工具來滅火，破壞燃燒的條件！
+                </p>
+                
+                <div className="flex flex-col gap-3">
+                  {EXTINGUISH_ITEMS.map(item => (
+                    <button 
+                      key={item.id}
+                      onClick={() => handleExtinguish(item)}
+                      className="bg-white hover:bg-red-50 border-2 border-gray-200 hover:border-red-400 p-3 rounded-xl flex items-center gap-4 transition-all group"
+                    >
+                      <span className="text-4xl group-hover:scale-110 transition-transform">{item.emoji}</span>
+                      <div className="text-left">
+                        <span className="block font-bold text-lg text-gray-800">{item.name}</span>
+                        <span className="text-sm text-gray-500">點擊使用此方法滅火</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* --- 階段 3：滅火成功解說 --- */}
+          {phase === 'success' && (
+            <div className="animate-fade-in-up bg-green-50 p-6 rounded-2xl border-2 border-green-300 shadow-md h-full flex flex-col justify-center items-center text-center">
+              <ShieldAlert className="w-16 h-16 text-green-500 mb-4" />
+              <h3 className="text-2xl font-black text-green-800 mb-4">校園危機解除！</h3>
+              <p className="text-gray-700 leading-relaxed mb-6 font-bold">
+                燃燒必須同時具備「可燃物、助燃物、達到燃點」三個要素。<br/><br/>
+                無論是發生在哪裡的火災，只要想辦法<span className="text-red-600 border-b-2 border-red-600 mx-1">移除其中一個要素</span>，火就無法繼續燃燒了！這就是所有滅火設備的基本科學原理。
+              </p>
+              <button onClick={resetGame} className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all">
+                再來玩一次
+              </button>
+            </div>
+          )}
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 模組 3: 粉塵爆炸實驗
+function DustExperiment() {
+  const [material, setMaterial] = useState('cornstarch'); // cornstarch, sand
+  const [condition, setCondition] = useState('pile'); // pile (堆積), dispersed (揚起)
+  const [result, setResult] = useState(null); // 'explosion', 'smolder', 'nothing'
+
+  const handleIgnite = () => {
+    if (material === 'sand') {
+      setResult('nothing');
+    } else if (material === 'cornstarch' && condition === 'dispersed') {
+      setResult('explosion');
+    } else {
+      setResult('smolder');
+    }
+    
+    // 3秒後恢復
+    setTimeout(() => setResult(null), 3500);
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <h2 className="text-2xl font-bold text-orange-700 mb-4 border-b-2 border-orange-200 pb-2">粉塵起火條件測試</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-full">
+        {/* 控制面板 */}
+        <div className="flex flex-col gap-6">
+          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+            <h3 className="font-bold text-gray-700 mb-3">1. 選擇粉塵種類 (可燃物)</h3>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setMaterial('cornstarch')}
+                className={`flex-1 py-2 rounded-lg font-bold transition-all ${material === 'cornstarch' ? 'bg-yellow-100 border-2 border-yellow-400 text-yellow-800' : 'bg-white border-2 border-gray-200 text-gray-500'}`}
+              >
+                玉米粉/麵粉
+              </button>
+              <button 
+                onClick={() => setMaterial('sand')}
+                className={`flex-1 py-2 rounded-lg font-bold transition-all ${material === 'sand' ? 'bg-gray-200 border-2 border-gray-400 text-gray-800' : 'bg-white border-2 border-gray-200 text-gray-500'}`}
+              >
+                泥沙
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+            <h3 className="font-bold text-gray-700 mb-3">2. 粉塵狀態 (與氧氣接觸面積)</h3>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setCondition('pile')}
+                className={`flex-1 py-2 rounded-lg font-bold transition-all ${condition === 'pile' ? 'bg-blue-100 border-2 border-blue-400 text-blue-800' : 'bg-white border-2 border-gray-200 text-gray-500'}`}
+              >
+                成堆放著 (接觸面小)
+              </button>
+              <button 
+                onClick={() => setCondition('dispersed')}
+                className={`flex-1 py-2 rounded-lg font-bold transition-all ${condition === 'dispersed' ? 'bg-blue-100 border-2 border-blue-400 text-blue-800' : 'bg-white border-2 border-gray-200 text-gray-500'}`}
+              >
+                空中揚起 (接觸面大)
+              </button>
+            </div>
+          </div>
+
+          <button 
+            onClick={handleIgnite}
+            disabled={result !== null}
+            className="mt-auto bg-red-500 hover:bg-red-600 text-white py-4 rounded-xl font-bold text-xl flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+          >
+            <Flame className="w-6 h-6" /> 點火測試
+          </button>
+        </div>
+
+        {/* 視覺展示區 */}
+        <div className="bg-slate-800 rounded-2xl flex flex-col items-center justify-center p-6 relative overflow-hidden h-64 md:h-auto">
+          {/* 狀態指示 */}
+          {!result && (
+            <div className="absolute inset-0 flex items-center justify-center flex-col">
+              {condition === 'pile' ? (
+                <div className={`w-32 h-12 rounded-t-full mt-32 ${material === 'cornstarch' ? 'bg-[#F5DEB3]' : 'bg-[#C2B280]'}`}></div>
+              ) : (
+                <div className="flex gap-4 flex-wrap w-48 justify-center">
+                  {[...Array(20)].map((_, i) => (
+                    <div key={i} className={`w-3 h-3 rounded-full animate-bounce ${material === 'cornstarch' ? 'bg-[#F5DEB3]' : 'bg-[#C2B280]'}`} style={{animationDelay: `${i * 0.1}s`}}></div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 結果動畫 */}
+          {result === 'explosion' && (
+             <div className="absolute inset-0 bg-yellow-400 flex items-center justify-center animate-ping opacity-80">
+               <div className="text-red-600 font-black text-6xl rotate-12 drop-shadow-2xl">BOOM! 粉塵爆炸</div>
+             </div>
+          )}
+          
+          {result === 'smolder' && (
+             <div className="absolute inset-0 flex items-center justify-center flex-col">
+                <div className="w-32 h-12 rounded-t-full mt-32 bg-gray-700 relative">
+                  <Flame className="w-10 h-10 text-orange-500 fill-yellow-400 absolute -top-8 left-10 animate-pulse" />
+                </div>
+             </div>
+          )}
+
+          {result === 'nothing' && (
+            <div className="absolute inset-0 flex items-center justify-center">
+               <span className="text-gray-400 font-bold text-xl">無法燃燒 (非可燃物)</span>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* 解說 */}
+      <div className="mt-6 bg-orange-50 p-4 rounded-xl border border-orange-200">
+        <h3 className="font-bold text-orange-800 mb-1">實驗結論：</h3>
+        <p className="text-sm text-gray-700">
+          當<strong>可燃的粉塵</strong>（如麵粉）<strong>飄散在空氣中</strong>時，與氧氣接觸的表面積變得非常大。此時只要遇到一點火花（達到燃點），就會瞬間劇烈燃燒，造成威力強大的<strong>粉塵爆炸</strong>。若堆積在地上，因接觸氧氣面積小，只會緩慢燃燒。沙子不是可燃物，所以不會燃燒。
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// 模組 4: 消防安全教育 (多情境挑戰版)
+function SafetyEscape() {
+  const [activeScenarioId, setActiveScenarioId] = useState('lab');
+  const [feedback, setFeedback] = useState(null);
+
+  // 關卡情境資料庫
+  const SCENARIOS = [
+    {
+      id: 'lab',
+      title: '實驗室起火',
+      subtitle: '打翻燃燒中的酒精燈',
+      icon: '🧪',
+      description: '做自然實驗時，不小心打翻了燃燒中的酒精燈，桌面起火了！',
+      options: [
+        { id: 'blow', text: '用力吹熄它', type: 'danger', reason: '危險！吹氣會提供更多氧氣，甚至把燃燒的酒精吹散到其他同學身上，讓火勢蔓延！' },
+        { id: 'wet_cloth', text: '馬上蓋上濕抹布', type: 'success', reason: '正確！濕抹布可以隔絕空氣（窒息法），同時降低溫度（冷卻法），是處理小面積酒精起火的最佳方式。' },
+        { id: 'water', text: '潑大量的水', type: 'danger', reason: '危險！酒精會溶於水並隨水流動，潑水可能導致燃燒的酒精擴散到更大範圍！' }
+      ]
+    },
+    {
+      id: 'oil',
+      title: '廚房油鍋起火',
+      subtitle: '烹飪時油溫過高起火',
+      icon: '🍳',
+      description: '家政課煮飯時，油鍋突然起火燃燒，火勢猛烈！',
+      options: [
+        { id: 'water', text: '立刻潑水滅火', type: 'danger', reason: '極度危險！水比油重，沉入高溫油中會瞬間沸騰成水蒸氣，把燃燒的油炸開噴濺出來，造成嚴重燒燙傷與火勢擴大！' },
+        { id: 'lid', text: '從側邊蓋上鍋蓋', type: 'success', reason: '正確！輕輕從側邊滑上鍋蓋或大濕抹布，可以有效隔絕「助燃物(氧氣)」，這叫做窒息法。' },
+        { id: 'extinguisher', text: '使用乾粉滅火器', type: 'success', reason: '正確！乾粉滅火器可以有效撲滅油類火災（B類火災）。' }
+      ]
+    },
+    {
+      id: 'electric',
+      title: '電線走火',
+      subtitle: '延長線負載過大',
+      icon: '🔌',
+      description: '電腦教室的延長線插了太多設備，突然冒煙並產生火花！',
+      options: [
+        { id: 'water', text: '拿水桶潑水', type: 'danger', reason: '致命危險！一般的水會導電，在未斷電的情況下潑水會導致嚴重的觸電事故！' },
+        { id: 'power_off', text: '拔除插頭 / 關總電源', type: 'success', reason: '正確！處理電器火災的第一步絕對是「切斷電源」，避免觸電風險與持續發熱。' },
+        { id: 'blanket', text: '用手拿滅火毯去蓋', type: 'danger', reason: '危險！在未斷電的情況下靠近火源，可能因為電線漏電而發生觸電意外。' }
+      ]
+    }
+  ];
+
+  const currentScenario = SCENARIOS.find(s => s.id === activeScenarioId);
+
+  const handleChoose = (opt) => {
+    setFeedback(opt);
+  };
+
+  const changeScenario = (id) => {
+    setActiveScenarioId(id);
+    setFeedback(null); // 切換關卡時重置狀態
+  };
+
+  // 渲染不同情境的視覺動畫
+  const renderVisual = () => {
+    const isSuccess = feedback && feedback.type === 'success';
+
+    if (activeScenarioId === 'oil') {
+      return (
+        <div className="relative w-48 h-24 bg-gray-800 rounded-b-full border-t-8 border-gray-600 mt-12 mb-8 mx-auto">
+          <div className="absolute -left-16 top-0 w-16 h-4 bg-gray-800 rounded-l-full"></div> {/* 鍋柄 */}
+          
+          {/* 火焰或煙霧 */}
+          {!isSuccess ? (
+            <div className={`absolute -top-20 left-12 flex ${feedback?.id === 'water' ? 'scale-150 transition-all duration-300' : ''}`}>
+              <Flame className="w-24 h-24 text-red-500 fill-orange-400 animate-pulse" />
+              <Flame className="w-16 h-16 text-orange-400 fill-yellow-300 absolute top-4 left-4 animate-bounce" />
+            </div>
+          ) : (
+            <div className="absolute -top-8 left-16 text-gray-400"><Wind className="w-12 h-12 animate-pulse" /></div>
+          )}
+          {/* 鍋蓋效果 */}
+          {feedback?.id === 'lid' && <div className="absolute -top-4 -left-4 w-56 h-8 bg-gray-400 rounded-full border-b-4 border-gray-500 z-20"></div>}
+        </div>
+      );
+    }
+
+    if (activeScenarioId === 'lab') {
+      return (
+        <div className="relative w-64 h-32 mt-12 mx-auto">
+          {/* 桌面 */}
+          <div className="absolute bottom-0 w-full h-6 bg-amber-700 rounded-sm border-t-4 border-amber-600"></div>
+          
+          {/* 打翻的酒精燈 */}
+          <div className={`absolute bottom-6 left-8 w-16 h-16 bg-blue-100/40 rounded-full border-4 border-gray-300 rotate-[60deg] origin-bottom-right transition-transform ${isSuccess ? 'opacity-50' : ''}`}>
+            <div className="absolute -top-4 left-4 w-6 h-6 bg-gray-400 rounded-t-sm"></div>
+          </div>
+          
+          {/* 灑出的酒精 */}
+          <div className="absolute bottom-6 left-24 w-32 h-3 bg-blue-300/60 rounded-full"></div>
+          
+          {/* 火焰或煙霧 */}
+          {!isSuccess ? (
+            <div className={`absolute bottom-6 left-28 flex items-end ${feedback?.id === 'blow' ? 'scale-x-150 translate-x-4 transition-all duration-300' : ''}`}>
+              <Flame className="w-20 h-20 text-red-500 fill-orange-400 animate-pulse" />
+              <Flame className="w-12 h-12 text-blue-500 fill-blue-300 animate-bounce -ml-6" />
+            </div>
+          ) : (
+            <div className="absolute bottom-8 left-32 text-gray-400"><Wind className="w-10 h-10 animate-pulse" /></div>
+          )}
+
+          {/* 濕抹布效果 */}
+          {feedback?.id === 'wet_cloth' && (
+            <div className="absolute bottom-5 left-16 w-40 h-8 bg-gray-500 rounded-lg opacity-95 border-2 border-gray-600 shadow-md">
+              <div className="text-xs text-white text-center mt-1">濕抹布覆蓋</div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (activeScenarioId === 'electric') {
+      return (
+        <div className="relative w-48 h-40 mt-8 mx-auto flex justify-center items-center">
+          {/* 牆壁插座 */}
+          <div className="w-24 h-32 bg-gray-100 rounded-lg border-2 border-gray-300 flex flex-col items-center justify-center gap-4 relative shadow-inner">
+            <div className="flex gap-2"><div className="w-2 h-6 bg-gray-800 rounded-full"></div><div className="w-2 h-6 bg-gray-800 rounded-full"></div></div>
+            <div className="flex gap-2"><div className="w-2 h-6 bg-gray-800 rounded-full"></div><div className="w-2 h-6 bg-gray-800 rounded-full"></div></div>
+            
+            {/* 插入的過載插頭 */}
+            <div className={`absolute bottom-4 w-20 h-16 bg-gray-800 rounded-lg -right-4 shadow-lg flex items-center transition-all duration-500 ${isSuccess && feedback?.id === 'power_off' ? 'translate-x-12 rotate-12 opacity-50' : ''}`}>
+              <div className="w-32 h-4 bg-gray-800 absolute -right-32 top-6"></div> {/* 電線 */}
+            </div>
+
+            {/* 火花與火焰 */}
+            {!isSuccess ? (
+              <div className="absolute bottom-2 -right-6 z-10">
+                <Flame className="w-16 h-16 text-yellow-400 fill-red-500 animate-bounce" />
+                <div className="absolute top-0 left-0 w-full h-full animate-ping border-4 border-yellow-300 rounded-full opacity-50"></div>
+              </div>
+            ) : (
+              <div className="absolute bottom-6 -right-6 text-gray-400"><Wind className="w-10 h-10 animate-pulse" /></div>
+            )}
+          </div>
+        </div>
+      );
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <h2 className="text-2xl font-bold text-orange-700 mb-4 border-b-2 border-orange-200 pb-2 flex items-center gap-2">
+        <ShieldAlert className="w-6 h-6" /> 校園與居家安全：滅火挑戰
+      </h2>
+      
+      {/* 關卡選擇器 */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {SCENARIOS.map(s => (
+          <button
+            key={s.id}
+            onClick={() => changeScenario(s.id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all shadow-sm
+              ${activeScenarioId === s.id 
+                ? 'bg-orange-500 text-white shadow-orange-300 scale-105' 
+                : 'bg-gray-100 text-gray-600 hover:bg-orange-100'}`}
+          >
+            <span className="text-xl">{s.icon}</span>
+            {s.title}
+          </button>
+        ))}
+      </div>
+
+      <div className="bg-red-50 p-6 rounded-2xl border-2 border-red-200 mb-6 flex-1 flex flex-col">
+        <div className="flex items-start gap-3 mb-2 text-red-700">
+          <AlertTriangle className="w-8 h-8 shrink-0 mt-1" />
+          <div>
+            <h3 className="text-xl font-bold">{currentScenario.title}：{currentScenario.subtitle}</h3>
+            <p className="text-gray-800 text-sm mt-1">{currentScenario.description}</p>
+          </div>
+        </div>
+        
+        {/* 視覺動態區 */}
+        <div className="bg-white p-4 rounded-xl shadow-inner flex-1 flex flex-col justify-center items-center relative overflow-hidden mt-4">
+          {renderVisual()}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <p className="font-bold text-gray-700">緊急處理！請選擇你的滅火方式：</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {currentScenario.options.map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => handleChoose(opt)}
+              className="bg-white hover:bg-orange-50 border-2 border-gray-300 hover:border-orange-500 p-4 rounded-xl font-bold text-gray-700 transition-all shadow-sm flex flex-col items-center justify-center text-center gap-1"
+            >
+              <span>{opt.text}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {feedback && (
+        <div className={`mt-6 p-4 rounded-xl border-2 flex items-start gap-3 animate-fade-in-up
+          ${feedback.type === 'success' ? 'bg-green-50 border-green-400 text-green-800 shadow-[0_0_15px_rgba(74,222,128,0.3)]' : 'bg-red-50 border-red-400 text-red-800 shadow-[0_0_15px_rgba(248,113,113,0.3)]'}`}
+        >
+          {feedback.type === 'success' ? <ShieldAlert className="w-6 h-6 shrink-0 text-green-600" /> : <AlertTriangle className="w-6 h-6 shrink-0 text-red-600" />}
+          <div className="flex-1">
+            <span className="font-bold block mb-1 text-lg">{feedback.type === 'success' ? '危機解除！處置正確 ✅' : '大失敗！情況更糟糕了 ❌'}</span>
+            <span className="leading-relaxed">{feedback.reason}</span>
+          </div>
+          <button onClick={() => setFeedback(null)} className={`shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-colors ${feedback.type === 'success' ? 'bg-green-200 hover:bg-green-300 text-green-800' : 'bg-red-200 hover:bg-red-300 text-red-800'}`}>
+            重新嘗試
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>水系生態系：闖關大挑戰 (作業繳交版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            user-select: none;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        .level-container { display: none; animation: fadeIn 0.5s ease-out; }
+        .level-container.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .btn-pop { transition: transform 0.1s; }
+        .btn-pop:active { transform: scale(0.95); }
+
+        /* 進度與分數 */
+        .status-bar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        /* 關卡 1：毛細現象畫布 */
+        #tissueCanvas {
+            background-color: #fcfaf5;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmNmYWY1Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wLDBMODw4IiBzdHJva2U9IiNlNWU3ZWIiIHN0cm9rZS13aWR0aD0iMC41IiBvcGFjaXR5PSIwLjUiLz4KPC9zdmc+');
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+            cursor: crosshair;
+            touch-action: none;
+        }
+        
+        #paletteInput::-webkit-color-swatch-wrapper { padding: 0; }
+        #paletteInput::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+        /* 關卡 3：大氣壓力 */
+        .bottle-flip { transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* 關卡 5：潛水艇 */
+        .bottle-squeeze { transform: scaleX(0.92) scaleY(1.02); transition: transform 0.2s; }
+        .bottle-normal { transform: scaleX(1) scaleY(1); transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .target-glow { box-shadow: 0 0 15px 5px rgba(34, 197, 94, 0.5); }
+
+        /* 成績單生成動畫 */
+        @keyframes stamp {
+            0% { opacity: 0; transform: scale(3) rotate(-20deg); }
+            50% { opacity: 1; transform: scale(0.9) rotate(-20deg); }
+            100% { opacity: 1; transform: scale(1) rotate(-20deg); }
+        }
+        .stamp-effect { animation: stamp 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center pt-24 pb-8 px-2 md:px-8 relative">
+
+    <!-- 頂部單元標題 -->
+    <div class="fixed top-0 left-0 right-0 bg-blue-800 text-white text-center py-1.5 font-black text-sm md:text-base z-50 shadow-md tracking-wider">
+        📚 國小自然科學單元：【奇妙的水與空氣】綜合實驗任務
+    </div>
+
+    <!-- 頂部狀態列 -->
+    <div class="fixed top-[34px] left-0 right-0 h-14 status-bar shadow-sm z-40 flex justify-between items-center px-4 md:px-8 border-b-2 border-blue-200">
+        <div class="text-blue-800 font-black text-lg md:text-xl flex items-center gap-2">
+            🏆 分數: <span id="scoreDisplay" class="text-2xl text-orange-500 transition-all duration-300">0</span> / 100
+        </div>
+        <div class="text-blue-800 font-black text-lg md:text-xl flex items-center gap-2">
+            ⏱️ 時間: <span id="timeDisplay" class="text-2xl text-gray-700">00:00</span>
+        </div>
+    </div>
+
+    <!-- 任務彈窗 -->
+    <div id="missionModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 flex-col px-4 pt-10">
+        <div class="bg-white rounded-[2rem] p-8 md:p-10 max-w-lg w-full text-center shadow-2xl transform transition-transform border-8 border-blue-400 relative overflow-hidden">
+            <div id="modalIcon" class="text-7xl mb-4 relative z-10 animate-bounce">💧</div>
+            <h2 id="modalTitle" class="text-3xl md:text-4xl font-black text-gray-800 mb-4 relative z-10">水系科學大挑戰</h2>
+            <div id="modalDesc" class="text-lg md:text-xl text-gray-600 mb-8 font-bold leading-relaxed relative z-10">
+                準備好挑戰 5 個關卡了嗎？每過一關可得 20 分！<br><span class="text-sm text-blue-500">通關後將獲得專屬證書，可上傳表單繳交作業。</span>
+            </div>
+            <button id="modalBtn" onclick="startGame()" class="relative z-10 w-full bg-blue-500 hover:bg-blue-600 text-white text-2xl font-black py-4 px-6 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95">
+                開始挑戰 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- 遊戲標題與進度 -->
+    <header class="w-full max-w-4xl bg-white rounded-3xl p-4 shadow-lg border-2 border-blue-200 mb-4 text-center z-10 flex flex-col md:flex-row justify-between items-center gap-4">
+        <h1 class="text-2xl font-black text-blue-600 flex items-center gap-2">💧 水系生態系闖關</h1>
+        <div class="flex items-center gap-2" id="progressIndicator">
+            <span class="text-sm font-bold text-gray-500">關卡：</span>
+        </div>
+    </header>
+
+    <!-- 主顯示區 -->
+    <main class="w-full max-w-4xl flex-1 bg-white/90 backdrop-blur-sm rounded-[2rem] shadow-2xl border-4 border-white p-6 relative overflow-hidden flex flex-col items-center justify-center min-h-[500px]">
+        
+        <!-- ================= 關卡 1：毛細現象 (無限混色版) ================= -->
+        <div id="level1" class="level-container flex-col items-center w-full max-w-2xl">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">🎨 第 1 關：交錯毛細藝術樹</h2>
+            <p class="text-gray-600 mb-4 text-center font-bold">
+                <span class="text-blue-500">所有的隱形水道皆相連</span>，不同顏色重疊時會產生<span class="text-purple-500">真實混色效果</span>！<br>
+                點擊「🎨」可開啟調色盤，<span class="text-red-500">長按畫布蓄力</span>讓顏料無限延伸吧！
+            </p>
+            
+            <div class="flex gap-3 mb-4 items-center justify-center bg-gray-100 p-2 rounded-full border-2 border-gray-200">
+                <button onclick="selectColor('rgba(239, 68, 68, 0.5)', this)" class="color-btn w-10 h-10 rounded-full bg-red-500 shadow-inner border-2 border-white hover:scale-110 transition-transform"></button>
+                <button onclick="selectColor('rgba(59, 130, 246, 0.5)', this)" class="color-btn w-10 h-10 rounded-full bg-blue-500 shadow-inner border-2 border-white hover:scale-110 transition-transform ring-4 ring-blue-300" id="defaultColorBtn"></button>
+                <button onclick="selectColor('rgba(234, 179, 8, 0.5)', this)" class="color-btn w-10 h-10 rounded-full bg-yellow-500 shadow-inner border-2 border-white hover:scale-110 transition-transform"></button>
+                <button onclick="selectColor('rgba(34, 197, 94, 0.5)', this)" class="color-btn w-10 h-10 rounded-full bg-green-500 shadow-inner border-2 border-white hover:scale-110 transition-transform"></button>
+                <div class="w-px h-8 bg-gray-300 mx-1"></div>
+                <!-- 自訂調色盤 -->
+                <label id="paletteLabel" class="relative flex items-center justify-center w-12 h-12 rounded-full shadow-md border-4 border-white cursor-pointer hover:scale-110 transition-transform bg-gradient-to-tr from-purple-500 via-pink-500 to-yellow-500" title="自訂調色盤混色">
+                    <span class="text-xl drop-shadow-md">🎨</span>
+                    <input type="color" id="paletteInput" value="#a855f7" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" onchange="usePalette(this.value)">
+                </label>
+            </div>
+
+            <div class="relative w-full max-w-md aspect-video">
+                <canvas id="tissueCanvas" width="600" height="340" class="w-full h-full rounded-xl border-2 border-gray-300"></canvas>
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300" id="tissueHint">
+                    <span class="bg-white/90 px-4 py-2 rounded-full font-bold text-gray-600 animate-pulse shadow-md border border-gray-200">👆 長按畫布蓄力，讓色彩蔓延</span>
+                </div>
+            </div>
+            
+            <div class="mt-4 flex gap-4 items-center">
+                <div class="font-bold text-blue-600 text-xl">已滴入顏料: <span id="inkCount">0</span> / 5 滴</div>
+                <button onclick="fillRequirement()" class="text-sm bg-gray-200 text-gray-600 px-3 py-1 rounded-full hover:bg-gray-300 active:scale-95 transition-transform">強制過關</button>
+            </div>
+        </div>
+
+        <!-- ================= 關卡 2：生態過濾 ================= -->
+        <div id="level2" class="level-container flex-col items-center w-full max-w-2xl">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">🌿 第 2 關：大自然濾水器</h2>
+            <p class="text-gray-600 mb-4 text-center font-bold">依照「孔隙大小」排列過濾層。越底下要放越細的材料來攔截微小雜質！</p>
+            
+            <div class="flex flex-col md:flex-row gap-8 items-center justify-center w-full">
+                <div class="flex flex-col gap-3">
+                    <button onclick="addLayer('gravel')" class="btn-pop bg-gray-200 hover:bg-gray-300 border-4 border-gray-400 font-bold py-2 px-4 rounded-xl flex items-center gap-2">
+                        <span class="text-2xl">🪨</span> 小礫石 (孔隙最大)
+                    </button>
+                    <button onclick="addLayer('sand')" class="btn-pop bg-yellow-200 hover:bg-yellow-300 border-4 border-yellow-400 font-bold py-2 px-4 rounded-xl flex items-center gap-2 text-yellow-900">
+                        <span class="text-2xl">🏜️</span> 細沙 (孔隙中等)
+                    </button>
+                    <button onclick="addLayer('carbon')" class="btn-pop bg-stone-800 hover:bg-stone-900 text-white border-4 border-stone-600 font-bold py-2 px-4 rounded-xl flex items-center gap-2">
+                        <span class="text-2xl">⬛</span> 活性碳 (孔隙極小)
+                    </button>
+                    <button onclick="resetFilterLevel()" class="text-red-500 font-bold mt-2 hover:underline">🔄 清空重排</button>
+                </div>
+
+                <div class="relative w-40 h-72 flex flex-col">
+                    <div class="h-8 border-x-4 border-t-4 border-gray-300 rounded-t-xl mx-4 bg-white/50 relative overflow-hidden">
+                        <div id="dirtyWater" class="absolute w-full h-8 bg-[#8B4513] -top-10"></div>
+                    </div>
+                    <div class="flex-1 border-4 border-gray-300 bg-white/50 flex flex-col justify-end p-1 gap-1 relative" id="filterBottleContainer">
+                        <div class="absolute inset-0 flex items-center justify-center text-gray-400 font-bold pointer-events-none text-center" id="bottleHint">請點擊左側<br>依序加入三層</div>
+                    </div>
+                    <div class="h-6 w-8 mx-auto border-x-4 border-gray-300 bg-white/50"></div>
+                    <div class="h-16 border-4 border-gray-300 rounded-b-xl rounded-t-sm mt-1 relative overflow-hidden flex items-end">
+                        <div id="cleanWaterResult" class="w-full bg-blue-400/80 transition-all duration-1000 ease-out" style="height: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="pourWaterTest()" id="pourTestBtn" class="mt-6 bg-blue-500 text-white font-bold py-3 px-8 rounded-full shadow-lg text-xl opacity-50 cursor-not-allowed" disabled>
+                🫗 倒入泥水測試
+            </button>
+            <p id="filterFeedback" class="mt-2 font-bold text-red-500 h-6"></p>
+        </div>
+
+        <!-- ================= 關卡 3：大氣壓力 ================= -->
+        <div id="level3" class="level-container flex-col items-center w-full max-w-2xl">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">🛡️ 第 3 關：倒立不漏水</h2>
+            <p class="text-gray-600 mb-6 text-center font-bold">先蓋住瓶口，再點擊翻轉瓶子。看看看不見的「大氣壓力」有多大力量！</p>
+            
+            <div class="flex flex-col items-center gap-6 relative h-80 w-full justify-center">
+                <div id="gravityBottle" class="bottle-flip relative w-32 h-48 border-x-8 border-b-8 border-t-2 border-blue-200 bg-white rounded-b-3xl rounded-t-sm shadow-md flex flex-col justify-end overflow-hidden z-10">
+                    <div class="w-full h-[90%] bg-blue-400 relative border-t-2 border-blue-200"></div>
+                </div>
+                <div id="coverPaper" onclick="coverBottle()" class="absolute bottom-10 w-40 h-6 bg-yellow-100 border-2 border-yellow-400 shadow-lg flex items-center justify-center cursor-pointer hover:scale-105 transition-transform z-20">
+                    <span class="text-sm font-bold text-yellow-800">1. 點我蓋住瓶口</span>
+                </div>
+                <div id="pressureExplanation" class="absolute hidden flex-col items-center z-30 pointer-events-none" style="bottom: 20px;">
+                    <div class="flex gap-2 text-3xl text-red-500 mb-1">
+                        <div class="animate-bounce">⬆️</div><div class="animate-bounce" style="animation-delay: 0.1s">⬆️</div><div class="animate-bounce" style="animation-delay: 0.2s">⬆️</div>
+                    </div>
+                    <span class="font-black text-red-600 bg-white/90 px-3 py-1 rounded-full shadow-md">大氣壓力把水撐住了！</span>
+                </div>
+            </div>
+
+            <button onclick="flipBottle()" id="flipBtn" class="mt-6 bg-blue-500 text-white font-bold py-3 px-8 rounded-full shadow-lg text-xl opacity-50 cursor-not-allowed hidden" disabled>
+                2. 翻轉瓶子 🔄
+            </button>
+        </div>
+
+        <!-- ================= 關卡 4：三態變化 ================= -->
+        <div id="level4" class="level-container flex-col items-center w-full max-w-2xl">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">🧊 第 4 關：尋找水的三態</h2>
+            <p class="text-gray-600 mb-4 text-center font-bold">滑動溫度計，觀察分子變化，集齊「固態」、「液態」、「氣態」三枚徽章！</p>
+            
+            <div class="flex gap-4 mb-4 justify-center">
+                <div id="badge-solid" class="w-16 h-16 rounded-full bg-gray-200 border-4 border-gray-300 flex items-center justify-center text-2xl grayscale opacity-50 transition-all duration-500">🧊</div>
+                <div id="badge-liquid" class="w-16 h-16 rounded-full bg-gray-200 border-4 border-gray-300 flex items-center justify-center text-2xl grayscale opacity-50 transition-all duration-500">💧</div>
+                <div id="badge-gas" class="w-16 h-16 rounded-full bg-gray-200 border-4 border-gray-300 flex items-center justify-center text-2xl grayscale opacity-50 transition-all duration-500">☁️</div>
+            </div>
+
+            <div class="flex flex-col md:flex-row items-center gap-8 w-full justify-center bg-blue-50 p-6 rounded-3xl border-2 border-blue-100">
+                <div class="flex flex-col items-center">
+                    <div class="text-4xl font-black text-green-500 mb-2 w-32 text-center" id="tempText">20°C</div>
+                    <input type="range" id="gameTempSlider" min="-20" max="120" value="20" class="w-48 h-4 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    <div class="w-full flex justify-between text-xs font-bold text-gray-400 mt-2 px-1">
+                        <span>-20°C</span><span>120°C</span>
+                    </div>
+                </div>
+                <div class="relative w-48 h-48 bg-white rounded-full border-8 border-gray-200 shadow-inner overflow-hidden flex items-center justify-center">
+                    <canvas id="gameStatesCanvas" width="180" height="180"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 關卡 5：潛水艇 ================= -->
+        <div id="level5" class="level-container flex-col items-center w-full max-w-2xl">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">👽 最終關：浮沉子任務</h2>
+            <p class="text-gray-600 mb-4 text-center font-bold">長按按鈕加壓使潛水艇下沉，讓它停留在綠色目標區。<br><span class="text-green-600">（進度會持續累加，不會倒退，直到充滿為止！）</span></p>
+            
+            <div class="flex items-center gap-8 justify-center w-full mb-6">
+                <div id="gamePlasticBottle" class="relative w-32 h-72 border-4 border-blue-300 bg-blue-50 rounded-t-full rounded-b-xl shadow-inner bottle-normal overflow-hidden z-10">
+                    <div class="absolute bottom-0 w-full h-[95%] bg-blue-300/50 relative">
+                        <div id="targetZone" class="absolute w-full h-16 bg-green-400/40 border-y-4 border-green-500 border-dashed top-[65%] flex items-center justify-center transition-all"></div>
+                        <div id="gameDiver" class="absolute w-12 h-16 transition-all duration-[50ms] ease-linear left-[15%] z-10 flex flex-col items-center" style="top: 5%;">
+                            <div class="w-full h-full bg-yellow-400 rounded-t-full rounded-b-md border-2 border-yellow-600 shadow-md flex items-center justify-center text-xl">👽</div>
+                            <div class="absolute -bottom-2 w-6 h-6 bg-white/80 rounded-full border border-blue-200 flex items-center justify-center" id="diverBubble">
+                                <span class="text-[8px] font-bold">空氣</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="pressureOverlay" class="absolute inset-0 bg-blue-600/20 opacity-0 transition-opacity pointer-events-none"></div>
+                </div>
+                
+                <div class="flex flex-col items-center gap-4">
+                    <div class="w-24 h-48 bg-gray-200 rounded-xl border-4 border-gray-300 overflow-hidden relative flex flex-col justify-end">
+                        <div class="absolute top-2 w-full text-center text-xs font-bold text-gray-500 z-10">累積進度</div>
+                        <div id="holdTimerBar" class="w-full bg-green-500 transition-all duration-100" style="height: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="squeezeBtn" class="bg-red-500 text-white text-2xl font-black py-4 px-12 rounded-full shadow-[0_6px_0_#b91c1c] active:shadow-[0_0px_0_#b91c1c] active:translate-y-[6px] transition-all select-none">
+                👇 長按這裡加壓 👇
+            </button>
+        </div>
+
+        <!-- ================= 結算與表單繳交畫面 ================= -->
+        <div id="resultScreen" class="level-container flex-col items-center w-full max-w-2xl hidden">
+            <h2 class="text-4xl font-black text-blue-700 mb-4 animate-bounce">🎉 挑戰成功！🎉</h2>
+            
+            <!-- 學生資料輸入區 -->
+            <div id="studentFormArea" class="w-full max-w-md bg-blue-50 border-4 border-blue-200 p-6 rounded-2xl shadow-lg mb-6 flex flex-col gap-4 transition-all">
+                <h3 class="text-xl font-black text-blue-800 text-center mb-1">📝 填寫資料以產生作業憑證</h3>
+                <p class="text-sm text-gray-600 text-center mb-2 font-bold">請輸入正確的資料，系統將自動為你合成帶有專屬毛細畫作的結業證書！</p>
+                <div class="flex gap-2">
+                    <input type="text" id="sClass" placeholder="班級 (例: 301)" class="w-1/2 p-3 rounded-xl border-2 border-blue-300 text-center font-bold text-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                    <input type="number" id="sNum" placeholder="座號 (例: 5)" class="w-1/2 p-3 rounded-xl border-2 border-blue-300 text-center font-bold text-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                </div>
+                <input type="text" id="sName" placeholder="學生姓名" class="w-full p-3 rounded-xl border-2 border-blue-300 text-center font-bold text-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                <button onclick="prepareSubmission()" class="w-full bg-green-500 hover:bg-green-600 text-white text-xl font-black py-3 px-6 rounded-xl shadow-[0_4px_0_#166534] active:shadow-[0_0px_0_#166534] active:translate-y-[4px] transition-all mt-2">
+                    📸 產生圖片並下載
+                </button>
+            </div>
+
+            <!-- 成績單預覽區 (一開始隱藏) -->
+            <div class="w-full max-w-md bg-white border-4 border-gray-800 p-4 rounded-lg shadow-2xl relative mb-6 hidden" id="certificateCard">
+                <canvas id="resultCanvas" width="400" height="300" class="w-full border border-gray-300"></canvas>
+                <div class="absolute top-4 right-4 text-red-500 font-black text-4xl border-4 border-red-500 p-2 rounded-lg rotate-[-20deg] opacity-0" id="passStamp">
+                    PASS
+                </div>
+            </div>
+
+            <!-- 繳交表單區 (一開始隱藏) -->
+            <div id="formSubmissionArea" class="w-full max-w-md flex-col gap-4 hidden bg-green-50 p-6 rounded-2xl border-4 border-green-200 shadow-lg text-center">
+                <div class="text-green-700 font-black text-xl mb-2 flex justify-center items-center gap-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    專屬成績單已自動下載！
+                </div>
+                <p class="text-gray-700 mb-4 font-bold text-sm">請點擊下方按鈕前往 Google 表單，<br>並將剛下載的 <span class="text-blue-600">成績單圖片</span> 上傳以完成作業繳交。</p>
+                
+                <!-- 注意：已替換成老師專屬的 Google Form 網址 -->
+                <a href="https://forms.gle/mKoEvCNUdiKNQ29D6" target="_blank" class="w-full block text-center bg-purple-600 hover:bg-purple-700 text-white text-2xl font-black py-4 px-6 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 mb-3">
+                    📝 前往表單繳交作業
+                </a>
+                
+                <button onclick="location.reload()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 text-lg font-bold py-2 px-6 rounded-full transition-transform active:scale-95">
+                    🔄 再玩一次
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // ================= 核心遊戲系統 =================
+        let currentLevel = 0;
+        let score = 0;
+        let startTime = 0;
+        let timerInterval;
+        let totalSeconds = 0;
+
+        const missions = {
+            1: { icon: '🎨', title: '任務 1：毛細藝術樹', desc: '這是一幅所有水道都互相連通的魔法畫布！<br><b>長按蓄力</b>讓色彩擴散。利用調色盤，看看不同顏色重疊時會產生什麼<b>混色變化</b>！' },
+            2: { icon: '🌿', title: '任務 2：生態過濾', desc: '大自然是神奇的濾水器。<br>請依正確順序將過濾材料放入瓶中：越往底層放，材料孔隙要越細！' },
+            3: { icon: '🛡️', title: '任務 3：大氣壓力', desc: '空氣雖然看不見，但力量驚人！<br>蓋住裝滿水的瓶口並翻轉它，看看水會不會漏出來！' },
+            4: { icon: '🧊', title: '任務 4：水的三態', desc: '進入微觀世界！<br>滑動溫度計，找出「固態(冰)」、「液態(水)」、「氣態(水蒸氣)」來收集徽章！' },
+            5: { icon: '👽', title: '最終任務：浮沉子', desc: '結合壓力與浮力！<br>長按加壓讓潛水艇下沉，將它停在綠色區收集能量 (累積滿即可過關)！' }
+        };
+
+        const modal = document.getElementById('missionModal');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const progressContainer = document.getElementById('progressIndicator');
+
+        for(let i=1; i<=5; i++){
+            progressContainer.innerHTML += `<div id="dot-${i}" class="w-6 h-6 rounded-full bg-gray-200 border-2 border-white shadow flex items-center justify-center text-xs font-bold text-white transition-colors">${i}</div>`;
+        }
+
+        function startGame() {
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+            showLevelIntro(1);
+        }
+
+        function updateTimer() {
+            totalSeconds = Math.floor((Date.now() - startTime) / 1000);
+            const m = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+            const s = String(totalSeconds % 60).padStart(2, '0');
+            timeDisplay.innerText = `${m}:${s}`;
+        }
+
+        function addScore(points) {
+            score += points;
+            scoreDisplay.innerText = score;
+            scoreDisplay.classList.add('scale-150', 'text-green-500');
+            setTimeout(() => scoreDisplay.classList.remove('scale-150', 'text-green-500'), 300);
+        }
+
+        function showLevelIntro(level) {
+            currentLevel = level;
+            const m = missions[level];
+            
+            for(let i=1; i<=5; i++){
+                const dot = document.getElementById(`dot-${i}`);
+                if (i < level) { dot.className = "w-6 h-6 rounded-full bg-green-500 border-2 border-white shadow flex items-center justify-center text-xs font-bold text-white"; dot.innerText = '✓'; }
+                else if (i === level) { dot.className = "w-6 h-6 rounded-full bg-blue-500 border-2 border-white shadow flex items-center justify-center text-xs font-bold text-white scale-110"; }
+            }
+
+            document.querySelectorAll('.level-container').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('modalIcon').innerText = m.icon;
+            document.getElementById('modalTitle').innerText = m.title;
+            document.getElementById('modalTitle').className = "text-3xl md:text-4xl font-black text-gray-800 mb-4 relative z-10";
+            document.getElementById('modalDesc').innerHTML = m.desc;
+            
+            const btn = document.getElementById('modalBtn');
+            btn.innerText = "開始挑戰 🚀";
+            btn.className = "relative z-10 w-full bg-blue-500 hover:bg-blue-600 text-white text-2xl font-black py-4 px-6 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95";
+            btn.onclick = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.getElementById(`level${level}`).classList.add('active');
+                if (level === 1) initCanvasLevel1();
+                if (level === 4) initGameStatesCanvas();
+            };
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function levelCompleted() {
+            addScore(20);
+            setTimeout(() => {
+                if (currentLevel === 5) {
+                    clearInterval(timerInterval);
+                    showResultScreen();
+                } else {
+                    document.getElementById('modalIcon').innerText = '🎉';
+                    document.getElementById('modalTitle').innerText = `第 ${currentLevel} 關 成功！`;
+                    document.getElementById('modalTitle').className = "text-3xl md:text-4xl font-black text-green-600 mb-4 relative z-10 animate-pulse";
+                    document.getElementById('modalDesc').innerHTML = "獲得 20 分！準備前往下一關。";
+                    
+                    const btn = document.getElementById('modalBtn');
+                    btn.innerText = "下一關 ➡️";
+                    btn.className = "relative z-10 w-full bg-green-500 hover:bg-green-600 text-white text-2xl font-black py-4 px-6 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95";
+                    btn.onclick = () => showLevelIntro(currentLevel + 1);
+                    
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                }
+            }, 1000);
+        }
+
+        // ================= 關卡 1：毛細渲染 (調色盤無限混色版) =================
+        let currentColor = 'rgba(59, 130, 246, 0.5)';
+        let inkDropsCount = 0;
+        let currentDropId = 0; 
+        const tCanvas = document.getElementById('tissueCanvas');
+        const tCtx = tCanvas.getContext('2d');
+        
+        let tNodes = [], tSegments = [], tStrokes = [], tFlows = [], tDrops = [];     
+        let isCharging = false;
+        let chargePos = {x: 0, y: 0};
+        let chargeRadius = 0;
+        let tAnimId;
+
+        function selectColor(color, btnElement) {
+            currentColor = color;
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('ring-4', 'ring-blue-300', 'ring-red-300', 'ring-yellow-300', 'ring-green-300'));
+            document.getElementById('paletteLabel').classList.remove('ring-4', 'ring-purple-400');
+            
+            if (btnElement) {
+                if(color.includes('68, 68')) btnElement.classList.add('ring-4', 'ring-red-300');
+                else if(color.includes('130, 246')) btnElement.classList.add('ring-4', 'ring-blue-300');
+                else if(color.includes('179, 8')) btnElement.classList.add('ring-4', 'ring-yellow-300');
+                else if(color.includes('197, 94')) btnElement.classList.add('ring-4', 'ring-green-300');
+            }
+        }
+
+        function usePalette(hexCode) {
+            let r = parseInt(hexCode.slice(1, 3), 16);
+            let g = parseInt(hexCode.slice(3, 5), 16);
+            let b = parseInt(hexCode.slice(5, 7), 16);
+            currentColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
+            
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('ring-4', 'ring-blue-300', 'ring-red-300', 'ring-yellow-300', 'ring-green-300'));
+            document.getElementById('paletteLabel').classList.add('ring-4', 'ring-purple-400');
+        }
+
+        function fillRequirement() {
+            inkDropsCount = 5;
+            document.getElementById('inkCount').innerText = inkDropsCount;
+            levelCompleted();
+        }
+
+        function getNode(x, y) {
+            for(let n of tNodes) { if(Math.hypot(n.x - x, n.y - y) < 8) return n; }
+            let n = {x, y, edges: []}; tNodes.push(n); return n;
+        }
+
+        function addSeg(x1, y1, x2, y2, w) {
+            let n1 = getNode(x1, y1), n2 = getNode(x2, y2);
+            let seg = { n1, n2, w, coloredBy: new Set() };
+            tSegments.push(seg); n1.edges.push(seg); n2.edges.push(seg); return seg;
+        }
+
+        function genTree(x, y, angle, len, w, depth) {
+            if(depth===0) return;
+            let ex = x + Math.cos(angle)*len, ey = y + Math.sin(angle)*len;
+            addSeg(x, y, ex, ey, w);
+            let count = (depth === 5) ? 3 : (Math.random() > 0.3 ? 2 : 1);
+            if(count === 3) { genTree(ex, ey, angle-0.35, len*0.8, w*0.7, depth-1); genTree(ex, ey, angle, len*0.85, w*0.7, depth-1); genTree(ex, ey, angle+0.35, len*0.8, w*0.7, depth-1); } 
+            else if(count === 2) { let spread = 0.25 + Math.random()*0.25; genTree(ex, ey, angle-spread, len*0.8, w*0.7, depth-1); genTree(ex, ey, angle+spread, len*0.8, w*0.7, depth-1); } 
+            else { genTree(ex, ey, angle+(Math.random()-0.5)*0.4, len*0.85, w*0.8, depth-1); }
+        }
+
+        function genMandala(cx, cy, r, petals, w) {
+            for(let i=0; i<petals; i++) {
+                let angle = (i/petals)*Math.PI*2, px = cx + (r/2)*Math.cos(angle), py = cy + (r/2)*Math.sin(angle);
+                let pPrevX = px + (r/2), pPrevY = py;
+                for(let j=1; j<=15; j++) {
+                    let t = (j/15)*Math.PI*2, nx = px + (r/2)*Math.cos(t), ny = py + (r/2)*Math.sin(t);
+                    addSeg(pPrevX, pPrevY, nx, ny, w); pPrevX = nx; pPrevY = ny;
+                }
+            }
+        }
+
+        function genCurve(x1, y1, cx, cy, x2, y2, w) {
+            let prevX = x1, prevY = y1;
+            for(let i=1; i<=20; i++) {
+                let t = i/20, inv = 1-t;
+                let nx = inv*inv*x1 + 2*inv*t*cx + t*t*x2, ny = inv*inv*y1 + 2*inv*t*cy + t*t*y2;
+                addSeg(prevX, prevY, nx, ny, w); prevX = nx; prevY = ny;
+            }
+        }
+
+        function buildArtCanvas() {
+            tNodes = []; tSegments = [];
+            genTree(300, 330, -Math.PI/2, 60, 10, 5);
+            genMandala(120, 200, 60, 6, 3); genMandala(480, 200, 60, 6, 3);
+            genCurve(120, 260, 210, 320, 300, 330, 2); genCurve(480, 260, 390, 320, 300, 330, 2);
+            genCurve(120, 140, 210, 80, 300, 150, 1.5); genCurve(480, 140, 390, 80, 300, 150, 1.5);
+        }
+
+        function initCanvasLevel1() {
+            buildArtCanvas();
+            function startCharge(e) {
+                if (inkDropsCount >= 5) return;
+                e.preventDefault(); 
+                document.getElementById('tissueHint').style.opacity = '0';
+                const rect = tCanvas.getBoundingClientRect(), scaleX = tCanvas.width / rect.width, scaleY = tCanvas.height / rect.height;
+                let clientX = e.touches ? e.touches[0].clientX : e.clientX, clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                chargePos = { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+                isCharging = true; chargeRadius = 5;
+            }
+
+            function endCharge(e) {
+                if (!isCharging) return;
+                isCharging = false; currentDropId++; 
+                tDrops.push({ x: chargePos.x, y: chargePos.y, color: currentColor, radius: chargeRadius, maxRadius: chargeRadius * 1.5 + 10, speed: 0.5 });
+                let energy = chargeRadius * 22; 
+                tNodes.forEach(n => {
+                    if(Math.hypot(n.x - chargePos.x, n.y - chargePos.y) <= chargeRadius + 10) {
+                        n.edges.forEach(seg => {
+                            if(!seg.coloredBy.has(currentDropId)) {
+                                seg.coloredBy.add(currentDropId);
+                                tFlows.push({ seg: seg, fromNode: n, toNode: (seg.n1 === n) ? seg.n2 : seg.n1, progress: 0, color: currentColor, energy: energy, dropId: currentDropId });
+                            }
+                        });
+                    }
+                });
+                inkDropsCount++; document.getElementById('inkCount').innerText = inkDropsCount;
+                if (inkDropsCount === 5) setTimeout(levelCompleted, 4000); 
+            }
+
+            tCanvas.addEventListener('mousedown', startCharge); tCanvas.addEventListener('touchstart', startCharge, {passive: false});
+            window.addEventListener('mouseup', endCharge); window.addEventListener('touchend', endCharge);
+
+            function renderTissue() {
+                tCtx.clearRect(0, 0, tCanvas.width, tCanvas.height);
+                tCtx.globalCompositeOperation = 'source-over'; tCtx.lineCap = 'round'; tCtx.lineJoin = 'round'; tCtx.strokeStyle = 'rgba(200, 200, 200, 0.2)';
+                tSegments.forEach(s => { tCtx.lineWidth = s.w + 3; tCtx.beginPath(); tCtx.moveTo(s.n1.x, s.n1.y); tCtx.lineTo(s.n2.x, s.n2.y); tCtx.stroke(); });
+
+                tCtx.globalCompositeOperation = 'multiply';
+                tStrokes.forEach(s => { tCtx.strokeStyle = s.color; tCtx.lineWidth = s.w; tCtx.beginPath(); tCtx.moveTo(s.x1, s.y1); tCtx.lineTo(s.x2, s.y2); tCtx.stroke(); });
+
+                for (let i = tFlows.length - 1; i >= 0; i--) {
+                    let f = tFlows[i]; let dist = Math.hypot(f.toNode.x - f.fromNode.x, f.toNode.y - f.fromNode.y); if(dist === 0) dist = 1;
+                    let step = 1.5 / dist; f.progress += step; f.energy -= step * dist; 
+                    if (f.energy <= 0) { tFlows.splice(i, 1); continue; }
+                    let p = Math.min(f.progress, 1), currX = f.fromNode.x + (f.toNode.x - f.fromNode.x) * p, currY = f.fromNode.y + (f.toNode.y - f.fromNode.y) * p;
+                    tCtx.strokeStyle = f.color; tCtx.lineWidth = f.seg.w; tCtx.beginPath(); tCtx.moveTo(f.fromNode.x, f.fromNode.y); tCtx.lineTo(currX, currY); tCtx.stroke();
+                    if (f.progress >= 1) {
+                        tStrokes.push({x1: f.fromNode.x, y1: f.fromNode.y, x2: f.toNode.x, y2: f.toNode.y, w: f.seg.w, color: f.color});
+                        f.toNode.edges.forEach(nextSeg => {
+                            if (!nextSeg.coloredBy.has(f.dropId)) {
+                                nextSeg.coloredBy.add(f.dropId); 
+                                tFlows.push({ seg: nextSeg, fromNode: f.toNode, toNode: (nextSeg.n1 === f.toNode) ? nextSeg.n2 : nextSeg.n1, progress: 0, color: f.color, energy: f.energy * 0.95, dropId: f.dropId });
+                            }
+                        });
+                        tFlows.splice(i, 1);
+                    }
+                }
+                tDrops.forEach(d => {
+                    if (d.radius < d.maxRadius) d.radius += d.speed;
+                    let gradient = tCtx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.radius);
+                    const rgbMatch = d.color.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([0-9.]+)\)/);
+                    if(rgbMatch) { gradient.addColorStop(0, `rgba(${rgbMatch[1]},${rgbMatch[2]},${rgbMatch[3]}, 0.7)`); gradient.addColorStop(0.5, `rgba(${rgbMatch[1]},${rgbMatch[2]},${rgbMatch[3]}, 0.4)`); gradient.addColorStop(1, `rgba(${rgbMatch[1]},${rgbMatch[2]},${rgbMatch[3]}, 0)`); }
+                    tCtx.beginPath(); tCtx.arc(d.x, d.y, d.radius, 0, Math.PI * 2); tCtx.fillStyle = gradient; tCtx.fill();
+                });
+
+                tCtx.globalCompositeOperation = 'source-over';
+                if (isCharging) {
+                    chargeRadius += 0.8; if (chargeRadius > 45) chargeRadius = 45; 
+                    tCtx.beginPath(); tCtx.arc(chargePos.x, chargePos.y, chargeRadius, 0, Math.PI * 2); tCtx.fillStyle = currentColor; tCtx.fill();
+                    tCtx.strokeStyle = 'white'; tCtx.lineWidth = 2; tCtx.beginPath(); tCtx.arc(chargePos.x, chargePos.y, chargeRadius + 3 + Math.sin(Date.now()/100)*2, 0, Math.PI * 2); tCtx.stroke();
+                }
+                tAnimId = requestAnimationFrame(renderTissue);
+            }
+            if(!tAnimId) renderTissue();
+        }
+
+        // ================= 關卡 2~5 邏輯略同 (維持不變，已整合) =================
+        let gameFilterLayers = [];
+        function addLayer(type) {
+            if(gameFilterLayers.length >= 3) return;
+            document.getElementById('bottleHint').style.display = 'none';
+            const bottle = document.getElementById('filterBottleContainer');
+            const layerDiv = document.createElement('div');
+            layerDiv.className = "w-full flex-1 rounded-sm border border-black/10 flex items-center justify-center font-bold text-sm shadow-sm opacity-0 transform translate-y-[-20px] transition-all duration-300";
+            if(type === 'gravel') { layerDiv.classList.add('bg-gray-400', 'text-gray-800'); layerDiv.innerText = "小礫石"; }
+            else if(type === 'carbon') { layerDiv.classList.add('bg-stone-800', 'text-white'); layerDiv.innerText = "活性碳"; }
+            else if(type === 'sand') { layerDiv.classList.add('bg-yellow-300', 'text-yellow-800'); layerDiv.innerText = "細沙"; }
+            bottle.insertBefore(layerDiv, bottle.firstChild);
+            setTimeout(() => layerDiv.classList.remove('opacity-0', 'translate-y-[-20px]'), 10);
+            gameFilterLayers.push(type);
+            if(gameFilterLayers.length >= 3) {
+                const btn = document.getElementById('pourTestBtn'); btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); btn.classList.add('hover:bg-blue-600', 'hover:scale-105');
+            }
+        }
+
+        function resetFilterLevel() {
+            gameFilterLayers = []; document.getElementById('filterBottleContainer').innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-gray-400 font-bold pointer-events-none text-center" id="bottleHint">請點擊左側<br>依序加入三層</div>';
+            const btn = document.getElementById('pourTestBtn'); btn.disabled = true; btn.className = "mt-6 bg-blue-500 text-white font-bold py-3 px-8 rounded-full shadow-lg text-xl opacity-50 cursor-not-allowed";
+            document.getElementById('dirtyWater').style.transition = 'none'; document.getElementById('dirtyWater').style.top = '-40px'; document.getElementById('cleanWaterResult').style.height = '0%'; document.getElementById('filterFeedback').innerText = '';
+        }
+
+        function pourWaterTest() {
+            document.getElementById('pourTestBtn').disabled = true;
+            const isCorrect = (gameFilterLayers[0] === 'carbon' && gameFilterLayers[1] === 'sand' && gameFilterLayers[2] === 'gravel');
+            const waterDrop = document.getElementById('dirtyWater'); waterDrop.style.transition = 'top 3s linear'; waterDrop.style.top = '120%';
+            setTimeout(() => {
+                const cleanWater = document.getElementById('cleanWaterResult'), feedback = document.getElementById('filterFeedback');
+                if (isCorrect) { cleanWater.style.backgroundColor = '#3b82f6'; cleanWater.style.height = '100%'; feedback.innerText = '✅ 順序正確！成功過濾泥水！'; feedback.className = "mt-2 font-bold text-green-500 text-xl h-6"; levelCompleted(); } 
+                else { cleanWater.style.backgroundColor = '#DEB887'; cleanWater.style.height = '100%'; feedback.innerText = '❌ 順序錯誤。大孔隙要在上，小孔隙要在下！'; feedback.className = "mt-2 font-bold text-red-500 h-6"; }
+            }, 2500);
+        }
+
+        let isCovered = false;
+        function coverBottle() {
+            const paper = document.getElementById('coverPaper'), bottle = document.getElementById('gravityBottle');
+            paper.style.transition = 'all 0.5s ease'; paper.style.bottom = 'auto'; paper.style.top = '-20px'; paper.innerText = '';
+            setTimeout(() => {
+                paper.style.position = 'absolute'; paper.style.top = '0px'; paper.style.width = '120%'; paper.style.left = '-10%'; bottle.insertBefore(paper, bottle.firstChild); isCovered = true;
+                const btn = document.getElementById('flipBtn'); btn.classList.remove('hidden', 'opacity-50', 'cursor-not-allowed'); btn.disabled = false;
+            }, 500);
+        }
+
+        function flipBottle() {
+            if(!isCovered) return;
+            document.getElementById('flipBtn').style.display = 'none'; document.getElementById('gravityBottle').style.transform = 'rotate(180deg)';
+            setTimeout(() => { document.getElementById('pressureExplanation').classList.remove('hidden'); document.getElementById('pressureExplanation').classList.add('flex'); levelCompleted(); }, 1200);
+        }
+
+        const gCanvas = document.getElementById('gameStatesCanvas'), gCtx = gCanvas.getContext('2d'), gSlider = document.getElementById('gameTempSlider'), gTempText = document.getElementById('tempText');
+        let gParticles = [], discovered = { solid: false, liquid: false, gas: false }, gAnimId;
+        function initGameStatesCanvas() {
+            gParticles = []; for (let i = 0; i < 40; i++) gParticles.push({ x: Math.random() * 180, y: Math.random() * 180, vx: 0, vy: 0, targetX: (i%8)*15 + 40, targetY: Math.floor(i/8)*15 + 60 });
+            if(!gAnimId) animateGameStates();
+        }
+        function animateGameStates() {
+            gCtx.clearRect(0, 0, 180, 180); let temp = parseInt(gSlider.value); gTempText.innerText = `${temp}°C`;
+            if (temp <= 0) { gTempText.style.color = '#3b82f6'; if(!discovered.solid) { discovered.solid = true; unlockBadge('badge-solid'); } } 
+            else if (temp > 0 && temp < 100) { gTempText.style.color = '#10b981'; if(!discovered.liquid) { discovered.liquid = true; unlockBadge('badge-liquid'); } } 
+            else if (temp >= 100) { gTempText.style.color = '#ef4444'; if(!discovered.gas) { discovered.gas = true; unlockBadge('badge-gas'); } }
+            gParticles.forEach(p => {
+                if(temp <= 0) { p.x += (p.targetX - p.x) * 0.1 + (Math.random()-0.5); p.y += (p.targetY - p.y) * 0.1 + (Math.random()-0.5); }
+                else if(temp < 100) { p.vy += 0.5; p.x += (Math.random()-0.5)*2; p.y += p.vy; if(p.y > 170) { p.y = 170; p.vy *= -0.5; } if(p.x < 10) p.x = 10; if(p.x > 170) p.x = 170; }
+                else { p.x += (Math.random()-0.5)*15; p.y += (Math.random()-0.5)*15; if(p.x < 0) p.x = 180; if(p.x > 180) p.x = 0; if(p.y < 0) p.y = 180; if(p.y > 180) p.y = 0; }
+                gCtx.beginPath(); gCtx.arc(p.x, p.y, 5, 0, Math.PI * 2); gCtx.fillStyle = '#60a5fa'; gCtx.fill();
+            });
+            gAnimId = requestAnimationFrame(animateGameStates);
+        }
+        function unlockBadge(id) {
+            const b = document.getElementById(id); b.classList.remove('grayscale', 'opacity-50'); b.classList.add('bg-blue-100', 'border-blue-400', 'scale-110');
+            if(discovered.solid && discovered.liquid && discovered.gas) setTimeout(levelCompleted, 1000);
+        }
+
+        const squeezeBtn = document.getElementById('squeezeBtn'), dBottle = document.getElementById('gamePlasticBottle'), gDiver = document.getElementById('gameDiver'), targetZone = document.getElementById('targetZone'), bar = document.getElementById('holdTimerBar'), bubble = document.getElementById('diverBubble'), pOverlay = document.getElementById('pressureOverlay');
+        let isSqueezing = false, diverY = 5, progress = 0, l5Completed = false;
+        function startPress(e) { e.preventDefault(); if(l5Completed) return; isSqueezing = true; dBottle.classList.add('bottle-squeeze'); squeezeBtn.innerText = '⚠️ 保持壓力 ⚠️'; bubble.style.transform = 'scale(0.5)'; pOverlay.style.opacity = '1'; }
+        function stopPress(e) { if(!isSqueezing) return; e.preventDefault(); isSqueezing = false; dBottle.classList.remove('bottle-squeeze'); squeezeBtn.innerText = '👇 長按這裡加壓 👇'; bubble.style.transform = 'scale(1)'; pOverlay.style.opacity = '0'; }
+        squeezeBtn.addEventListener('mousedown', startPress); window.addEventListener('mouseup', stopPress); squeezeBtn.addEventListener('touchstart', startPress, {passive: false}); window.addEventListener('touchend', stopPress);
+        setInterval(() => {
+            if(currentLevel !== 5 || l5Completed) return;
+            if(isSqueezing) { diverY += 1.5; if(diverY > 80) diverY = 80; } else { diverY -= 1.0; if(diverY < 5) diverY = 5; }
+            gDiver.style.top = `${diverY}%`;
+            if(diverY >= 60 && diverY <= 75) { targetZone.classList.add('target-glow'); progress += 1.5; if(progress >= 100) { progress = 100; l5Completed = true; levelCompleted(); } } 
+            else { targetZone.classList.remove('target-glow'); }
+            bar.style.height = `${progress}%`;
+        }, 50);
+
+        // ================= 作業繳交與成績單系統 =================
+        function showResultScreen() {
+            document.querySelectorAll('.level-container').forEach(el => el.classList.remove('active'));
+            document.getElementById('resultScreen').classList.add('active');
+            document.querySelector('header').style.display = 'none';
+            document.querySelector('.status-bar').style.display = 'none';
+            // 不立刻畫成績單，等待學生輸入資料
+        }
+
+        function prepareSubmission() {
+            const sClass = document.getElementById('sClass').value.trim();
+            const sNum = document.getElementById('sNum').value.trim();
+            const sName = document.getElementById('sName').value.trim();
+
+            if (!sClass || !sNum || !sName) {
+                alert("⚠️ 請填寫完整的班級、座號與姓名，才能產生專屬證書喔！");
+                return;
+            }
+
+            // 隱藏輸入區，顯示證書與表單繳交區
+            document.getElementById('studentFormArea').style.display = 'none';
+            document.getElementById('certificateCard').classList.remove('hidden');
+            
+            // 生成合成成績單
+            generateCertificate(sClass, sNum, sName);
+
+            // 自動下載圖片
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.download = `${sClass}班_${sNum}號_${sName}_水系實驗成績單.png`;
+                link.href = document.getElementById('resultCanvas').toDataURL('image/png');
+                link.click();
+                
+                // 顯示前往表單的按鈕
+                document.getElementById('formSubmissionArea').classList.remove('hidden');
+                document.getElementById('formSubmissionArea').classList.add('flex');
+            }, 800);
+        }
+
+        function generateCertificate(sClass, sNum, sName) {
+            const rCanvas = document.getElementById('resultCanvas');
+            const rCtx = rCanvas.getContext('2d');
+            
+            rCtx.fillStyle = '#f8fafc';
+            rCtx.fillRect(0, 0, rCanvas.width, rCanvas.height);
+            
+            rCtx.strokeStyle = '#3b82f6';
+            rCtx.lineWidth = 10;
+            rCtx.strokeRect(5, 5, rCanvas.width - 10, rCanvas.height - 10);
+
+            rCtx.fillStyle = '#1e40af';
+            rCtx.font = 'bold 26px "Noto Sans TC", sans-serif';
+            rCtx.textAlign = 'center';
+            rCtx.fillText('【自然與生活科技】實驗證書', rCanvas.width / 2, 45);
+
+            // 合成學生自己畫的毛細畫布
+            rCtx.globalAlpha = 0.6;
+            rCtx.drawImage(tCanvas, 180, 80, 200, 200 * (tCanvas.height/tCanvas.width));
+            rCtx.globalAlpha = 1.0;
+
+            rCtx.fillStyle = '#334155';
+            rCtx.font = 'bold 18px "Noto Sans TC", sans-serif';
+            rCtx.textAlign = 'left';
+            
+            // 寫上學生資料
+            rCtx.fillText(`姓名：${sClass} 班 ${sNum} 號`, 30, 100);
+            rCtx.fillText(`　　　${sName} 同學`, 30, 130);
+
+            const timeStr = document.getElementById('timeDisplay').innerText;
+            rCtx.fillText(`測驗分數：100 / 100 分`, 30, 180);
+            rCtx.fillText(`通關耗時：${timeStr}`, 30, 210);
+
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}/${today.getMonth()+1}/${today.getDate()}`;
+            rCtx.fillStyle = '#64748b';
+            rCtx.font = '14px sans-serif';
+            rCtx.fillText(`認證日期：${dateStr}`, 30, 260);
+
+            // 蓋章動畫
+            const stamp = document.getElementById('passStamp');
+            stamp.classList.remove('hidden');
+            setTimeout(() => stamp.style.opacity = '1', 100);
+            stamp.classList.add('stamp-effect');
+        }
+
+        document.querySelector('header').style.display = 'flex';
+    </script>
+</body>
+</html>

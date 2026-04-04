@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小石猴探險隊：岩石大冒險</title>
+  
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
+    
+    /* 掃描線動畫 */
+    @keyframes scan-line {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { top: 100%; opacity: 0; }
+    }
+    .animate-scan {
+      position: absolute; width: 100%; height: 4px;
+      background: #3b82f6; box-shadow: 0 0 15px #3b82f6;
+      animation: scan-line 1.5s ease-in-out infinite; z-index: 10;
+    }
+
+    /* 氣泡上升動畫 */
+    @keyframes bubble-rise {
+      0% { transform: translateY(0) scale(0.5); opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 0.8; }
+      100% { transform: translateY(-60px) scale(1.5); opacity: 0; }
+    }
+    .bubble {
+      position: absolute; background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%; animation: bubble-rise 1s infinite;
+    }
+
+    /* 輸送帶動畫 */
+    @keyframes belt-move {
+      from { background-position: 0 0; }
+      to { background-position: 40px 0; }
+    }
+    .conveyor-belt {
+      background-image: linear-gradient(90deg, #333 25%, #444 25%, #444 50%, #333 50%, #333 75%, #444 75%, #444 100%);
+      background-size: 40px 100%;
+      animation: belt-move 1s linear infinite;
+    }
+
+    .fade-in { animation: fadeIn 0.5s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="bg-blue-50">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const rockData = [
+      { name: '花岡岩', type: '火成岩', typeDesc: '第一種分類', hardness: 6.5, acid: false, color: 'red', feature: '結晶顆粒粗大，由石英、長石和黑雲母組成，有明顯的黑白肉紅斑點。' },
+      { name: '玄武岩', type: '火成岩', typeDesc: '第一種分類', hardness: 5.5, acid: false, color: 'red', feature: '顏色深灰到黑色，常含有細小氣孔，是火山熔岩快速冷卻形成。' },
+      { name: '安山岩', type: '火成岩', typeDesc: '第一種分類', hardness: 6, acid: false, color: 'red', feature: '顏色多為灰黑色，常帶有明顯的斑晶，是台灣常見的火山岩。' },
+      { name: '礫岩', type: '沉積岩', typeDesc: '第二種分類', hardness: 4, acid: false, color: 'amber', feature: '由大小不一的圓滑卵石和泥沙膠結而成，像是天然的混凝土。' },
+      { name: '砂岩', type: '沉積岩', typeDesc: '第二種分類', hardness: 5, acid: false, color: 'amber', feature: '由細小的沙粒膠結而成，摸起來有粗糙的顆粒感，常見水平層理。' },
+      { name: '頁岩', type: '沉積岩', typeDesc: '第二種分類', hardness: 2, acid: false, color: 'amber', feature: '由極細的泥土壓實而成，具有薄片狀的平行層理，質地脆弱易剝落。' },
+      { name: '石灰岩', type: '沉積岩', typeDesc: '第二種分類', hardness: 3, acid: true, color: 'amber', feature: '主要成分為碳酸鈣（如珊瑚骨骼），質地較軟且顏色較淺，偶爾可見化石。' },
+      { name: '大理岩', type: '變質岩', typeDesc: '第三種分類', hardness: 3, acid: true, color: 'purple', feature: '由石灰岩在高溫高壓下變質而來，具有美麗的波浪狀或不規則紋理。' },
+      { name: '板岩', type: '變質岩', typeDesc: '第三種分類', hardness: 3.5, acid: false, color: 'purple', feature: '由頁岩變質而來，具有平整的板狀劈理，敲擊聲音清脆，常被用作石板屋。' },
+      { name: '石英岩', type: '變質岩', typeDesc: '第三種分類', hardness: 7, acid: false, color: 'purple', feature: '由砂岩變質而來，顆粒緊密結合，非常堅硬且具有半透明的玻璃光澤。' },
+    ];
+
+    const rockMap = rockData.reduce((acc, r) => ({ ...acc, [r.name]: r }), {});
+
+    // 專為岩石設計的擬真視覺組件
+    const RockVisual = ({ rock }) => {
+      const styles = {
+        '花岡岩': { // 黑白肉紅相間斑點
+          background: '#d1c7c7', 
+          backgroundImage: 'radial-gradient(#333 15%, transparent 16%), radial-gradient(#f1f2f6 15%, transparent 16%)', 
+          backgroundSize: '0.2em 0.2em, 0.25em 0.25em',
+          backgroundPosition: '0 0, 0.1em 0.1em',
+          borderRadius: '40% 60% 70% 30% / 40% 50% 60% 50%' 
+        },
+        '玄武岩': { // 深灰黑色，帶有細小氣孔
+          background: '#353b48', 
+          backgroundImage: 'radial-gradient(#2f3640 20%, transparent 21%)', 
+          backgroundSize: '0.15em 0.15em', 
+          borderRadius: '50% 40% 60% 40% / 50% 50% 40% 60%' 
+        },
+        '安山岩': { // 灰黑色，帶有些微斑晶
+          background: '#718093', 
+          backgroundImage: 'radial-gradient(#dcdde1 10%, transparent 11%), radial-gradient(#2f3640 10%, transparent 11%)', 
+          backgroundSize: '0.25em 0.25em, 0.2em 0.2em',
+          backgroundPosition: '0 0, 0.1em 0.1em',
+          borderRadius: '45% 55% 40% 60% / 55% 45% 60% 40%' 
+        },
+        '礫岩': { // 含有大小不一的卵石膠結
+          background: '#b8a08c',
+          backgroundImage: 'radial-gradient(circle at 30% 30%, #8c7b6c 15%, transparent 16%), radial-gradient(circle at 70% 60%, #a69587 20%, transparent 21%), radial-gradient(circle at 40% 80%, #7d6e61 15%, transparent 16%)', 
+          borderRadius: '50% 50% 50% 50% / 60% 40% 60% 40%' 
+        },
+        '砂岩': { // 黃褐色，帶有細微沙粒層理
+          background: '#e1b12c', 
+          backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.05) 20%, transparent 20%, transparent 50%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.08) 70%, transparent 70%)', 
+          backgroundSize: '100% 0.2em', 
+          borderRadius: '30% 70% 60% 40% / 40% 50% 60% 50%' 
+        },
+        '頁岩': { // 灰色/黑色，平行薄層，外觀較扁平
+          background: '#576574', 
+          backgroundImage: 'linear-gradient(to bottom, #2f3640 10%, transparent 10%)', 
+          backgroundSize: '100% 0.1em', 
+          borderRadius: '10% 15% 10% 15% / 10% 15% 10% 15%', 
+          transform: 'skewX(-15deg) rotate(5deg)' 
+        },
+        '石灰岩': { // 淺灰/白色，質地較均勻
+          background: '#dcdde1', 
+          backgroundImage: 'radial-gradient(circle at 25% 40%, #c8d6e5 10%, transparent 11%)',
+          borderRadius: '60% 40% 50% 50% / 50% 50% 40% 60%' 
+        },
+        '大理岩': { // 白色底，有灰黑色波浪紋理
+          background: '#f5f6fa', 
+          backgroundImage: 'linear-gradient(45deg, transparent 35%, #dcdde1 40%, #dcdde1 45%, transparent 50%)', 
+          backgroundSize: '0.3em 0.3em', 
+          borderRadius: '30% 25% 35% 20% / 25% 35% 20% 30%' 
+        },
+        '板岩': { // 黑色/深灰色，平整板狀邊緣銳利
+          background: '#2f3542', 
+          borderRadius: '5% 10% 5% 10% / 5% 10% 5% 10%', 
+          borderBottom: '0.05em solid #1e272e', 
+          borderRight: '0.04em solid #1e272e',
+          transform: 'rotate(-8deg)'
+        },
+        '石英岩': { // 淺色帶有透明結晶與玻璃光澤感
+          background: '#f8f9fa', 
+          border: '0.02em solid #dcdde1', 
+          boxShadow: 'inset 0.1em 0.1em 0.2em rgba(100, 150, 255, 0.2), inset -0.05em -0.05em 0.1em rgba(0,0,0,0.05)', 
+          borderRadius: '35% 45% 40% 50% / 45% 35% 50% 40%' 
+        },
+      };
+
+      const baseStyle = { 
+        width: '1em', 
+        height: '1em', 
+        display: 'block', 
+        boxShadow: rock.name === '石英岩' ? styles['石英岩'].boxShadow : 'inset -0.1em -0.1em 0.2em rgba(0,0,0,0.3), 0.05em 0.05em 0.1em rgba(0,0,0,0.2)' 
+      };
+      
+      const specificStyle = styles[rock.name] || {};
+      
+      return (
+        <div 
+          className="mx-auto" 
+          style={{ ...baseStyle, ...specificStyle }}
+          title={rock.name}
+        ></div>
+      );
+    };
+
+    const App = () => {
+      const [activeMode, setActiveMode] = useState('home');
+      const [gameScore, setGameScore] = useState(0);
+
+      return (
+        <div className="flex flex-col md:flex-row min-h-screen">
+          <nav className="w-full md:w-64 bg-slate-900 text-white p-4 flex flex-col shadow-2xl z-30">
+            <h1 className="text-2xl font-black mb-8 text-center text-yellow-400 italic">🐒 ROCK EXP!</h1>
+            <div className="flex md:flex-col gap-2 overflow-x-auto">
+              <NavBtn id="home" active={activeMode} set={setActiveMode} icon="🏠" label="探險首頁" />
+              <NavBtn id="study" active={activeMode} set={setActiveMode} icon="🎤" label="圖鑑自學" />
+              <NavBtn id="acid" active={activeMode} set={setActiveMode} icon="🧪" label="滴酸實驗" />
+              <NavBtn id="scanner" active={activeMode} set={setActiveMode} icon="📸" label="AI 掃描器" />
+              <NavBtn id="conveyor" active={activeMode} set={setActiveMode} icon="🏗️" label="輸送帶任務" />
+              <NavBtn id="quiz" active={activeMode} set={setActiveMode} icon="📝" label="最終測驗" />
+            </div>
+          </nav>
+
+          <main className="flex-1 p-4 md:p-10 overflow-y-auto">
+            {activeMode === 'home' && <HomeMode setMode={setActiveMode} />}
+            {activeMode === 'study' && <StudyMode />}
+            {activeMode === 'acid' && <AcidMode />}
+            {activeMode === 'scanner' && <ScannerMode setMode={setActiveMode} />}
+            {activeMode === 'conveyor' && <ConveyorGame score={gameScore} setScore={setGameScore} back={() => setActiveMode('scanner')} next={() => setActiveMode('quiz')} />}
+            {activeMode === 'quiz' && <QuizMode />}
+          </main>
+        </div>
+      );
+    };
+
+    const NavBtn = ({ id, active, set, icon, label }) => (
+      <button onClick={() => set(id)} className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all whitespace-nowrap ${active === id ? 'bg-blue-600 text-white shadow-lg' : 'hover:bg-slate-800 text-slate-400'}`}>
+        <span>{icon}</span> {label}
+      </button>
+    );
+
+    const HomeMode = ({ setMode }) => (
+      <div className="fade-in text-center py-10">
+        <h2 className="text-5xl font-black text-slate-800 mb-6">岩石大師考驗</h2>
+        <p className="text-xl text-slate-600 mb-10">學完三大岩石分類，就來挑戰 AI 輸送帶收集任務吧！</p>
+        <button onClick={() => setMode('scanner')} className="bg-blue-600 text-white px-10 py-4 rounded-2xl text-2xl font-bold shadow-xl hover:bg-blue-700 transition-all">開始探險</button>
+      </div>
+    );
+
+    const StudyMode = () => (
+      <div className="fade-in max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-xl">
+        <h2 className="text-3xl font-bold mb-6 text-center">🎤 快速記憶口訣</h2>
+        <div className="space-y-4 text-lg">
+          <div className="p-4 bg-red-50 border-l-8 border-red-500 rounded">
+            <strong>火成岩：</strong>花、玄、安。火山噴發熱呼呼，硬度偏高很堅固！
+          </div>
+          <div className="p-4 bg-amber-50 border-l-8 border-amber-500 rounded">
+            <strong>沉積岩：</strong>礫、砂、頁、灰。含有碳酸鈣，遇酸冒泡泡！（頁岩無反應）
+          </div>
+          <div className="p-4 bg-purple-50 border-l-8 border-purple-500 rounded">
+            <strong>變質岩：</strong>大、板、英。高溫高壓大變身！石英岩最硬不怕刀。
+          </div>
+        </div>
+      </div>
+    );
+
+    const AcidMode = () => {
+      const [reaction, setReaction] = useState(null);
+      
+      const test = (rock) => {
+        setReaction({ name: rock.name, bubble: rock.acid });
+        setTimeout(() => setReaction(null), 2000);
+      };
+
+      return (
+        <div className="fade-in max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-black mb-4">🧪 互動滴酸實驗室</h2>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
+            {rockData.map(r => (
+              <button key={r.name} onClick={() => test(r)} className="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition-all border-2 border-transparent hover:border-blue-400 relative overflow-hidden group">
+                <div className="text-5xl flex justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <RockVisual rock={r} />
+                </div>
+                <div className="font-bold">{r.name}</div>
+                
+                {reaction?.name === r.name && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-blue-100/60 transition-opacity">
+                    {reaction.bubble ? (
+                      <div className="relative w-full h-full">
+                        <div className="bubble" style={{left: '30%', width: '10px', height: '10px', animationDelay: '0s'}}></div>
+                        <div className="bubble" style={{left: '50%', width: '15px', height: '15px', animationDelay: '0.2s'}}></div>
+                        <div className="bubble" style={{left: '70%', width: '8px', height: '8px', animationDelay: '0.4s'}}></div>
+                        <div className="bubble" style={{left: '40%', width: '12px', height: '12px', animationDelay: '0.6s'}}></div>
+                        <div className="absolute bottom-2 w-full text-center text-blue-700 font-black text-xs">冒泡反應中!</div>
+                      </div>
+                    ) : (
+                      <div className="text-slate-500 font-bold text-sm">💧 無反應</div>
+                    )}
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+          <div className="bg-slate-800 text-white p-4 rounded-xl inline-block">提示：試試看點擊「石灰岩」或「大理岩」！</div>
+        </div>
+      );
+    };
+
+    const ScannerMode = ({ setMode }) => {
+      const [target, setTarget] = useState(null);
+      const [isScanning, setIsScanning] = useState(false);
+
+      const scan = (rock) => {
+        setIsScanning(true);
+        setTarget(null);
+        setTimeout(() => {
+          setIsScanning(false);
+          setTarget(rock);
+        }, 1500);
+      };
+
+      return (
+        <div className="fade-in max-w-4xl mx-auto">
+          <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
+            <h2 className="text-2xl font-bold mb-4 text-center">📸 AI 掃描分析儀</h2>
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              {rockData.map(r => (
+                <button key={r.name} onClick={() => scan(r)} className="px-4 py-2 bg-slate-100 hover:bg-blue-100 rounded-lg font-bold border border-slate-200 transition-colors">
+                  {r.name}
+                </button>
+              ))}
+            </div>
+            
+            <div className="relative aspect-video bg-slate-900 rounded-xl flex items-center justify-center border-4 border-slate-800 overflow-hidden">
+              {isScanning && <div className="animate-scan"></div>}
+              {isScanning ? (
+                <div className="text-blue-400 font-mono text-xl animate-pulse">正在掃描岩石分子結構...</div>
+              ) : target ? (
+                <div className="w-full h-full p-8 text-white fade-in flex flex-col justify-center">
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <div className="text-6xl mb-4 ml-2">
+                        <RockVisual rock={target} />
+                      </div>
+                      <h3 className="text-4xl font-black">{target.name}</h3>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-slate-400 text-sm">AI 鑑定分類</div>
+                      <div className={`text-2xl font-black px-4 py-1 rounded bg-${target.color}-600`}>{target.type}</div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white/10 p-4 rounded-lg">
+                      <div className="text-xs text-slate-400">莫氏硬度</div>
+                      <div className="text-2xl font-bold text-yellow-400">{target.hardness}</div>
+                    </div>
+                    <div className="bg-white/10 p-4 rounded-lg">
+                      <div className="text-xs text-slate-400">遇酸反應</div>
+                      <div className="text-2xl font-bold">{target.acid ? '✅ 會冒泡' : '❌ 無反應'}</div>
+                    </div>
+                  </div>
+                  <div className="mt-4 bg-white/10 p-4 rounded-lg text-left">
+                    <div className="text-xs text-slate-400 mb-1">🔍 形態特徵</div>
+                    <div className="text-lg leading-relaxed">{target.feature}</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-slate-500 font-bold">請選擇上方岩石進行掃描</div>
+              )}
+            </div>
+          </div>
+          <div className="text-center">
+            <button onClick={() => setMode('conveyor')} className="bg-green-600 hover:bg-green-700 text-white px-10 py-4 rounded-full text-xl font-black shadow-lg animate-bounce">
+              🚀 進入輸送帶收集挑戰！
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    const ConveyorGame = ({ score, setScore, back, next }) => {
+      const [currentRock, setCurrentRock] = useState(null);
+      const [message, setMessage] = useState("觀察輸送帶上的岩石，點擊正確的桶子！");
+      const [gameOver, setGameOver] = useState(false);
+
+      const nextRock = () => {
+        const random = rockData[Math.floor(Math.random() * rockData.length)];
+        setCurrentRock(random);
+      };
+
+      const check = (type) => {
+        if (currentRock.type === type) {
+          setScore(s => {
+            const newScore = s + 10;
+            if (newScore >= 80) setGameOver(true);
+            return newScore;
+          });
+          setMessage(`✅ 正確！${currentRock.name} 屬於 ${currentRock.type}`);
+        } else {
+          setMessage(`❌ 答錯了！${currentRock.name} 屬於 ${currentRock.type}`);
+        }
+        nextRock();
+      };
+
+      if (!currentRock && !gameOver) return (
+        <div className="text-center py-20">
+          <button onClick={nextRock} className="bg-blue-600 text-white px-12 py-6 rounded-2xl text-4xl font-black shadow-2xl hover:scale-105 transition-transform">START GAME!</button>
+        </div>
+      );
+
+      if (gameOver) return (
+        <div className="fade-in text-center py-10 bg-white rounded-3xl shadow-2xl border-8 border-yellow-400 max-w-xl mx-auto">
+          <div className="text-8xl mb-6">🏆</div>
+          <h2 className="text-5xl font-black text-slate-800 mb-4">挑戰成功！</h2>
+          <p className="text-2xl text-slate-600 mb-10">恭喜獲得 80 分，你已成為岩石大師！🐒</p>
+          <div className="flex justify-center gap-4">
+            <button onClick={() => {setScore(0); setGameOver(false); back();}} className="bg-slate-200 text-slate-700 px-6 py-4 rounded-xl text-xl font-bold hover:bg-slate-300">返回掃描儀</button>
+            <button onClick={() => {setScore(0); setGameOver(false); next();}} className="bg-blue-600 text-white px-10 py-4 rounded-xl text-xl font-bold hover:bg-blue-700 shadow-lg animate-bounce">前往最終測驗 📝</button>
+          </div>
+        </div>
+      );
+
+      return (
+        <div className="fade-in max-w-4xl mx-auto">
+          <div className="flex justify-between items-center mb-8 bg-slate-800 text-white p-4 rounded-xl shadow-lg">
+            <div className="text-xl font-bold">目前積分：<span className="text-yellow-400 text-3xl">{score}</span> / 80</div>
+            <div className="text-lg font-medium">{message}</div>
+          </div>
+
+          <div className="relative h-64 w-full mb-12 flex items-center justify-center">
+             <div className="absolute bottom-0 w-full h-16 conveyor-belt rounded-lg border-t-4 border-slate-700 shadow-inner"></div>
+             {currentRock && (
+               <div className="relative z-10 flex flex-col items-center animate-bounce">
+                 <div className="text-8xl drop-shadow-xl mb-4">
+                   <RockVisual rock={currentRock} />
+                 </div>
+                 <div className="mt-2 text-3xl font-black bg-white px-6 py-2 rounded-full border-4 border-slate-800 text-slate-800 shadow-lg">
+                   {currentRock.name}
+                 </div>
+               </div>
+             )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Bin label="火成岩" color="red" onClick={() => check('火成岩')} />
+            <Bin label="沉積岩" color="amber" onClick={() => check('沉積岩')} />
+            <Bin label="變質岩" color="purple" onClick={() => check('變質岩')} />
+          </div>
+        </div>
+      );
+    };
+
+    const QuizMode = () => {
+      const questions = [
+        { q: "下列哪一種岩石滴到稀鹽酸會產生冒泡反應？", options: ["花岡岩", "石英岩", "石灰岩", "砂岩"], ans: "石灰岩" },
+        { q: "構成台灣原住民「石板屋」的主要岩石是？", options: ["大理岩", "板岩", "玄武岩", "礫岩"], ans: "板岩" },
+        { q: "「花、玄、安」口訣代表的是哪一種岩石分類？", options: ["火成岩", "沉積岩", "變質岩", "化石岩"], ans: "火成岩" },
+        { q: "由細小的沙粒膠結而成，摸起來有粗糙顆粒感的是？", options: ["礫岩", "頁岩", "砂岩", "石灰岩"], ans: "砂岩" },
+        { q: "岩石分類中，哪一種是由高溫高壓「變質」而來的？", options: ["安山岩", "玄武岩", "石灰岩", "大理岩"], ans: "大理岩" }
+      ];
+
+      const [currentQ, setCurrentQ] = useState(0);
+      const [score, setScore] = useState(0);
+      const [isFinished, setIsFinished] = useState(false);
+      const [studentData, setStudentData] = useState({ name: '', id: '' });
+      const [submitStatus, setSubmitStatus] = useState('idle');
+
+      const handleAnswer = (opt) => {
+        if (opt === questions[currentQ].ans) {
+          setScore(s => s + 20); // 每題 20 分，共 100 分
+        }
+        if (currentQ < questions.length - 1) {
+          setCurrentQ(q => q + 1);
+        } else {
+          setIsFinished(true);
+        }
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        setSubmitStatus('submitting');
+        
+        /* * 🧑‍🏫 給老師的設定說明：
+         * 1. 建立一個 Google 試算表，點選「擴充功能」->「Apps Script」
+         * 2. 貼上以下程式碼並部署為「網頁應用程式」(權限設為所有人)：
+         * * function doPost(e) {
+         * var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+         * var data = JSON.parse(e.postData.contents);
+         * sheet.appendRow([new Date(), data.id, data.name, data.score]);
+         * return ContentService.createTextOutput("Success");
+         * }
+         * * 3. 將部署後得到的 URL 替換掉下方的 scriptURL 變數，並解開 fetch 註解即可！
+         */
+        const scriptURL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL';
+        
+        // --- 模擬網路傳送 (正式啟用試算表後請將 setTimeout 刪除) ---
+        setTimeout(() => {
+          setSubmitStatus('success');
+        }, 1500);
+
+        /* --- 真實串接程式碼 (需解開註解即可真實寫入試算表) ---
+        fetch(scriptURL, {
+          method: 'POST',
+          body: JSON.stringify({
+            id: studentData.id,
+            name: studentData.name,
+            score: score
+          })
+        }).then(res => setSubmitStatus('success'))
+          .catch(err => alert('傳送失敗，請通知老師！'));
+        */
+      };
+
+      if (isFinished) {
+        return (
+          <div className="fade-in max-w-lg mx-auto bg-white p-8 rounded-3xl shadow-xl text-center">
+            <h2 className="text-3xl font-black mb-4">🎉 測驗完成！</h2>
+            <div className="text-6xl font-black text-blue-600 mb-6">{score} 分</div>
+            
+            {submitStatus === 'success' ? (
+              <div className="bg-green-100 text-green-800 p-6 rounded-xl font-bold text-xl">
+                ✅ 成績已成功送出至試算表！老師辛苦了！
+              </div>
+            ) : (
+              <div className="text-left">
+                <p className="text-slate-600 mb-4 font-bold">請輸入基本資料，將成績傳送給老師：</p>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                  <input required type="text" placeholder="班級座號 (例: 60101)" className="p-3 border-2 border-slate-300 rounded-lg text-lg focus:border-blue-500 focus:outline-none" value={studentData.id} onChange={e => setStudentData({...studentData, id: e.target.value})} disabled={submitStatus !== 'idle'} />
+                  <input required type="text" placeholder="姓名" className="p-3 border-2 border-slate-300 rounded-lg text-lg focus:border-blue-500 focus:outline-none" value={studentData.name} onChange={e => setStudentData({...studentData, name: e.target.value})} disabled={submitStatus !== 'idle'} />
+                  <button type="submit" disabled={submitStatus !== 'idle'} className={`mt-2 py-4 rounded-xl text-xl font-bold text-white transition-all ${submitStatus === 'idle' ? 'bg-blue-600 hover:bg-blue-700 shadow-lg' : 'bg-slate-400'}`}>
+                    {submitStatus === 'idle' ? '📤 送出成績至試算表' : '傳送中...'}
+                  </button>
+                </form>
+                <div className="mt-4 text-xs text-slate-400 text-center">
+                  (備註：老師請參考原始碼說明，替換 Apps Script 網址以啟用真實寫入)
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      return (
+        <div className="fade-in max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-xl">
+          <div className="flex justify-between items-center mb-6 text-slate-500 font-bold">
+            <span>📝 最終測驗</span>
+            <span>第 {currentQ + 1} / {questions.length} 題</span>
+          </div>
+          <h2 className="text-2xl font-black mb-8 leading-relaxed text-slate-800">
+            {questions[currentQ].q}
+          </h2>
+          <div className="grid grid-cols-1 gap-4">
+            {questions[currentQ].options.map(opt => (
+              <button 
+                key={opt} 
+                onClick={() => handleAnswer(opt)}
+                className="p-4 border-2 border-slate-200 rounded-xl text-left text-xl font-bold text-slate-700 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-95"
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    const Bin = ({ label, color, onClick }) => (
+      <button onClick={onClick} className={`bg-${color}-50 border-4 border-${color}-500 p-8 rounded-t-none rounded-b-3xl hover:bg-${color}-500 hover:text-white transition-all transform hover:-translate-y-2 group shadow-xl active:scale-95`}>
+        <div className="text-5xl mb-4 group-hover:scale-125 transition-transform">🗑️</div>
+        <div className="text-2xl font-black">{label}桶</div>
+        <div className="text-xs mt-2 opacity-60 font-bold group-hover:opacity-100">將岩石收入此處</div>
+      </button>
+    );
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
