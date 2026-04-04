@@ -5,18 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>校園生態系 - 金系實驗室</title>
   
-  <!-- 載入 Tailwind CSS (處理排版與美觀) -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- 載入 FontAwesome 圖示庫 (cdnjs穩定版) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- 🔴 關鍵修改區：使用 cdnjs 取代不穩定的 unpkg 🔴 -->
-  <!-- 載入 React 核心庫 -->
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   
-  <!-- 載入 Babel (讓瀏覽器可以直接看懂 React JSX 語法，解決 '<' 錯誤) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
 
   <style>
@@ -41,10 +36,8 @@
   </style>
 </head>
 <body class="bg-slate-100 min-h-screen font-sans antialiased text-slate-800">
-  <!-- React 渲染的目標容器 -->
   <div id="root"></div>
 
-  <!-- React 程式碼開始 -->
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
@@ -62,25 +55,21 @@
 
     // --- 20題測驗題庫 (一題5分) ---
     const QUIZ_QUESTIONS = [
-      // 三年級：磁性
       { id: 1, category: '三年級(磁性)', text: '磁鐵可以吸引下列哪一種校園物質？', options: ['鐵釘', '塑膠尺', '橡皮擦', '樹枝'], answer: '鐵釘' },
       { id: 2, category: '三年級(磁性)', text: '下列哪一種金屬「不能」被磁鐵吸引？', options: ['鐵片', '銅線', '鋼釘', '鐵製迴紋針'], answer: '銅線' },
       { id: 3, category: '三年級(磁性)', text: '磁鐵的哪一部份磁力最強？', options: ['中間', '兩端(磁極)', '側面', '各部位都一樣強'], answer: '兩端(磁極)' },
       { id: 4, category: '三年級(磁性)', text: '把兩個磁鐵的 N極 和 S極 互相靠近，會發生什麼事？', options: ['互相推開', '互相吸引', '沒有反應', '會發熱'], answer: '互相吸引' },
       { id: 5, category: '三年級(磁性)', text: '日常生活中，哪一個物品裡面「沒有」用到磁鐵的特性？', options: ['鉛筆盒的磁扣', '冰箱門的膠條', '黑板上的彩色吸鐵', '橡皮擦'], answer: '橡皮擦' },
-      // 四年級：導電
       { id: 6, category: '四年級(導電)', text: '電池有凸起的那一端，我們稱為什麼極？', options: ['正極', '負極', '北極(N極)', '南極(S極)'], answer: '正極' },
       { id: 7, category: '四年級(導電)', text: '能夠讓電流通過的物質，在科學上稱為什麼？', options: ['絕緣體', '良導體', '半導體', '不良導體'], answer: '良導體' },
       { id: 8, category: '四年級(導電)', text: '下列哪一個物品可以接在電路中，並且讓燈泡發光？', options: ['塑膠繩', '棉線', '鋁罐', '乾木條'], answer: '鋁罐' },
       { id: 9, category: '四年級(導電)', text: '「鉛筆芯」的主要成分是石墨，請問它連接在電路中能導電嗎？', options: ['能導電', '不能導電', '泡水後才能導電', '加熱後才能導電'], answer: '能導電' },
       { id: 10, category: '四年級(導電)', text: '如果發現電線走火（電線著火），為了安全，第一步應該先怎麼做？', options: ['用水潑滅', '用剪刀剪斷電線', '關閉電源或拔掉插頭', '用手拍滅'], answer: '關閉電源或拔掉插頭' },
-      // 六年級：生鏽
       { id: 11, category: '六年級(生鏽)', text: '鐵製品生鏽，主要是因為接觸了水和空氣中的哪一種氣體？', options: ['二氧化碳', '氧氣', '氮氣', '氫氣'], answer: '氧氣' },
       { id: 12, category: '六年級(生鏽)', text: '哪一種環境下的鐵釘最容易生鏽？', options: ['乾燥的沙漠', '潮濕的浴室', '真空包裝內', '完全浸泡在沙拉油中'], answer: '潮濕的浴室' },
       { id: 13, category: '六年級(生鏽)', text: '為了防止腳踏車的鏈條生鏽，我們通常會怎麼做？', options: ['塗肥皂水', '泡在水中', '塗抹潤滑油', '用火烤'], answer: '塗抹潤滑油' },
       { id: 14, category: '六年級(生鏽)', text: '鐵生鏽後產生的鐵鏽，通常是什麼顏色的？', options: ['銀白色', '紅褐色', '黑灰色', '透明無色'], answer: '紅褐色' },
       { id: 15, category: '六年級(生鏽)', text: '比較「生鏽的鐵」和「原本的鐵」，下列敘述何者正確？', options: ['生鏽的鐵比較硬', '原本的鐵表面比較粗糙', '原本的鐵能被磁鐵吸引，生鏽的鐵鏽磁性會消失或減弱', '兩者都能導電且導電性一樣好'], answer: '原本的鐵能被磁鐵吸引，生鏽的鐵鏽磁性會消失或減弱' },
-      // 六年級：綜合統整
       { id: 16, category: '六年級(統整)', text: '小明想分類校園中的物品，他用磁鐵測試，下列哪一組會被分在「有磁性」的同一類？', options: ['鐵釘、剪刀的鐵刃', '銅線、鋁箔紙', '塑膠尺、橡皮擦', '玻璃杯、書本'], answer: '鐵釘、剪刀的鐵刃' },
       { id: 17, category: '六年級(統整)', text: '如果將「金屬」作為一個分類標準，下列哪一個物品不屬於此類？', options: ['鐵釘', '迴紋針', '鋁罐', '樹枝'], answer: '樹枝' },
       { id: 18, category: '六年級(統整)', text: '迴紋針通常是鐵或鋼製成的，因此它具備了哪些科學特性？', options: ['有磁性、能導電、會生鏽', '無磁性、能導電、不會生鏽', '有磁性、不能導電、會生鏽', '無磁性、不能導電、不會生鏽'], answer: '有磁性、能導電、會生鏽' },
@@ -90,7 +79,8 @@
 
     const App = () => {
       // 狀態管理
-      const [mode, setMode] = useState('menu'); // 'menu', 'lab', 'summary', 'quiz'
+      const [mode, setMode] = useState('menu'); 
+      const [userInfo, setUserInfo] = useState({ gradeClass: '', seatNumber: '', name: '' });
       const [activeTab, setActiveTab] = useState('magnetism'); 
       const [testedResults, setTestedResults] = useState({});
       
@@ -100,22 +90,19 @@
       const [feedbackMsg, setFeedbackMsg] = useState('');
 
       // 線上測驗狀態
-      const [quizAnswers, setQuizAnswers] = useState({ classNumber: '', name: '', answers: {} });
+      const [quizAnswers, setQuizAnswers] = useState({ answers: {} });
       const [isSubmitting, setIsSubmitting] = useState(false);
       const [submitSuccess, setSubmitSuccess] = useState(false);
       const [finalScore, setFinalScore] = useState(0);
 
-      // 取得目前已作答題數
       const answeredCount = Object.keys(quizAnswers.answers).length;
 
-      // 切換物品到實驗桌
       const handleSelectBenchItem = (item) => {
         setBenchItem(item);
         setTestState('idle');
         setFeedbackMsg('');
       };
 
-      // 執行實驗
       const runTest = () => {
         if (!benchItem) return;
         setTestState('testing');
@@ -145,7 +132,6 @@
         return count;
       };
 
-      // 處理選擇答案
       const handleOptionSelect = (questionId, optionValue) => {
         setQuizAnswers(prev => ({
           ...prev,
@@ -153,7 +139,6 @@
         }));
       };
 
-      // 處理測驗提交
       const handleSubmitQuiz = (e) => {
         e.preventDefault();
         
@@ -163,40 +148,36 @@
           return;
         }
 
-        setIsSubmitting(true);
-
-        // 計算分數 (一題 5 分)
-        let score = 0;
-        QUIZ_QUESTIONS.forEach(q => {
-          if (quizAnswers.answers[q.id] === q.answer) {
-            score += 5;
-          }
-        });
-        setFinalScore(score);
-
-        // ⚠️ 老師請注意：請將下方的網址替換成您的 Google Apps Script 部署網址
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxObSUYEmaz_SAk2r0ZxcpUk3nPUk9nllRENYcGo9ig2qayeZQ-d0QhYNCaWGIHFZDT/exec';
-
-        if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
-          setTimeout(() => {
-            setIsSubmitting(false);
-            setSubmitSuccess(true);
-            window.scrollTo(0, 0); // 回到最上方看成績
-          }, 1500);
+        // 檢查基本資料是否填寫
+        if (!userInfo.gradeClass || !userInfo.seatNumber || !userInfo.name) {
+          alert('請先回到主畫面填寫「班級、座號、姓名」後再送出測驗喔！');
           return;
         }
 
-        // --- 真實傳送資料到 Google Sheets 的程式碼 ---
-         const formData = new FormData();
-         formData.append('classNumber', quizAnswers.classNumber);
-         formData.append('name', quizAnswers.name);
-         formData.append('score', score);
+        setIsSubmitting(true);
+
+        // 計算分數
+        let score = 0;
+        QUIZ_QUESTIONS.forEach(q => {
+          if (quizAnswers.answers[q.id] === q.answer) score += 5;
+        });
+        setFinalScore(score);
+
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxObSUYEmaz_SAk2r0ZxcpUk3nPUk9nllRENYcGo9ig2qayeZQ-d0QhYNCaWGIHFZDT/exec';
+
+        // 準備送出的資料
+        const formData = new FormData();
+        formData.append('gradeClass', userInfo.gradeClass);
+        formData.append('seatNumber', userInfo.seatNumber);
+        formData.append('name', userInfo.name);             
+        formData.append('score', score);                    
         
-        // 將 20 題的答案依序加入 formData (q1, q2 ... q20)
+        // 加入每一題的答案
         QUIZ_QUESTIONS.forEach(q => {
           formData.append(`q${q.id}`, quizAnswers.answers[q.id] || '');
         });
 
+        // 傳送資料
         fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           body: formData,
@@ -224,6 +205,40 @@
             <h1 className="text-4xl font-black text-slate-800 mb-2">校園生態系 - 金系</h1>
             <p className="text-lg text-slate-600 mb-8 font-medium">探索校園物質的特性：磁性、導電性與生鏽</p>
             
+            {/* 基本資料輸入區塊 */}
+            <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 mb-8 flex flex-col sm:flex-row gap-4 text-left">
+              <div className="flex-1">
+                <label className="block text-indigo-900 font-bold mb-2"><i className="fa-solid fa-school mr-2"></i>班級</label>
+                <input 
+                  type="text" 
+                  placeholder="例: 三年甲班"
+                  value={userInfo.gradeClass}
+                  onChange={(e) => setUserInfo({...userInfo, gradeClass: e.target.value})}
+                  className="w-full px-4 py-2 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 outline-none"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-indigo-900 font-bold mb-2"><i className="fa-solid fa-chair mr-2"></i>座號</label>
+                <input 
+                  type="text" 
+                  placeholder="例: 05"
+                  value={userInfo.seatNumber}
+                  onChange={(e) => setUserInfo({...userInfo, seatNumber: e.target.value})}
+                  className="w-full px-4 py-2 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 outline-none"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-indigo-900 font-bold mb-2"><i className="fa-solid fa-user mr-2"></i>姓名</label>
+                <input 
+                  type="text" 
+                  placeholder="例: 王小明"
+                  value={userInfo.name}
+                  onChange={(e) => setUserInfo({...userInfo, name: e.target.value})}
+                  className="w-full px-4 py-2 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 outline-none"
+                />
+              </div>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <button onClick={() => setMode('lab')} className="group relative p-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden">
                 <div className="relative z-10 flex flex-col items-center">
@@ -241,23 +256,23 @@
                 </div>
               </button>
 
-              <button onClick={() => {setMode('quiz'); setSubmitSuccess(false);setQuizAnswers({classNumber: '', name: '', answers: {}}); setFinalScore(0); window.scrollTo(0, 0);}} className="group relative p-6 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden">
+              <button onClick={() => {
+                if(!userInfo.gradeClass || !userInfo.seatNumber || !userInfo.name) {
+                  alert('進入測驗前，請先填寫上方的「班級、座號、姓名」喔！');
+                  return;
+                }
+                setMode('quiz'); 
+                setSubmitSuccess(false);
+                setQuizAnswers({ answers: {} }); 
+                setFinalScore(0); 
+                window.scrollTo(0, 0);
+              }} className="group relative p-6 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden">
                 <div className="relative z-10 flex flex-col items-center">
                   <i className="fa-solid fa-file-signature text-4xl mb-3 group-hover:scale-110 transition-transform"></i>
                   <span className="text-xl font-bold">線上測驗</span>
                   <span className="text-sm text-rose-100 mt-1">共20題・紀錄成績</span>
                 </div>
               </button>
-            </div>
-            
-            <div className="mt-8 text-sm text-slate-500 bg-slate-50 p-4 rounded-xl text-left border border-slate-100">
-              <h3 className="font-bold text-slate-700 mb-2"><i className="fa-solid fa-book-open mr-2"></i>涵蓋單元：</h3>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>三年級：「神奇的磁鐵」</li>
-                <li>四年級：「燈泡亮了」（導電）</li>
-                <li>六年級：「物質的變化」（生鏽與防鏽）</li>
-                <li>六年級：「物質的特性與分類」（綜合統整）</li>
-              </ul>
             </div>
           </div>
         </div>
@@ -317,11 +332,10 @@
             <div className="w-full lg:w-2/3 bg-white rounded-3xl shadow-md p-6 flex flex-col">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-black text-slate-800">
-                  {activeTab === 'magnetism' && '🧲 神奇的磁鐵 (三年級)'}
-                  {activeTab === 'conductivity' && '💡 燈泡亮了 (四年級)'}
-                  {activeTab === 'rust' && '💧 鐵生鏽與防鏽 (六年級)'}
+                  {activeTab === 'magnetism' && '🧲 神奇的磁鐵'}
+                  {activeTab === 'conductivity' && '💡 燈泡亮了'}
+                  {activeTab === 'rust' && '💧 鐵生鏽與防鏽'}
                 </h2>
-                <p className="text-slate-500 mt-2">請選擇左側物品，放上實驗桌進行測試</p>
               </div>
 
               <div className="flex-1 bg-slate-100 rounded-2xl border-4 border-slate-200 border-dashed flex flex-col items-center justify-center p-8 relative min-h-[350px]">
@@ -344,7 +358,7 @@
                         {testState === 'result' && ((activeTab === 'magnetism' && benchItem.magnetic) || (activeTab === 'conductivity' && benchItem.conductive) || (activeTab === 'rust' && benchItem.rustable) ? <i className="fa-solid fa-check-circle text-green-500"></i> : <i className="fa-solid fa-times-circle text-slate-400"></i>)}
                       </div>
                       <div className="flex flex-col items-center">
-                        <i className={`fa-solid ${benchItem.icon} text-6xl ${benchItem.color} ${testState === 'result' && activeTab === 'rust' && benchItem.rustable ? 'text-amber-800 transition-colors duration-1000' : ''} ${testState === 'result' && activeTab === 'magnetism' && benchItem.magnetic ? '-translate-x-6 transition-transform duration-500' : ''}`}></i>
+                        <i className={`fa-solid ${benchItem.icon} text-6xl ${benchItem.color}`}></i>
                         <span className="mt-2 font-bold text-slate-700 bg-white px-3 py-1 rounded-full shadow-sm">{benchItem.name}</span>
                       </div>
                     </div>
@@ -370,7 +384,14 @@
                 </button>
                 <h1 className="text-3xl font-black text-slate-800"><i className="fa-solid fa-table-list text-emerald-500 mr-3"></i>物質的特性與分類</h1>
               </div>
-              <button onClick={() => {setMode('quiz'); window.scrollTo(0, 0);}} className="mt-4 sm:mt-0 px-6 py-3 bg-rose-600 text-white rounded-xl font-bold shadow-lg hover:bg-rose-700 transition-colors">
+              <button onClick={() => {
+                if(!userInfo.gradeClass || !userInfo.seatNumber || !userInfo.name) {
+                  alert('請先回首頁填寫基本資料喔！');
+                  setMode('menu');
+                  return;
+                }
+                setMode('quiz'); window.scrollTo(0, 0);
+              }} className="mt-4 sm:mt-0 px-6 py-3 bg-rose-600 text-white rounded-xl font-bold shadow-lg hover:bg-rose-700 transition-colors">
                 <i className="fa-solid fa-pen mr-2"></i> 前往線上測驗 (20題)
               </button>
             </div>
@@ -381,9 +402,9 @@
                   <thead>
                     <tr className="bg-slate-800 text-white">
                       <th className="p-4 font-bold text-lg border-b border-slate-700">物質名稱</th>
-                      <th className="p-4 font-bold text-lg border-b border-slate-700 text-center"><i className="fa-solid fa-magnet text-red-400 mr-2"></i>具磁性</th>
-                      <th className="p-4 font-bold text-lg border-b border-slate-700 text-center"><i className="fa-solid fa-bolt text-yellow-400 mr-2"></i>可導電</th>
-                      <th className="p-4 font-bold text-lg border-b border-slate-700 text-center"><i className="fa-solid fa-droplet text-blue-400 mr-2"></i>易生鏽</th>
+                      <th className="p-4 font-bold text-lg border-b border-slate-700 text-center">具磁性</th>
+                      <th className="p-4 font-bold text-lg border-b border-slate-700 text-center">可導電</th>
+                      <th className="p-4 font-bold text-lg border-b border-slate-700 text-center">易生鏽</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -422,7 +443,6 @@
         <div className="min-h-screen bg-slate-100 p-4 md:p-8 flex justify-center">
           <div className="max-w-3xl w-full">
             
-            {/* 頂部導覽列(測驗專用) */}
             <div className="flex items-center justify-between mb-6 sticky top-4 z-50 bg-white/90 backdrop-blur px-6 py-3 rounded-2xl shadow-sm border border-slate-200">
               <button onClick={() => setMode('menu')} className="text-slate-500 font-bold hover:text-slate-800 flex items-center gap-2">
                 <i className="fa-solid fa-arrow-left"></i> 回主選單
@@ -436,11 +456,10 @@
             </div>
             
             <div className="bg-white rounded-3xl shadow-xl overflow-hidden mb-10">
-              {/* 測驗標頭 */}
               <div className="bg-gradient-to-r from-rose-500 to-pink-600 p-8 text-white text-center relative overflow-hidden">
                 <i className="fa-solid fa-clipboard-check text-6xl mb-4 relative z-10"></i>
                 <h2 className="text-4xl font-black relative z-10">金系學習大挑戰</h2>
-                <p className="mt-3 text-rose-100 text-lg relative z-10">共 20 題，一題 5 分。作答完畢將顯示成績並傳送給老師！</p>
+                <p className="mt-3 text-rose-100 text-lg relative z-10">測驗者：{userInfo.gradeClass} {userInfo.name} 同學</p>
                 <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
               </div>
 
@@ -453,52 +472,18 @@
                   
                   <h3 className="text-3xl font-black text-slate-800 mb-2">測驗完成！</h3>
                   <p className="text-lg text-slate-600 mb-8 font-medium">
-                    {quizAnswers.name} 同學，你的資料與成績已經成功記錄。
+                    {userInfo.name} 同學，你的資料與成績已經成功記錄。
                   </p>
                   
                   <div className="flex gap-4">
-                    <button onClick={() => {setMode('menu'); setSubmitSuccess(false); setQuizAnswers({classNumber: '', name: '', answers: {}}); setFinalScore(0);}} className="px-6 py-3 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300 transition-colors shadow-sm">
+                    <button onClick={() => {setMode('menu'); setSubmitSuccess(false); setQuizAnswers({ answers: {} }); setFinalScore(0);}} className="px-6 py-3 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300 transition-colors shadow-sm">
                       <i className="fa-solid fa-house mr-2"></i>回首頁
-                    </button>
-                    <button onClick={() => {setMode('lab');}} className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-md">
-                      <i className="fa-solid fa-flask mr-2"></i>回實驗室複習
                     </button>
                   </div>
                 </div>
               ) : (
                 /* 20 題作答表單 */
                 <form onSubmit={handleSubmitQuiz} className="p-6 md:p-10 space-y-8">
-                {/* 基本資料輸入 (班級座號與姓名並排) */}
-                  <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 flex flex-col md:flex-row gap-4">
-                    <div className="flex-1">
-                      <label className="block text-indigo-900 font-black mb-2 text-xl">
-                        <i className="fa-solid fa-users mr-2 text-indigo-500"></i>班級座號：
-                      </label>
-                      <input 
-                        type="text" 
-                        required
-                        value={quizAnswers.classNumber}
-                        onChange={(e) => setQuizAnswers({...quizAnswers, classNumber: e.target.value})}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 focus:ring-0 outline-none transition-colors text-lg"
-                        placeholder="例：60101"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-indigo-900 font-black mb-2 text-xl">
-                        <i className="fa-solid fa-id-card mr-2 text-indigo-500"></i>你的姓名：
-                      </label>
-                      <input 
-                        type="text" 
-                        required
-                        value={quizAnswers.name}
-                        onChange={(e) => setQuizAnswers({...quizAnswers, name: e.target.value})}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 focus:ring-0 outline-none transition-colors text-lg"
-                        placeholder="例：王小明"
-                      />
-                    </div>
-                  </div>
-                  <div className="w-full h-px bg-slate-200 my-8"></div>
-
                   {/* 選擇題清單 */}
                   {QUIZ_QUESTIONS.map((q, index) => (
                     <div key={q.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
