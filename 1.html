@@ -100,7 +100,7 @@
       const [feedbackMsg, setFeedbackMsg] = useState('');
 
       // 線上測驗狀態
-      const [quizAnswers, setQuizAnswers] = useState({ name: '', answers: {} });
+      const [quizAnswers, setQuizAnswers] = useState({ classNumber: '', name: '', answers: {} });
       const [isSubmitting, setIsSubmitting] = useState(false);
       const [submitSuccess, setSubmitSuccess] = useState(false);
       const [finalScore, setFinalScore] = useState(0);
@@ -175,7 +175,7 @@
         setFinalScore(score);
 
         // ⚠️ 老師請注意：請將下方的網址替換成您的 Google Apps Script 部署網址
-        const GOOGLE_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxObSUYEmaz_SAk2r0ZxcpUk3nPUk9nllRENYcGo9ig2qayeZQ-d0QhYNCaWGIHFZDT/exec';
 
         if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
           setTimeout(() => {
@@ -187,9 +187,10 @@
         }
 
         // --- 真實傳送資料到 Google Sheets 的程式碼 ---
-        const formData = new FormData();
-        formData.append('name', quizAnswers.name);
-        formData.append('score', score); // 傳送總分
+         const formData = new FormData();
+         formData.append('classNumber', quizAnswers.classNumber);
+         formData.append('name', quizAnswers.name);
+         formData.append('score', score);
         
         // 將 20 題的答案依序加入 formData (q1, q2 ... q20)
         QUIZ_QUESTIONS.forEach(q => {
@@ -240,7 +241,7 @@
                 </div>
               </button>
 
-              <button onClick={() => {setMode('quiz'); setSubmitSuccess(false); setQuizAnswers({name: '', answers: {}}); setFinalScore(0); window.scrollTo(0, 0);}} className="group relative p-6 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden">
+              <button onClick={() => {setMode('quiz'); setSubmitSuccess(false);setQuizAnswers({classNumber: '', name: '', answers: {}}); setFinalScore(0); window.scrollTo(0, 0);}} className="group relative p-6 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden">
                 <div className="relative z-10 flex flex-col items-center">
                   <i className="fa-solid fa-file-signature text-4xl mb-3 group-hover:scale-110 transition-transform"></i>
                   <span className="text-xl font-bold">線上測驗</span>
@@ -456,7 +457,7 @@
                   </p>
                   
                   <div className="flex gap-4">
-                    <button onClick={() => {setMode('menu'); setSubmitSuccess(false); setQuizAnswers({name: '', answers: {}}); setFinalScore(0);}} className="px-6 py-3 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300 transition-colors shadow-sm">
+                    <button onClick={() => {setMode('menu'); setSubmitSuccess(false); setQuizAnswers({classNumber: '', name: '', answers: {}}); setFinalScore(0);}} className="px-6 py-3 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300 transition-colors shadow-sm">
                       <i className="fa-solid fa-house mr-2"></i>回首頁
                     </button>
                     <button onClick={() => {setMode('lab');}} className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-md">
@@ -467,21 +468,35 @@
               ) : (
                 /* 20 題作答表單 */
                 <form onSubmit={handleSubmitQuiz} className="p-6 md:p-10 space-y-8">
-                  {/* 基本資料輸入 */}
-                  <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
-                    <label className="block text-indigo-900 font-black mb-2 text-xl">
-                      <i className="fa-solid fa-id-card mr-2 text-indigo-500"></i>你的姓名或座號：
-                    </label>
-                    <input 
-                      type="text" 
-                      required
-                      value={quizAnswers.name}
-                      onChange={(e) => setQuizAnswers({...quizAnswers, name: e.target.value})}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 focus:ring-0 outline-none transition-colors text-lg"
-                      placeholder="請輸入姓名，例如：王小明"
-                    />
+                {/* 基本資料輸入 (班級座號與姓名並排) */}
+                  <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 flex flex-col md:flex-row gap-4">
+                    <div className="flex-1">
+                      <label className="block text-indigo-900 font-black mb-2 text-xl">
+                        <i className="fa-solid fa-users mr-2 text-indigo-500"></i>班級座號：
+                      </label>
+                      <input 
+                        type="text" 
+                        required
+                        value={quizAnswers.classNumber}
+                        onChange={(e) => setQuizAnswers({...quizAnswers, classNumber: e.target.value})}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 focus:ring-0 outline-none transition-colors text-lg"
+                        placeholder="例：60101"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-indigo-900 font-black mb-2 text-xl">
+                        <i className="fa-solid fa-id-card mr-2 text-indigo-500"></i>你的姓名：
+                      </label>
+                      <input 
+                        type="text" 
+                        required
+                        value={quizAnswers.name}
+                        onChange={(e) => setQuizAnswers({...quizAnswers, name: e.target.value})}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 focus:ring-0 outline-none transition-colors text-lg"
+                        placeholder="例：王小明"
+                      />
+                    </div>
                   </div>
-
                   <div className="w-full h-px bg-slate-200 my-8"></div>
 
                   {/* 選擇題清單 */}
