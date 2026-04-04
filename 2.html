@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校園生態系 - 種子的傳播大冒險</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: #4CAF50;
+            --secondary: #FF9800;
+            --bg-color: #E8F5E9;
+            --text-main: #2E7D32;
+            --panel-bg: #FFFFFF;
+        }
+
+        * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#C8E6C9 20%, transparent 20%), radial-gradient(#C8E6C9 20%, transparent 20%);
+            background-position: 0 0, 25px 25px; background-size: 50px 50px;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%; max-width: 900px;
+            background: var(--panel-bg); border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            padding: 30px; position: relative; margin: 20px; min-height: 600px;
+        }
+
+        /* 按鈕樣式 */
+        .btn {
+            padding: 12px 25px; font-size: 1.2rem; font-weight: bold;
+            border: none; border-radius: 50px; cursor: pointer;
+            transition: all 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin: 10px;
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #43A047; }
+        .btn-secondary { background: var(--secondary); color: white; }
+        .btn-secondary:hover { background: #F57C00; }
+        .btn-outline { background: white; border: 2px solid var(--primary); color: var(--primary); }
+        
+        .teacher-toggle {
+            position: absolute; top: 20px; right: 20px;
+            background: #9E9E9E; color: white; border: none;
+            padding: 8px 15px; border-radius: 20px; cursor: pointer; z-index: 100;
+        }
+
+        .view { display: none; flex-direction: column; align-items: center; text-align: center; animation: fadeIn 0.5s; }
+        .view.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 首頁樣式 */
+        .title-banner { background: #A5D6A7; padding: 15px 30px; border-radius: 20px; margin-bottom: 20px; width: 100%; }
+        h1 { margin: 0; color: #1B5E20; font-size: 2.5rem; text-shadow: 2px 2px 0px white; }
+        .textbook-info { background: #FFF9C4; padding: 15px; border-radius: 15px; border-left: 6px solid #FBC02D; margin-bottom: 25px; text-align: left; width: 80%; line-height: 1.6;}
+        
+        /* 遊戲介面 */
+        .game-header { display: flex; justify-content: space-between; width: 100%; padding: 10px 20px; background: #E8F5E9; border-radius: 15px; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; border: 2px solid #A5D6A7;}
+        .timer { color: #D32F2F; } .score { color: #1976D2; } .progress-text { color: #F57C00; font-size: 1.2rem; }
+
+        .question-area { margin-bottom: 30px; display: flex; flex-direction: column; align-items: center; }
+        .seed-name { font-size: 2rem; color: var(--text-main); font-weight: 900; margin-bottom: 10px; background: #DCEDC8; padding: 5px 25px; border-radius: 20px;}
+        .draggable-seed { width: 140px; height: 140px; object-fit: contain; cursor: grab; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.2)); transition: transform 0.2s; background: white; border-radius: 50%; padding: 10px; border: 4px dashed #81C784;}
+        .draggable-seed:active { cursor: grabbing; transform: scale(1.1); }
+
+        .drop-zones { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; width: 100%; }
+        .zone { 
+            width: 140px; height: 150px; background: #F5F5F5; border: 4px solid #B0BEC5; border-radius: 20px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s; position: relative;
+        }
+        .zone.drag-over { background: #DCEDC8; border-color: var(--primary); transform: scale(1.05); }
+        .zone-icon { font-size: 2.5rem; margin-bottom: 10px; animation: float 3s ease-in-out infinite; }
+        .zone-title { font-weight: bold; color: #455A64; font-size: 1.1rem;}
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+
+        /* 回饋彈窗 */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: white; padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; width: 90%; animation: popIn 0.4s; }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .feedback-icon { font-size: 5rem; margin-bottom: 10px; }
+        .feedback-title { font-size: 2rem; font-weight: bold; margin-bottom: 15px; }
+        .feedback-hint { font-size: 1.2rem; color: #555; line-height: 1.6; margin-bottom: 20px; background: #F5F5F5; padding: 15px; border-radius: 15px; text-align: left;}
+
+        /* 教師後台 */
+        .admin-panel { width: 100%; text-align: left; }
+        .form-group { background: #F1F8E9; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #AED581; display: flex; flex-wrap: wrap; gap: 15px; align-items: center;}
+        input[type="text"], select { padding: 10px; border-radius: 10px; border: 1px solid #ccc; font-size: 1rem; flex: 1; min-width: 150px;}
+        .seed-table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-radius: 10px; overflow: hidden;}
+        .seed-table th, .seed-table td { padding: 12px 15px; border-bottom: 1px solid #EEE; text-align: left; }
+        .seed-table th { background: #A5D6A7; color: #1B5E20; position: sticky; top: 0; z-index: 1;}
+        .preview-img { width: 50px; height: 50px; object-fit: cover; border-radius: 10px; border: 1px solid #ddd; background: white;}
+        .db-scroll { max-height: 350px; overflow-y: auto; border: 1px solid #ddd; border-radius: 10px; }
+
+        /* 過關動畫區 */
+        .tree-animation-container { width: 100%; height: 300px; display: flex; justify-content: center; align-items: flex-end; position: relative; margin-bottom: 20px; background: linear-gradient(to bottom, #81D4FA 0%, #E1F5FE 70%, #8D6E63 70%, #5D4037 100%); border-radius: 20px; overflow: hidden;}
+        .growing-seed { width: 40px; height: 40px; background: #4E342E; border-radius: 50%; position: absolute; bottom: 20%; transition: all 1s ease-in-out; z-index: 2;}
+        .final-tree { width: 250px; height: 0px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 10 Q 70 10 80 40 Q 90 60 70 70 Q 50 80 30 70 Q 10 60 20 40 Q 30 10 50 10 Z" fill="%2343A047"/><path d="M45 70 L55 70 L60 100 L40 100 Z" fill="%23795548"/></svg>') no-repeat bottom center; background-size: contain; position: absolute; bottom: 20%; opacity: 0; transition: height 2s ease-out, opacity 1s; z-index: 1;}
+        .grow-active .growing-seed { transform: translateY(30px) scale(0); opacity: 0; }
+        .grow-active .final-tree { height: 220px; opacity: 1; }
+        .mode-badge { position: absolute; top: 10px; left: 10px; background: #FFC107; color: #3E2723; padding: 5px 15px; border-radius: 20px; font-weight: bold;}
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <button class="teacher-toggle" onclick="switchView('admin-view')">⚙️ 教師管理 (55題庫)</button>
+
+    <!-- 首頁 -->
+    <div id="home-view" class="view active">
+        <div class="title-banner">
+            <h1>🌱 校園生態系：種子傳播大冒險</h1>
+        </div>
+        
+        <div class="textbook-info">
+            <strong>📖 結合自然課本單元：</strong><br>
+            植物繁衍後代的關鍵是「種子的傳播」。主要分為：自力、風力、水力、動物傳播（食用／附著）。<br>
+            在生態系中，種子散播得越遠，越能減少競爭。本次內建高達 55 種植物題庫等你挑戰！
+        </div>
+
+        <h3 style="color: #455A64;">請選擇學習模式：</h3>
+        <div style="display: flex; gap: 20px; margin-top: 10px;">
+            <button class="btn btn-primary" style="font-size: 1.5rem; padding: 15px 30px;" onclick="startGame('self')">🎮 自學挑戰 (30秒限時)</button>
+            <button class="btn btn-secondary" style="font-size: 1.5rem; padding: 15px 30px;" onclick="startGame('teaching')">🎓 教學任務 (累積答對10題)</button>
+        </div>
+    </div>
+
+    <!-- 遊戲頁 -->
+    <div id="game-view" class="view">
+        <div id="mode-badge" class="mode-badge">自學模式</div>
+        <div class="game-header">
+            <div class="timer" id="timer-display">⏱️ 時間: 30</div>
+            <div class="progress-text" id="progress-display" style="display:none;">🎯 達成進度: 0 / 10</div>
+            <div class="score" id="score-display">💰 得分: 0</div>
+        </div>
+
+        <div class="question-area">
+            <div class="seed-name" id="current-seed-name">種子名稱</div>
+            <img id="current-seed-img" class="draggable-seed" src="" alt="種子圖片" draggable="true">
+        </div>
+
+        <div class="drop-zones">
+            <div class="zone" data-method="風力"><div class="zone-icon">💨</div><div class="zone-title">風力傳播</div></div>
+            <div class="zone" data-method="水力"><div class="zone-icon">🌊</div><div class="zone-title">水力傳播</div></div>
+            <div class="zone" data-method="自力"><div class="zone-icon">💥</div><div class="zone-title">自力傳播</div></div>
+            <div class="zone" data-method="動物食用"><div class="zone-icon">🍎</div><div class="zone-title">動物(食用)</div></div>
+            <div class="zone" data-method="動物附著"><div class="zone-icon">🦔</div><div class="zone-title">動物(附著)</div></div>
+        </div>
+    </div>
+
+    <!-- 教師後台 -->
+    <div id="admin-view" class="view admin-panel">
+        <button class="btn btn-outline" style="margin-bottom: 20px;" onclick="switchView('home-view')">🔙 返回首頁</button>
+        <h2 style="color: #2E7D32;">🛠️ 教師種子資料庫管理 (目前 <span id="db-count">0</span> 筆)</h2>
+        <p style="color: #666; font-size: 0.9rem;">老師可在此編輯文字或上傳新種子。<b>點擊「編輯」後，若不上傳新圖會自動保留舊圖。</b></p>
+        
+        <div class="form-group">
+            <input type="text" id="new-seed-name" placeholder="請輸入種子名稱 (例如: 鬼針草)">
+            <select id="new-seed-method">
+                <option value="風力">風力傳播</option>
+                <option value="水力">水力傳播</option>
+                <option value="自力">自力傳播</option>
+                <option value="動物食用">動物傳播 (食用)</option>
+                <option value="動物附著">動物傳播 (附著)</option>
+            </select>
+            <input type="text" id="new-seed-hint" placeholder="請輸入提示說明 (學生答錯時顯示)" style="flex-basis: 100%;">
+            <input type="file" id="new-seed-file" accept="image/*" style="flex: 1;">
+            <button class="btn btn-primary" onclick="uploadSeed()">➕ 儲存 / 更新種子</button>
+        </div>
+
+        <div class="db-scroll">
+            <table class="seed-table" id="seed-table">
+                <thead>
+                    <tr>
+                        <th>預覽圖</th>
+                        <th>種子名稱</th>
+                        <th>傳播方式</th>
+                        <th>屬性</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="db-list"></tbody>
+            </table>
+        </div>
+        <button class="btn btn-secondary" style="margin-top: 15px; font-size: 1rem;" onclick="resetDatabase()">🔄 恢復 55 筆預設題庫</button>
+    </div>
+
+    <!-- 結算畫面 -->
+    <div id="end-view" class="view">
+        <h1 style="margin-bottom: 10px;">🎉 闖關成功！</h1>
+        <div class="tree-animation-container" id="tree-scene">
+            <div class="growing-seed"></div>
+            <div class="final-tree"></div>
+        </div>
+        <h2 id="final-score" style="color: var(--secondary); font-size: 2.5rem; margin: 10px 0;">得分: 100 分</h2>
+        <button class="btn btn-outline" style="margin-top: 20px;" onclick="switchView('home-view')">🏠 回首頁再玩一次</button>
+    </div>
+</div>
+
+<!-- 答題回饋彈窗 -->
+<div class="modal-overlay" id="feedback-modal">
+    <div class="modal">
+        <div class="feedback-icon" id="fb-icon">⭕</div>
+        <div class="feedback-title" id="fb-title">太棒了！</div>
+        <div class="feedback-hint" id="fb-hint">提示文字</div>
+        <button class="btn btn-primary" onclick="nextQuestion()">知道了，繼續挑戰！</button>
+    </div>
+</div>
+
+<script>
+    // --- 55 筆豪華題庫資料產生器 ---
+    const getSvg = (type, color1, color2) => {
+        const svgHeader = "data:image/svg+xml;utf8,";
+        let inner = "";
+        if(type === '風力') inner = `<circle cx='50' cy='30' r='18' fill='${color1}' opacity='0.8'/><line x1='50' y1='45' x2='50' y2='75' stroke='${color2}' stroke-width='3'/><circle cx='50' cy='80' r='6' fill='${color2}'/>`;
+        else if(type === '水力') inner = `<ellipse cx='50' cy='50' rx='40' ry='28' fill='${color1}'/><ellipse cx='50' cy='50' rx='30' ry='18' fill='${color2}'/>`;
+        else if(type === '自力') inner = `<path d='M20 80 Q 50 20 80 80' stroke='${color1}' stroke-width='12' fill='none' stroke-linecap='round'/><circle cx='35' cy='65' r='6' fill='${color2}'/><circle cx='65' cy='65' r='6' fill='${color2}'/>`;
+        else if(type === '動物食用') inner = `<circle cx='50' cy='55' r='35' fill='${color1}'/><circle cx='35' cy='45' r='4' fill='${color2}'/><circle cx='65' cy='60' r='4' fill='${color2}'/>`;
+        else if(type === '動物附著') inner = `<circle cx='50' cy='50' r='22' fill='${color1}'/><path d='M50 20 L50 10 M50 80 L50 90 M20 50 L10 50 M80 50 L90 50 M30 30 L20 20 M70 70 L80 80 M30 70 L20 80 M70 30 L80 20' stroke='${color2}' stroke-width='4' stroke-linecap='round'/>`;
+        
+        return svgHeader + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>${inner}</svg>`);
+    };
+
+    const rawData = [
+        // 風力 (12筆)
+        ["桃花心木", "風力", "種子有長長的翅膀，成熟後像螺旋槳一樣旋轉飛散。", "#F5F5F5", "#5D4037", "mandatory"],
+        ["木棉花", "風力", "種子包覆在輕柔的棉毛中，像棉花糖一樣隨風飛翔。", "#FFFFFF", "#212121", "mandatory"],
+        ["蒲公英", "風力", "帶著白色冠毛，像降落傘一樣隨風飄揚到遠方。", "#F5F5F5", "#8D6E63", "mandatory"],
+        ["青楓", "風力", "果實長著一對翅膀，掉落時像直升機螺旋槳一樣旋轉飛翔。", "#E8F5E9", "#388E3C", "common"],
+        ["臺灣欒樹", "風力", "蒴果像小燈籠，由苞片組成，乾燥後隨風輕飄。", "#FFF9C4", "#F57F17", "common"],
+        ["昭和草", "風力", "種子上端有白色冠毛，風一吹就會像雪花般飛舞。", "#FAFAFA", "#616161", "common"],
+        ["蘆葦", "風力", "花穗上的種子非常輕，帶有毛絨，能被風帶到很遠的濕地。", "#FFF3E0", "#8D6E63", "common"],
+        ["黑板樹", "風力", "長條狀的果實裂開後，種子兩端帶有黃褐色細毛，隨風飛散。", "#EFEBE9", "#4E342E", "uncommon"],
+        ["白茅", "風力", "種子包覆在白色絨毛中，大片生長時隨風如白浪般傳播。", "#FFFFFF", "#BDBDBD", "uncommon"],
+        ["柳樹", "風力", "柳絮就是帶有白色絨毛的種子，春天時隨風漫天飛舞。", "#F1F8E9", "#558B2F", "uncommon"],
+        ["榆樹", "風力", "果實周圍有一圈薄膜狀的翅膀，稱為「榆錢」，能隨風飄落。", "#DCEDC8", "#33691E", "uncommon"],
+        ["臺灣百合", "風力", "乾燥的蒴果裂開後，扁平輕薄的種子會被風吹出來。", "#FFFDE7", "#F57F17", "uncommon"],
+        
+        // 水力 (11筆)
+        ["棋盤腳", "風力", "【修正: 應為水力】外觀像方形肉粽，外皮充滿纖維能浮水。(僅供系統覆蓋測試)", "#8D6E63", "#5D4037", "common"], // 故意留錯測試覆蓋
+        ["棋盤腳", "水力", "果實外觀像方形肉粽，外皮充滿纖維且富含空氣，能輕鬆漂浮在海面上。", "#A1887F", "#5D4037", "mandatory"],
+        ["椰子", "水力", "擁有厚實的纖維層和防水外殼，能在海水中漂流數個月。", "#8D6E63", "#4E342E", "mandatory"],
+        ["銀葉樹", "水力", "果實腹部有突起的龍骨，像小船底部，具漂浮組織能順海流傳播。", "#BCAAA4", "#5D4037", "common"],
+        ["海檬果", "水力", "果皮富含纖維與空氣，質輕能浮在水面，常在海岸林可見。", "#A5D6A7", "#2E7D32", "common"],
+        ["水黃皮", "水力", "豆莢呈扁平狀且具有木質化外殼，能漂浮在水面上傳播。", "#D7CCC8", "#795548", "common"],
+        ["欖仁樹", "水力", "果實外圍有龍骨狀突起，果皮富含纖維質，適合海漂。", "#C8E6C9", "#388E3C", "common"],
+        ["林投", "水力", "果實由許多核果聚集而成，成熟後掉落海中，藉由海流傳播。", "#FFCC80", "#E65100", "uncommon"],
+        ["瓊崖海棠", "水力", "圓形果實的外果皮雖然會腐爛，但內果皮呈海綿狀能浮水。", "#B0BEC5", "#455A64", "uncommon"],
+        ["睡蓮", "水力", "種子外有一層透明的假種皮包覆著空氣，能在水面漂浮一段時間。", "#C5CAE9", "#303F9F", "uncommon"],
+        ["荷花", "水力", "蓮蓬枯萎後掉入水中腐爛，將堅硬的蓮子釋放到水裡。", "#F48FB1", "#880E4F", "uncommon"],
+        
+        // 自力 (11筆)
+        ["酢漿草", "自力", "果實成熟時，果皮乾燥收縮產生強大彈力，瞬間爆裂將種子彈出。", "#81C784", "#388E3C", "mandatory"],
+        ["鳳仙花", "自力", "成熟的果實只要輕輕一碰就會瞬間捲曲爆裂，將種子彈射出去。", "#F48FB1", "#C2185B", "mandatory"],
+        ["綠豆", "自力", "豆莢在烈日下曬乾後會因為收縮不均而突然裂開，彈出豆子。", "#AED581", "#33691E", "common"],
+        ["大豆", "自力", "成熟的豆莢乾燥後會自動扭轉裂開，將裡面的種子彈射出來。", "#FFE082", "#FF6F00", "common"],
+        ["豌豆", "自力", "豆莢成熟乾燥後會沿著兩側縫線裂開，並扭曲彈出種子。", "#81C784", "#1B5E20", "common"],
+        ["羊蹄甲", "自力", "長長的豆莢成熟乾燥後會扭曲並突然裂開，將種子彈到四周。", "#CE93D8", "#6A1B9A", "common"],
+        ["紫藤", "自力", "巨大的木質豆莢在乾燥炎熱的日子裡會發出劈啪聲並爆裂彈射。", "#B39DDB", "#4527A0", "uncommon"],
+        ["黃野百合", "自力", "豆莢成熟後乾燥，搖動會有沙沙聲，最後裂開彈出種子。", "#FFF59D", "#F57F17", "uncommon"],
+        ["爆竹草", "自力", "蒴果成熟後乾燥裂開，將細小的種子向外彈出。", "#EF9A9A", "#C62828", "uncommon"],
+        ["非洲鳳仙花", "自力", "果莢成熟後充滿膨壓，外力觸碰即會炸開彈出種子。", "#F48FB1", "#AD1457", "uncommon"],
+        ["橡膠樹", "自力", "堅硬的果實成熟後會在樹上爆裂，發出巨響並將種子彈到遠處。", "#A1887F", "#3E2723", "uncommon"],
+        
+        // 動物食用 (11筆)
+        ["番石榴", "動物食用", "美味多汁的果實吸引鳥類食用，堅硬的種子無法被消化，會隨糞便排出。", "#C5E1A5", "#5D4037", "mandatory"],
+        ["桑葚", "動物食用", "紫紅色的果實鮮甜多汁，小鳥吃下後，種子會隨著糞便排出。", "#7E57C2", "#311B92", "mandatory"],
+        ["榕樹", "動物食用", "無花果實吸引白頭翁等鳥類食用，種子不易消化而隨糞便傳播。", "#EF9A9A", "#B71C1C", "common"],
+        ["雀榕", "動物食用", "果實成熟時呈粉紅色，吸引大量野鳥前來啄食，幫忙散播種子。", "#F48FB1", "#880E4F", "common"],
+        ["構樹", "動物食用", "橘紅色的果實甜美多汁，不僅鳥類愛吃，昆蟲和哺乳動物也喜歡。", "#FFAB91", "#BF360C", "common"],
+        ["龍葵", "動物食用", "黑紫色的成熟漿果是許多小鳥的最愛，吃下後將種子帶到各處。", "#512DA8", "#1A237E", "common"],
+        ["西瓜", "動物食用", "鮮紅多汁的果肉吸引動物，吃下的黑色籽會隨糞便排到遠處。", "#EF5350", "#212121", "common"],
+        ["蘋果", "動物食用", "哺乳動物吃下果實後，常將含有種子的果核丟棄在其他地方。", "#E53935", "#F5F5F5", "uncommon"],
+        ["櫻桃", "動物食用", "鳥類吃掉鮮紅的果肉，將中間堅硬的果核吐出或排泄出來。", "#D32F2F", "#FFCDD2", "uncommon"],
+        ["葡萄", "動物食用", "鳥類整顆吞下，種子隨糞便排出，常在電線桿下發現長出的葡萄藤。", "#7B1FA2", "#E1BEE7", "uncommon"],
+        ["百香果", "動物食用", "香氣濃郁的果肉吸引動物取食，堅硬的種子則隨著糞便排出發芽。", "#FFCA28", "#3E2723", "uncommon"],
+        
+        // 動物附著 (10筆)
+        ["鬼針草", "動物附著", "果實頂端有倒刺，只要動物經過，就會緊緊附著在毛髮上跟著旅行。", "#8D6E63", "#3E2723", "mandatory"],
+        ["蒼耳", "動物附著", "果實表面佈滿倒鉤刺，非常容易黏附在動物的毛皮或人的衣褲上。", "#A1887F", "#4E342E", "mandatory"],
+        ["蒺藜草", "動物附著", "種子外圍有堅硬的刺，會刺入動物的腳底或附著在毛髮上帶走。", "#FFE082", "#F57F17", "common"],
+        ["虱母子", "動物附著", "果實上佈滿星狀毛和倒刺，像魔鬼氈一樣黏在經過的動物身上。", "#F48FB1", "#C2185B", "common"],
+        ["牛膝", "動物附著", "果實帶有向下生長的苞片刺，動物經過時會勾住毛髮。", "#C5E1A5", "#33691E", "common"],
+        ["竊衣", "動物附著", "果實表面有密集的鉤狀刺，很容易黏在衣服上，就像偷偷跟著人走一樣。", "#BCAAA4", "#4E342E", "common"],
+        ["鉤刺草", "動物附著", "小堅果表面長滿微小的倒鉤，能緊緊抓住動物的皮毛。", "#E6EE9C", "#827717", "uncommon"],
+        ["台灣蒺藜", "動物附著", "果實上有尖銳的硬刺，會刺傷動物的腳蹄或黏在車輪上傳播。", "#FFCC80", "#E65100", "uncommon"],
+        ["山螞蝗", "動物附著", "豆莢表面有細小的倒鉤毛，會一節一節斷裂黏在人的褲管或動物身上。", "#A5D6A7", "#1B5E20", "uncommon"],
+        ["曼陀羅", "動物附著", "圓形果實外表長滿尖刺，除了保護種子，也可能稍微勾住動物移動。", "#C8E6C9", "#2E7D32", "uncommon"]
+    ];
+
+    let defaultDB = [];
+    // 初始化 55 筆資料 (並去除重複的名稱保留最新的)
+    let tempMap = {};
+    rawData.forEach(item => {
+        tempMap[item[0]] = {
+            name: item[0], method: item[1], hint: item[2], 
+            img: getSvg(item[1], item[3], item[4]), rarity: item[5]
+        };
+    });
+    defaultDB = Object.values(tempMap);
+
+    // --- 系統核心程式 ---
+    let seedDB = [];
+    let currentMode = 'self';
+    let questionsQueue = [];
+    let currentQuestion = null;
+    let score = 0, timeLeft = 30, correctCount = 0;
+    let timerInterval = null;
+
+    window.onload = () => {
+        loadDatabase();
+        setupDragAndDrop();
+    };
+
+    function loadDatabase() {
+        const stored = localStorage.getItem('seed_game_db_pro');
+        if (stored) {
+            seedDB = JSON.parse(stored);
+        } else {
+            resetDatabase(false);
+        }
+        renderAdminTable();
+    }
+
+    function saveDatabase() {
+        try {
+            localStorage.setItem('seed_game_db_pro', JSON.stringify(seedDB));
+            renderAdminTable();
+            return true;
+        } catch (e) {
+            alert("⚠️ 儲存失敗：瀏覽器空間已滿！請先刪除一些自訂的舊種子後再上傳。");
+            return false;
+        }
+    }
+
+    function resetDatabase(showMsg = true) {
+        seedDB = JSON.parse(JSON.stringify(defaultDB)); 
+        saveDatabase();
+        if(showMsg) alert("已成功恢復為 55 筆預設豪華題庫！");
+    }
+
+    function compressImage(file, callback) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_SIZE = 200; // 強制壓縮長寬
+                let width = img.width, height = img.height;
+                if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
+                else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                callback(canvas.toDataURL('image/jpeg', 0.6)); // 高度壓縮確保可以存幾百張
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function uploadSeed() {
+        const nameInput = document.getElementById('new-seed-name').value.trim();
+        const methodInput = document.getElementById('new-seed-method').value;
+        const hintInput = document.getElementById('new-seed-hint').value.trim();
+        const fileInput = document.getElementById('new-seed-file');
+
+        if (!nameInput) return alert("請輸入種子名稱！");
+
+        const updateOrAdd = (imgData) => {
+            const existingIndex = seedDB.findIndex(s => s.name === nameInput);
+            const newEntry = {
+                name: nameInput, method: methodInput, rarity: "custom",
+                hint: hintInput || `這是老師新增的種子喔！`,
+                img: imgData
+            };
+
+            const backupDB = [...seedDB];
+            if (existingIndex >= 0) seedDB[existingIndex] = newEntry;
+            else seedDB.unshift(newEntry); // 新增的放最前面
+            
+            if (saveDatabase()) {
+                alert(`已成功儲存：${nameInput}`);
+                document.getElementById('new-seed-name').value = '';
+                document.getElementById('new-seed-hint').value = '';
+                fileInput.value = '';
+            } else { seedDB = backupDB; }
+        };
+
+        if (fileInput.files.length > 0) {
+            compressImage(fileInput.files[0], updateOrAdd);
+        } else {
+            const existing = seedDB.find(s => s.name === nameInput);
+            if (existing) updateOrAdd(existing.img); // 保留舊圖
+            else alert("新增全新種子時，請務必選擇一張圖片！");
+        }
+    }
+
+    function deleteSeed(index) {
+        if(confirm(`確定要刪除「${seedDB[index].name}」嗎？`)){
+            seedDB.splice(index, 1);
+            saveDatabase();
+        }
+    }
+
+    function editSeed(index) {
+        const seed = seedDB[index];
+        document.getElementById('new-seed-name').value = seed.name;
+        document.getElementById('new-seed-method').value = seed.method;
+        document.getElementById('new-seed-hint').value = seed.hint;
+        document.getElementById('new-seed-file').value = ''; 
+        alert(`已載入「${seed.name}」。\n您可以修改文字後點擊「儲存」，若不選新檔案會自動保留原本的圖片！`);
+    }
+
+    function renderAdminTable() {
+        const tbody = document.getElementById('db-list');
+        document.getElementById('db-count').innerText = seedDB.length;
+        tbody.innerHTML = '';
+        seedDB.forEach((seed, index) => {
+            let badgeColor = seed.rarity === 'mandatory' ? '#f44336' : (seed.rarity === 'custom' ? '#2196F3' : '#9E9E9E');
+            let badgeText = seed.rarity === 'mandatory' ? '必考' : (seed.rarity === 'custom' ? '自訂' : '一般');
+            tbody.innerHTML += `
+                <tr>
+                    <td><img src="${seed.img}" class="preview-img"></td>
+                    <td style="font-weight:bold;">${seed.name}</td>
+                    <td>${seed.method}</td>
+                    <td><span style="background:${badgeColor}; color:white; padding:3px 8px; border-radius:10px; font-size:0.8rem;">${badgeText}</span></td>
+                    <td>
+                        <button onclick="editSeed(${index})" style="color:#1976D2; cursor:pointer; background:none; border:none; text-decoration:underline; font-weight:bold; margin-right:10px;">編輯</button>
+                        <button onclick="deleteSeed(${index})" style="color:red; cursor:pointer; background:none; border:none; text-decoration:underline;">刪除</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    // --- 遊戲邏輯 ---
+    function switchView(viewId) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        document.querySelector('.teacher-toggle').style.display = (viewId === 'admin-view') ? 'none' : 'block';
+    }
+
+    function startGame(mode) {
+        currentMode = mode;
+        score = 0; correctCount = 0; timeLeft = 30;
+        document.getElementById('score-display').innerText = `💰 得分: 0`;
+        
+        if (mode === 'self') {
+            document.getElementById('mode-badge').innerText = "🎮 自學模式 (30秒)";
+            document.getElementById('mode-badge').style.background = "#FFC107";
+            document.getElementById('timer-display').style.display = 'block';
+            document.getElementById('progress-display').style.display = 'none';
+        } else {
+            document.getElementById('mode-badge').innerText = "🎓 教學任務 (滿10題)";
+            document.getElementById('mode-badge').style.background = "#64B5F6";
+            document.getElementById('timer-display').style.display = 'none';
+            document.getElementById('progress-display').style.display = 'block';
+            document.getElementById('progress-display').innerText = `🎯 達成進度: 0 / 10`;
+        }
+
+        generateQuestions();
+        switchView('game-view');
+        loadNextSeedUI();
+
+        if (mode === 'self') {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = `⏱️ 時間: ${timeLeft}`;
+                if (timeLeft <= 0) triggerGameOver();
+            }, 1000);
+        }
+    }
+
+    function generateQuestions() {
+        // 從龐大題庫中隨機洗牌抽出題目，保證多樣性
+        questionsQueue = [...seedDB].sort(() => Math.random() - 0.5);
+    }
+
+    function loadNextSeedUI() {
+        if (questionsQueue.length === 0) generateQuestions();
+        currentQuestion = questionsQueue.shift();
+
+        document.getElementById('current-seed-name').innerText = currentQuestion.name;
+        document.getElementById('current-seed-img').src = currentQuestion.img;
+        document.getElementById('current-seed-img').style.transform = "scale(1)";
+    }
+
+    function setupDragAndDrop() {
+        const seedImg = document.getElementById('current-seed-img');
+        const zones = document.querySelectorAll('.zone');
+
+        seedImg.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', currentQuestion.method);
+            setTimeout(() => e.target.style.opacity = '0.5', 0);
+        });
+        seedImg.addEventListener('dragend', (e) => e.target.style.opacity = '1');
+
+        zones.forEach(zone => {
+            zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                checkAnswer(zone.getAttribute('data-method'), e.dataTransfer.getData('text/plain'));
+            });
+        });
+    }
+
+    function checkAnswer(dropped, correct) {
+        if (dropped === correct) {
+            score += 20; correctCount++;
+            document.getElementById('score-display').innerText = `💰 得分: ${score}`;
+            if (currentMode === 'teaching') document.getElementById('progress-display').innerText = `🎯 達成進度: ${correctCount} / 10`;
+            showFeedback(true);
+        } else { showFeedback(false); }
+    }
+
+    function showFeedback(isCorrect) {
+        if (timerInterval) clearInterval(timerInterval); 
+        const modal = document.getElementById('feedback-modal');
+        const title = document.getElementById('fb-title');
+        
+        document.getElementById('fb-icon').innerText = isCorrect ? "✨⭕✨" : "💦❌💦";
+        title.innerText = isCorrect ? "太棒了！分類正確！" : "哎呀！分錯囉！(不扣分)";
+        title.style.color = isCorrect ? "#4CAF50" : "#F44336";
+        document.getElementById('fb-hint').innerHTML = `<strong>【${currentQuestion.name}】</strong>的傳播方式是：<span style="color:#E65100; font-weight:bold;">${currentQuestion.method}</span>。<br><br>${currentQuestion.hint}`;
+        
+        modal.style.display = "flex";
+    }
+
+    function nextQuestion() {
+        document.getElementById('feedback-modal').style.display = "none";
+        if (currentMode === 'teaching' && correctCount >= 10) return triggerGameOver();
+        
+        loadNextSeedUI();
+        if (currentMode === 'self') {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = `⏱️ 時間: ${timeLeft}`;
+                if (timeLeft <= 0) triggerGameOver();
+            }, 1000);
+        }
+    }
+
+    function triggerGameOver() {
+        if (timerInterval) clearInterval(timerInterval);
+        switchView('end-view');
+        document.getElementById('final-score').innerText = `最終得分: ${score} 分`;
+        
+        const treeScene = document.getElementById('tree-scene');
+        treeScene.classList.remove('grow-active');
+        setTimeout(() => treeScene.classList.add('grow-active'), 100);
+    }
+</script>
+</body>
+</html>
