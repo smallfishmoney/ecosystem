@@ -8,15 +8,16 @@
   <!-- 載入 Tailwind CSS (處理排版與美觀) -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- 載入 FontAwesome 圖示庫 -->
+  <!-- 載入 FontAwesome 圖示庫 (cdnjs穩定版) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
+  <!-- 🔴 關鍵修改區：使用 cdnjs 取代不穩定的 unpkg 🔴 -->
   <!-- 載入 React 核心庫 -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   
-  <!-- 載入 Babel (讓瀏覽器可以直接看懂 React JSX 語法) -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- 載入 Babel (讓瀏覽器可以直接看懂 React JSX 語法，解決 '<' 錯誤) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
 
   <style>
     /* 自訂動畫效果 */
@@ -261,7 +262,7 @@
         </div>
       );
 
-      // --- 元件：實驗室介面 (省略部分重複代碼，保持不變) ---
+      // --- 元件：實驗室介面 ---
       const renderLab = () => (
         <div className="min-h-screen bg-slate-50 flex flex-col">
           <header className="bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-20">
@@ -445,15 +446,13 @@
               {submitSuccess ? (
                 /* 成績結算畫面 */
                 <div className="p-10 text-center flex flex-col items-center bg-slate-50">
-                  <div className="w-32 h-32 rounded-full flex items-center justify-center mb-6 shadow-lg border-8 border-white
-                    ${finalScore >= 80 ? 'bg-green-500' : finalScore >= 60 ? 'bg-yellow-500' : 'bg-red-500'}
-                  " style={{ backgroundColor: finalScore >= 80 ? '#22c55e' : finalScore >= 60 ? '#eab308' : '#ef4444' }}>
+                  <div className={`w-32 h-32 rounded-full flex items-center justify-center mb-6 shadow-lg border-8 border-white`} style={{ backgroundColor: finalScore >= 80 ? '#22c55e' : finalScore >= 60 ? '#eab308' : '#ef4444' }}>
                     <span className="text-5xl font-black text-white">{finalScore}</span>
                   </div>
                   
                   <h3 className="text-3xl font-black text-slate-800 mb-2">測驗完成！</h3>
                   <p className="text-lg text-slate-600 mb-8 font-medium">
-                    {quizAnswers.name} 同學，你的資料與成績已經成功寫入雲端試算表。
+                    {quizAnswers.name} 同學，你的資料與成績已經成功記錄。
                   </p>
                   
                   <div className="flex gap-4">
@@ -500,9 +499,7 @@
                       
                       <div className="space-y-3 pl-11">
                         {q.options.map((option, optIdx) => (
-                          <label key={optIdx} className={`flex items-center space-x-3 cursor-pointer p-3 rounded-xl transition-all border-2
-                            ${quizAnswers.answers[q.id] === option ? 'bg-rose-50 border-rose-400' : 'bg-slate-50 border-transparent hover:bg-slate-100'}
-                          `}>
+                          <label key={optIdx} className={`flex items-center space-x-3 cursor-pointer p-3 rounded-xl transition-all border-2 ${quizAnswers.answers[q.id] === option ? 'bg-rose-50 border-rose-400' : 'bg-slate-50 border-transparent hover:bg-slate-100'}`}>
                             <input 
                               type="radio" 
                               name={`q${q.id}`} 
