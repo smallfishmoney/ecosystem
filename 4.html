@@ -1,666 +1,730 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>校園生態系：火系 - 互動實驗室</title>
-  
-  <!-- 引入 React 與 ReactDOM -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  
-  <!-- 引入 Babel 讓瀏覽器可以直接編譯 JSX -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  
-  <!-- 引入 Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- 自訂動畫樣式 -->
-  <style>
-    @keyframes fade-in-up {
-      0% { opacity: 0; transform: translateY(10px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-      20%, 40%, 60%, 80% { transform: translateX(5px); }
-    }
-    @keyframes drop-water {
-      0% { transform: translateY(-50px) scale(1); opacity: 1; }
-      100% { transform: translateY(50px) scale(0.5); opacity: 0; }
-    }
-    @keyframes slide-lid {
-      0% { transform: translate(100px, -50px) rotate(20deg); opacity: 0; }
-      100% { transform: translate(0, 0) rotate(0); opacity: 1; }
-    }
-    @keyframes fire-explosion {
-      0% { transform: scale(1); opacity: 0.8; }
-      50% { transform: scale(5); opacity: 1; }
-      100% { transform: scale(6); opacity: 0; }
-    }
-    .animate-fade-in-up { animation: fade-in-up 0.4s ease-out forwards; }
-    .animate-shake { animation: shake 0.5s ease-in-out; }
-    .animate-drop-water { animation: drop-water 0.5s ease-in forwards; }
-    .animate-slide-lid { animation: slide-lid 0.5s ease-out forwards; }
-    .animate-fire-explosion { animation: fire-explosion 1s ease-out forwards; }
-    
-    /* 隱藏捲軸 */
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火系生態系：燃燒、滅火與逃生</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .flame {
+            transform-origin: bottom center;
+            will-change: transform, opacity;
+        }
+        /* 隱藏捲軸但可滑動 (針對標籤列) */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .tab-btn {
+            white-space: nowrap;
+            min-width: 120px;
+        }
+        .tab-btn.active {
+            border-bottom: 4px solid #f97316; /* orange-500 */
+            color: #ea580c; /* orange-600 */
+            font-weight: bold;
+            background-color: #fff7ed;
+        }
+        .gas-tube {
+            stroke-dasharray: 10;
+            animation: dash 2s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -20; }
+        }
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        /* 滅火器掃射動畫 */
+        .sweep-anim {
+            animation: sweep 1.5s ease-in-out infinite alternate;
+        }
+        @keyframes sweep {
+            0% { transform: rotate(-30deg); }
+            100% { transform: rotate(10deg); }
+        }
+        /* 互動小圖示選取特效 */
+        .item-selected {
+            ring: 4px;
+            ring-color: #3b82f6;
+            transform: scale(1.1);
+        }
+        /* 測驗單選框美化 */
+        .quiz-radio:checked + div {
+            background-color: #fef08a; /* yellow-200 */
+            border-color: #eab308; /* yellow-500 */
+            font-weight: bold;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-  <div id="root"></div>
+<body class="bg-gray-100 min-h-screen font-sans text-gray-800 pb-10">
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+    <div class="max-w-6xl mx-auto p-2 md:p-6">
+        <header class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">🔥 火系生態系：燃燒、滅火與逃生</h1>
+            <p class="text-gray-600">從科學實驗了解燃燒的原理，並學習生活中正確的防火與逃生知識。</p>
+        </header>
 
-    // ==========================================
-    // 圖示元件庫 (Inline SVGs)
-    // ==========================================
-    const FlameIcon = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1"><path d="M12 2C12 2 5 9 5 14C5 17.866 8.13401 21 12 21C15.866 21 19 17.866 19 14C19 9 12 2 12 2ZM12 18C10.3431 18 9 16.6569 9 15C9 13 12 9 12 9C12 9 15 13 15 15C15 16.6569 13.6569 18 12 18Z"/></svg>;
-    const WindIcon = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17.7 7.7a2.5 2.5 0 111.8 4.3H2M9.6 4.6A2 2 0 1111 8H2M12.6 19.4A2 2 0 1014 16H2"/></svg>;
-    const DropletIcon = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>;
-    const AlertIcon = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>;
-    const CheckCircle = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
-    const XCircle = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>;
-    const PlayIcon = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
-    const ResetIcon = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>;
+        <!-- 橫向滑動 Tabs -->
+        <div class="flex overflow-x-auto no-scrollbar border-b-2 border-gray-200 mb-6 bg-white rounded-t-xl shadow-sm">
+            <button onclick="switchTab('exp1')" id="tab-exp1" class="tab-btn active flex-1 py-4 px-4 text-center text-sm md:text-base hover:bg-orange-50 transition-colors">1. 廣口瓶覆蓋</button>
+            <button onclick="switchTab('exp2')" id="tab-exp2" class="tab-btn flex-1 py-4 px-4 text-center text-sm md:text-base hover:bg-orange-50 transition-colors">2. 氣體反應</button>
+            <button onclick="switchTab('exp3')" id="tab-exp3" class="tab-btn flex-1 py-4 px-4 text-center text-sm md:text-base hover:bg-orange-50 transition-colors">3. 長短蠟燭</button>
+            <button onclick="switchTab('exp4')" id="tab-exp4" class="tab-btn flex-1 py-4 px-4 text-center text-sm md:text-base hover:bg-orange-50 transition-colors">4. 三要素挑戰</button>
+            <button onclick="switchTab('exp5')" id="tab-exp5" class="tab-btn flex-1 py-4 px-4 text-center text-sm md:text-base hover:bg-red-50 transition-colors text-red-700">5. 居家滅火</button>
+            <button onclick="switchTab('exp6')" id="tab-exp6" class="tab-btn flex-1 py-4 px-4 text-center text-sm md:text-base hover:bg-red-50 transition-colors text-red-700">6. 滅火器操作</button>
+            <button onclick="switchTab('exp7')" id="tab-exp7" class="tab-btn flex-1 py-4 px-4 text-center text-sm md:text-base hover:bg-green-50 transition-colors text-green-700">7. 火災逃生</button>
+            <button onclick="switchTab('exp8')" id="tab-exp8" class="tab-btn flex-1 py-4 px-4 text-center text-sm md:text-base hover:bg-blue-50 transition-colors text-blue-700">8. 線上測驗</button>
+        </div>
 
-    // ==========================================
-    // 實驗 1：長短蠟燭 (可選瓶子大小，觀察CO2下沉)
-    // ==========================================
-    function CandlesExperiment() {
-      const [jarSize, setJarSize] = useState('small'); // small, large
-      const [isCovered, setIsCovered] = useState(false);
-      const [co2Level, setCo2Level] = useState(0); // 0 to 100 (%)
-      const [status, setStatus] = useState('ready'); // ready, running, finished
+        <!-- Content Areas -->
+        <div class="bg-white rounded-b-xl rounded-t-sm shadow-lg p-4 md:p-8 min-h-[500px] relative overflow-hidden border-t-4 border-orange-400">
 
-      // 蠟燭高度設定 (%)
-      const longCandleHeight = 60;
-      const shortCandleHeight = 30;
+            <!-- Experiment 1: 廣口瓶覆蓋 (保留) -->
+            <div id="content-exp1" class="block animate-fade-in">
+                <h2 class="text-2xl font-bold mb-4 text-center">實驗一：廣口瓶覆蓋測試</h2>
+                <p class="text-center text-gray-600 mb-8">觀察看看，被廣口瓶蓋住的蠟燭，火焰與旁邊未蓋住的蠟燭有什麼不同？如果在完全熄滅前移開瓶子，又會如何？</p>
+                <div class="flex justify-center items-end gap-16 mb-12 h-48 relative">
+                    <div class="flex flex-col items-center">
+                        <span class="mb-2 text-sm text-gray-500">對照組 (無覆蓋)</span>
+                        <div class="relative flex flex-col items-center">
+                            <svg viewBox="0 0 30 40" class="flame w-6 h-10 fill-orange-500">
+                                <path d="M15 0 Q 30 20 15 40 Q 0 20 15 0 Z" /><path d="M15 15 Q 22 25 15 35 Q 8 25 15 15 Z" fill="#fbbf24" />
+                            </svg>
+                            <div class="w-6 h-16 bg-gray-200 border-2 border-gray-300 rounded-sm"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center relative">
+                        <span class="mb-2 text-sm text-gray-500">實驗組</span>
+                        <div id="exp1-bottle" class="absolute bottom-0 w-24 h-32 border-4 border-blue-200 bg-blue-50 bg-opacity-40 rounded-t-xl transition-all duration-500 transform -translate-y-48 opacity-0 z-10 pointer-events-none flex items-start justify-center"></div>
+                        <div class="relative flex flex-col items-center z-0">
+                            <svg id="exp1-flame-test" viewBox="0 0 30 40" class="flame w-6 h-10 fill-orange-500">
+                                <path d="M15 0 Q 30 20 15 40 Q 0 20 15 0 Z" /><path d="M15 15 Q 22 25 15 35 Q 8 25 15 15 Z" fill="#fbbf24" />
+                            </svg>
+                            <div class="w-6 h-16 bg-gray-200 border-2 border-gray-300 rounded-sm"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-center gap-4">
+                    <button id="exp1-btn" onclick="toggleExp1Cover()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow">蓋上廣口瓶</button>
+                    <button onclick="resetExp1()" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition shadow">重新點燃</button>
+                </div>
+            </div>
 
-      const isLongExtinguished = (100 - co2Level) < longCandleHeight;
-      const isShortExtinguished = (100 - co2Level) < shortCandleHeight;
+            <!-- Experiment 2: 氣體反應測試 (保留) -->
+            <div id="content-exp2" class="hidden">
+                <h2 class="text-2xl font-bold mb-4 text-center">實驗二：氣體反應測試</h2>
+                <p class="text-center text-gray-600 mb-8">分別加入不同的物質產生氣體，並將氣體導向蠟燭，觀察火焰的變化。</p>
+                <div class="flex justify-center items-center gap-4 mb-12 h-48 relative">
+                    <div class="relative flex flex-col items-center">
+                        <div class="w-8 h-8 border-4 border-b-0 border-gray-300 rounded-t-md relative z-10 bg-white"></div>
+                        <div class="w-24 h-24 border-4 border-gray-300 rounded-full relative overflow-hidden flex items-end justify-center z-0 bg-gray-50">
+                            <div id="flask-liquid" class="w-full h-0 bg-transparent transition-all duration-1000"></div>
+                        </div>
+                        <span id="flask-text" class="mt-4 text-sm font-semibold text-gray-700 h-5">空瓶</span>
+                    </div>
+                    <svg class="w-32 h-16" viewBox="0 0 100 50">
+                        <path id="gas-path" d="M 0 10 Q 50 10 50 40 Q 50 50 100 50" fill="none" stroke="#cbd5e1" stroke-width="4" />
+                    </svg>
+                    <div class="flex flex-col items-center mt-12">
+                        <div class="relative flex flex-col items-center">
+                            <svg id="exp2-flame" viewBox="0 0 30 40" class="flame w-8 h-12 fill-orange-500">
+                                <path d="M15 0 Q 30 20 15 40 Q 0 20 15 0 Z" /><path d="M15 15 Q 22 25 15 35 Q 8 25 15 15 Z" fill="#fbbf24" />
+                            </svg>
+                            <div class="w-8 h-20 bg-gray-200 border-2 border-gray-300 rounded-sm"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button onclick="runGasExp('O2')" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow">加入：雙氧水 + 金針菇</button>
+                    <button onclick="runGasExp('CO2')" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition shadow">加入：小蘇打 + 醋</button>
+                    <button onclick="resetGasExp()" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition shadow">清理並重置</button>
+                </div>
+            </div>
 
-      useEffect(() => {
-        let timer;
-        if (isCovered && status === 'running') {
-          timer = setInterval(() => {
-            setCo2Level(prev => {
-              // 大瓶子累積慢，小瓶子累積快
-              const increment = jarSize === 'small' ? 3.5 : 1.5;
-              const nextLevel = prev + increment;
-              if (nextLevel >= 100) {
-                setStatus('finished');
-                return 100;
-              }
-              return nextLevel;
+            <!-- Experiment 3: 長短蠟燭測試 (保留) -->
+            <div id="content-exp3" class="hidden">
+                <h2 class="text-2xl font-bold mb-4 text-center">實驗三：長短蠟燭測試</h2>
+                <p class="text-center text-gray-600 mb-8">將一長一短的蠟燭點燃，並用大燒杯同時蓋住兩者，觀察哪一根先熄滅？</p>
+                <div class="flex justify-center items-end gap-8 mb-12 h-64 relative">
+                    <div id="exp4-beaker" class="absolute bottom-0 w-48 h-56 border-4 border-gray-300 bg-gray-100 bg-opacity-30 rounded-t-2xl transition-all duration-500 transform -translate-y-64 opacity-0 z-10 pointer-events-none"></div>
+                    <div class="flex flex-col items-center z-0">
+                        <span class="mb-2 text-sm text-gray-500">長蠟燭</span>
+                        <div class="relative flex flex-col items-center">
+                            <svg id="exp4-tall-flame" viewBox="0 0 30 40" class="flame w-6 h-10 fill-orange-500"><path d="M15 0 Q 30 20 15 40 Q 0 20 15 0 Z" /><path d="M15 15 Q 22 25 15 35 Q 8 25 15 15 Z" fill="#fbbf24" /></svg>
+                            <div class="w-6 h-32 bg-gray-200 border-2 border-gray-300 rounded-sm"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center z-0">
+                        <span class="mb-2 text-sm text-gray-500">短蠟燭</span>
+                        <div class="relative flex flex-col items-center">
+                            <svg id="exp4-short-flame" viewBox="0 0 30 40" class="flame w-6 h-10 fill-orange-500"><path d="M15 0 Q 30 20 15 40 Q 0 20 15 0 Z" /><path d="M15 15 Q 22 25 15 35 Q 8 25 15 15 Z" fill="#fbbf24" /></svg>
+                            <div class="w-6 h-12 bg-gray-200 border-2 border-gray-300 rounded-sm"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-center gap-4">
+                    <button id="exp4-btn" onclick="toggleExp4()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow">蓋上大燒杯</button>
+                    <button onclick="resetExp4()" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition shadow">重新點燃</button>
+                </div>
+            </div>
+
+            <!-- Experiment 4: 燃燒三要素互動挑戰 (保留) -->
+            <div id="content-exp4" class="hidden">
+                <h2 class="text-2xl font-bold mb-2 text-center text-orange-600">實驗結論：燃燒三要素互動</h2>
+                <p class="text-center text-gray-600 mb-6">點選下方的「物品」，再點選圖形上的「空缺」，集齊三個正確條件就能成功點燃中央的火焰！</p>
+                <div class="max-w-2xl mx-auto flex flex-col items-center gap-8">
+                    <div class="w-full p-4 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                        <p class="text-sm text-center text-gray-500 mb-2">👇 點選要使用的物品 👇</p>
+                        <div class="flex flex-wrap justify-center gap-3" id="item-pool">
+                            <button onclick="selectItem(this, 'fuel', '木柴')" class="px-4 py-2 bg-white border border-gray-300 rounded shadow hover:bg-orange-50 transition">🪵 木柴</button>
+                            <button onclick="selectItem(this, 'wrong', '石頭')" class="px-4 py-2 bg-white border border-gray-300 rounded shadow hover:bg-orange-50 transition">🪨 石頭</button>
+                            <button onclick="selectItem(this, 'oxygen', '氧氣')" class="px-4 py-2 bg-white border border-gray-300 rounded shadow hover:bg-orange-50 transition">💨 氧氣</button>
+                            <button onclick="selectItem(this, 'wrong', '水')" class="px-4 py-2 bg-white border border-gray-300 rounded shadow hover:bg-orange-50 transition">💧 水</button>
+                            <button onclick="selectItem(this, 'heat', '打火機')" class="px-4 py-2 bg-white border border-gray-300 rounded shadow hover:bg-orange-50 transition">🔥 打火機</button>
+                            <button onclick="selectItem(this, 'wrong', '二氧化碳')" class="px-4 py-2 bg-white border border-gray-300 rounded shadow hover:bg-orange-50 transition">🌫️ 二氧化碳</button>
+                        </div>
+                    </div>
+                    <div class="relative w-full max-w-sm h-72" id="triangle-zones">
+                        <svg class="absolute top-0 left-0 w-full h-full z-0">
+                            <polygon points="190,50 60,250 320,250" fill="none" stroke="#fdba74" stroke-width="4" stroke-dasharray="10" />
+                        </svg>
+                        <div onclick="placeItem('heat')" class="absolute top-0 left-1/2 transform -translate-x-1/2 flex flex-col items-center cursor-pointer z-10 group">
+                            <div id="slot-heat" class="w-24 h-24 bg-white border-4 border-red-300 rounded-full flex items-center justify-center text-sm font-bold text-red-400 group-hover:border-red-500 transition-colors shadow-md text-center leading-tight">達到燃點<br>(溫度)</div>
+                        </div>
+                        <div onclick="placeItem('fuel')" class="absolute bottom-0 left-0 flex flex-col items-center cursor-pointer z-10 group">
+                            <div id="slot-fuel" class="w-24 h-24 bg-white border-4 border-yellow-400 rounded-full flex items-center justify-center text-sm font-bold text-yellow-600 group-hover:border-yellow-500 transition-colors shadow-md">可燃物</div>
+                        </div>
+                        <div onclick="placeItem('oxygen')" class="absolute bottom-0 right-0 flex flex-col items-center cursor-pointer z-10 group">
+                            <div id="slot-oxygen" class="w-24 h-24 bg-white border-4 border-blue-300 rounded-full flex items-center justify-center text-sm font-bold text-blue-500 group-hover:border-blue-500 transition-colors shadow-md">助燃物</div>
+                        </div>
+                        <div id="triangle-fire" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 scale-0 transition-transform duration-700 ease-out">
+                            <svg viewBox="0 0 30 40" class="flame w-20 h-28 fill-orange-500 opacity-90 drop-shadow-lg">
+                                <path d="M15 0 Q 30 20 15 40 Q 0 20 15 0 Z" /><path d="M15 15 Q 22 25 15 35 Q 8 25 15 15 Z" fill="#fbbf24" />
+                            </svg>
+                            <p class="text-center font-bold text-orange-600 mt-2 text-xl absolute w-full -bottom-8">燃燒發生！</p>
+                        </div>
+                    </div>
+                    <button onclick="resetTriangle()" class="mt-4 px-4 py-2 text-gray-500 underline hover:text-gray-800">重新挑戰</button>
+                    <p id="triangle-msg" class="text-red-500 font-bold h-6 text-center"></p>
+                </div>
+            </div>
+
+            <!-- Experiment 5: 居家滅火挑戰 (保留) -->
+            <div id="content-exp5" class="hidden">
+                <h2 class="text-2xl font-bold mb-4 text-center text-red-600">狀況五：居家滅火挑戰</h2>
+                <p class="text-center text-gray-600 mb-8">家中起火時，根據起火原因不同，滅火的方法也不同！用錯方法反而會引發大爆炸！</p>
+                <div class="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto">
+                    <div class="flex-1 bg-red-50 p-6 rounded-xl border border-red-100 flex flex-col items-center">
+                        <h3 class="font-bold text-xl mb-2">🍳 廚房油鍋起火</h3>
+                        <div id="oil-scene" class="h-32 w-full flex justify-center items-center relative mb-4">
+                            <div class="w-24 h-6 bg-gray-800 absolute bottom-4 rounded-b-xl border-b-4 border-gray-900"></div>
+                            <div class="w-32 h-2 bg-gray-700 absolute bottom-10 rounded"></div>
+                            <svg id="oil-fire" viewBox="0 0 30 40" class="flame w-16 h-20 fill-orange-500 absolute bottom-10 z-10">
+                                <path d="M15 0 Q 30 20 15 40 Q 0 20 15 0 Z" /><path d="M15 15 Q 22 25 15 35 Q 8 25 15 15 Z" fill="#fbbf24" />
+                            </svg>
+                            <div id="oil-lid" class="w-26 h-4 bg-gray-400 absolute bottom-10 z-20 rounded-t-full opacity-0 transform -translate-y-10 transition-all duration-300"></div>
+                        </div>
+                        <p id="oil-msg" class="text-sm font-bold text-red-600 h-10 mb-2 text-center"></p>
+                        <div class="flex gap-2">
+                            <button onclick="extinguish('oil', 'water')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">潑水</button>
+                            <button onclick="extinguish('oil', 'lid')" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 text-sm">蓋上鍋蓋</button>
+                        </div>
+                    </div>
+                    <div class="flex-1 bg-red-50 p-6 rounded-xl border border-red-100 flex flex-col items-center">
+                        <h3 class="font-bold text-xl mb-2">🔌 電線走火</h3>
+                        <div id="elec-scene" class="h-32 w-full flex justify-center items-center relative mb-4">
+                            <div class="w-16 h-16 bg-gray-100 border-2 border-gray-300 absolute rounded shadow-inner flex flex-col justify-center items-center gap-2">
+                                <div class="w-6 h-2 bg-black"></div><div class="w-6 h-2 bg-black"></div>
+                            </div>
+                            <div id="elec-plug" class="w-12 h-14 bg-gray-800 absolute rounded transition-transform duration-500 z-10 flex border-r-4 border-gray-900 items-center justify-start pr-2">
+                                <div class="h-10 w-24 bg-gray-800 absolute -right-24 top-2 z-0"></div>
+                            </div>
+                            <svg id="elec-fire" viewBox="0 0 30 40" class="flame w-16 h-20 fill-orange-500 absolute bottom-6 z-20">
+                                <path d="M15 0 Q 30 20 15 40 Q 0 20 15 0 Z" /><path d="M15 15 Q 22 25 15 35 Q 8 25 15 15 Z" fill="#fbbf24" />
+                            </svg>
+                        </div>
+                        <p id="elec-msg" class="text-sm font-bold text-red-600 h-10 mb-2 text-center"></p>
+                        <div class="flex gap-2">
+                            <button onclick="extinguish('elec', 'water')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">潑水</button>
+                            <button onclick="extinguish('elec', 'unplug')" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 text-sm">拔除插頭</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-6">
+                    <p class="text-sm text-gray-500">💡 提示：水能導電，且油浮在水面上。請謹慎選擇！</p>
+                    <button onclick="resetExp5()" class="mt-2 px-4 py-1 border border-gray-300 rounded text-sm hover:bg-gray-100">重置狀況</button>
+                </div>
+            </div>
+
+            <!-- Experiment 6: 滅火器操作 (更新：加入火勢動畫) -->
+            <div id="content-exp6" class="hidden">
+                <h2 class="text-2xl font-bold mb-4 text-center text-red-600">狀況六：滅火器動畫操作</h2>
+                <p class="text-center text-gray-600 mb-6">請依照正確的口訣順序點擊按鈕，觀察滅火器的作動與火勢變化！</p>
+                
+                <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-8 bg-gray-50 p-6 rounded-xl border border-gray-200">
+                    <!-- Extinguisher & Fire SVG Scene -->
+                    <div class="relative w-80 h-64 flex justify-between items-end border-b-4 border-gray-300 pb-2">
+                        <!-- Extinguisher -->
+                        <div class="relative w-32 h-56">
+                            <div class="w-16 h-40 bg-red-600 rounded-xl absolute bottom-0 left-8 border-b-8 border-red-800"></div>
+                            <div class="w-16 h-8 bg-black absolute bottom-40 left-8 rounded-t border-t-4 border-gray-700"></div>
+                            <div id="ext-pin" class="w-12 h-12 border-4 border-yellow-400 rounded-full absolute bottom-40 left-2 transition-transform duration-500"></div>
+                            <div class="w-8 h-2 bg-gray-400 absolute bottom-44 left-12"></div>
+                            <div id="ext-handle" class="w-12 h-3 bg-gray-800 absolute bottom-46 left-16 rounded transition-transform duration-300 origin-left -rotate-12"></div>
+                            <!-- Hose -->
+                            <div id="ext-hose" class="w-4 h-32 bg-gray-800 absolute bottom-10 right-4 rounded-b-full transform origin-top transition-transform duration-500 -rotate-[20deg]"></div>
+                            <!-- Powder spray -->
+                            <div id="ext-spray" class="absolute right-[-180px] bottom-4 w-48 h-24 bg-white opacity-0 transition-opacity duration-300 rounded-full blur-md flex items-center justify-center z-10 pointer-events-none"></div>
+                        </div>
+                        <!-- Fire -->
+                        <div class="relative w-32 h-40 flex justify-center items-end">
+                            <div class="w-24 h-4 bg-gray-800 rounded-full absolute bottom-0 opacity-20"></div>
+                            <svg id="ext-fire" viewBox="0 0 30 40" class="flame w-24 h-32 fill-orange-500 transition-transform duration-[2000ms] ease-out z-0">
+                                <path d="M15 0 Q 30 20 15 40 Q 0 20 15 0 Z" /><path d="M15 15 Q 22 25 15 35 Q 8 25 15 15 Z" fill="#fbbf24" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Steps -->
+                    <div class="flex-1 w-full">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <button id="btn-step-2" onclick="doExtStep(2)" class="p-4 border-2 border-gray-300 rounded-xl hover:bg-red-50 hover:border-red-400 text-lg font-bold transition">壓 (握把)</button>
+                            <button id="btn-step-1" onclick="doExtStep(1)" class="p-4 border-2 border-gray-300 rounded-xl hover:bg-red-50 hover:border-red-400 text-lg font-bold transition">拉 (插梢)</button>
+                            <button id="btn-step-4" onclick="doExtStep(4)" class="p-4 border-2 border-gray-300 rounded-xl hover:bg-red-50 hover:border-red-400 text-lg font-bold transition">掃 (向左右)</button>
+                            <button id="btn-step-3" onclick="doExtStep(3)" class="p-4 border-2 border-gray-300 rounded-xl hover:bg-red-50 hover:border-red-400 text-lg font-bold transition">瞄 (火源根部)</button>
+                        </div>
+                        <div class="bg-white p-4 border border-gray-200 rounded shadow-sm">
+                            <p class="font-bold text-gray-700">執行進度：</p>
+                            <div class="flex gap-2 mt-2 text-2xl font-black text-gray-300" id="ext-progress">
+                                <span id="p-1">拉</span> ➔ <span id="p-2">瞄</span> ➔ <span id="p-3">壓</span> ➔ <span id="p-4">掃</span>
+                            </div>
+                            <p id="ext-msg" class="text-sm text-red-500 font-bold mt-2 h-5"></p>
+                        </div>
+                        <button onclick="resetExt()" class="mt-4 px-4 py-1 border border-gray-300 rounded text-sm hover:bg-gray-100">重置操作</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Experiment 7: 火災逃生指南 (更新：加入情境動畫) -->
+            <div id="content-exp7" class="hidden">
+                <h2 class="text-2xl font-bold mb-4 text-center text-green-700">狀況七：火場逃生情境模擬</h2>
+                <p class="text-center text-gray-600 mb-4">你正在房間睡覺，門外突然竄入濃煙且門把發燙。此時你該怎麼做？請選擇下方行動來觀看模擬結果。</p>
+                
+                <div class="max-w-4xl mx-auto flex flex-col items-center gap-6">
+                    
+                    <!-- Animation Scene -->
+                    <div class="relative w-full h-56 bg-orange-50 border-4 border-gray-800 rounded-xl overflow-hidden shadow-inner flex" id="escape-scene">
+                        <!-- 房間內部 -->
+                        <div class="flex-1 relative z-10 flex flex-col justify-end p-4">
+                            <div class="text-4xl absolute top-4 left-4" id="anim-window">🪟</div>
+                            <div class="text-5xl absolute bottom-4 left-1/2 transform -translate-x-1/2 transition-all duration-1000 z-20" id="anim-person">🧍</div>
+                            <div class="absolute bottom-4 left-4 text-3xl opacity-0 transition-opacity duration-500" id="anim-towel">🧻塞門縫</div>
+                            <div class="absolute w-full h-full left-0 top-0 bg-red-600 opacity-0 transition-opacity duration-1000 z-30 pointer-events-none flex justify-center items-center text-white text-3xl font-bold" id="anim-fire-overlay">🔥 被高溫濃煙吞噬</div>
+                            <div class="absolute w-full h-full left-0 top-0 bg-gray-800 opacity-0 transition-opacity duration-1000 z-30 pointer-events-none flex justify-center items-center text-white text-3xl font-bold" id="anim-smoke-overlay">🌫️ 被有毒濃煙嗆昏</div>
+                            <div class="absolute w-full h-full left-0 top-0 bg-green-500 opacity-0 transition-opacity duration-1000 z-30 pointer-events-none flex justify-center items-center text-white text-3xl font-bold" id="anim-safe-overlay">✅ 成功阻擋濃煙，等待救援</div>
+                        </div>
+                        <!-- 浴室 -->
+                        <div class="w-1/4 bg-blue-50 border-l-4 border-gray-400 relative z-0 flex flex-col items-center justify-center transition-colors duration-1000" id="anim-bathroom">
+                            <div class="text-4xl">🛁</div>
+                            <div class="mt-2 text-sm text-gray-500 font-bold">塑膠門浴室</div>
+                        </div>
+                        <!-- 大門 (通往走廊) -->
+                        <div class="absolute right-[25%] bottom-0 w-16 h-32 bg-yellow-800 border-2 border-yellow-900 rounded-t-lg origin-right transition-transform duration-700 z-10 flex items-center justify-start pl-2" id="anim-door">
+                            <div class="w-3 h-3 bg-yellow-300 rounded-full"></div>
+                        </div>
+                    </div>
+
+                    <!-- Choices -->
+                    <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button onclick="playEscape('A')" class="text-left p-4 border-2 border-gray-200 rounded-xl hover:bg-red-50 hover:border-red-400 transition group relative">
+                            <span class="font-bold text-xl mr-2 text-red-500">A</span> 開門往樓下大門衝
+                        </button>
+                        <button onclick="playEscape('B')" class="text-left p-4 border-2 border-gray-200 rounded-xl hover:bg-red-50 hover:border-red-400 transition group relative">
+                            <span class="font-bold text-xl mr-2 text-red-500">B</span> 跑進浴室躲起來
+                        </button>
+                        <button onclick="playEscape('C')" class="text-left p-4 border-2 border-gray-200 rounded-xl hover:bg-yellow-100 hover:border-yellow-400 transition group relative">
+                            <span class="font-bold text-xl mr-2 text-yellow-600">C</span> 去浴室弄濕毛巾後逃生
+                        </button>
+                        <button onclick="playEscape('D')" class="text-left p-4 border-2 border-gray-200 rounded-xl hover:bg-green-50 hover:border-green-400 transition group relative shadow-sm">
+                            <span class="font-bold text-xl mr-2 text-green-600">D</span> 關緊房門，塞住門縫在窗邊求救
+                        </button>
+                    </div>
+
+                    <!-- Explanation -->
+                    <div id="escape-explanation" class="w-full p-4 rounded-xl text-lg font-medium text-center hidden min-h-[80px] flex items-center justify-center"></div>
+                </div>
+            </div>
+
+            <!-- 新增 Experiment 8: 20題線上測驗 -->
+            <div id="content-exp8" class="hidden">
+                <h2 class="text-2xl font-bold mb-2 text-center text-blue-700">🔥 火系安全綜合測驗</h2>
+                <p class="text-center text-gray-600 mb-6">請填寫基本資料並完成下方20題測驗。交卷後將自動計算成績！</p>
+                
+                <div class="max-w-3xl mx-auto bg-blue-50 p-6 rounded-xl border border-blue-200">
+                    <!-- 學生資料表單 -->
+                    <div class="grid grid-cols-3 gap-4 mb-8 bg-white p-4 rounded-lg shadow-sm">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">班級</label>
+                            <input type="text" id="student-class" class="w-full border-gray-300 rounded-md shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" placeholder="例如：一年甲班">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">座號</label>
+                            <input type="number" id="student-seat" class="w-full border-gray-300 rounded-md shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" placeholder="例如：15">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">姓名</label>
+                            <input type="text" id="student-name" class="w-full border-gray-300 rounded-md shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" placeholder="請輸入姓名">
+                        </div>
+                    </div>
+
+                    <!-- 測驗題目容器 -->
+                    <div id="quiz-container" class="space-y-6">
+                        <!-- 題目將由 JavaScript 動態生成 -->
+                    </div>
+
+                    <!-- 提交按鈕與結果 -->
+                    <div class="mt-8 pt-6 border-t border-blue-200 text-center">
+                        <button onclick="submitQuiz()" class="px-8 py-3 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition shadow-lg text-lg">📝 提交考卷</button>
+                        <div id="quiz-result" class="mt-6 hidden p-6 bg-white rounded-xl shadow-md border-2 border-green-400">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">測驗完成！</h3>
+                            <p class="text-lg text-gray-600 mb-4">姓名：<span id="res-name" class="font-bold"></span> | 總分：<span id="res-score" class="font-bold text-red-600 text-3xl"></span> / 100</p>
+                            <p class="text-sm text-green-600 font-bold bg-green-50 p-2 rounded">✅ 成績已準備好送出（請參考原始碼註解串接 Google Apps Script）</p>
+                            <button onclick="document.getElementById('quiz-result').classList.add('hidden')" class="mt-4 px-4 py-1 border border-gray-300 rounded text-sm hover:bg-gray-100">關閉</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- Tab Switching Logic ---
+        function switchTab(tabId) {
+            const tabs = ['exp1', 'exp2', 'exp3', 'exp4', 'exp5', 'exp6', 'exp7', 'exp8'];
+            tabs.forEach(id => {
+                document.getElementById(`content-${id}`).classList.add('hidden');
+                document.getElementById(`tab-${id}`).classList.remove('active');
             });
-          }, 100);
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            document.getElementById(`content-${tabId}`).classList.add('block');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            
+            // 每次切換到測驗頁面，確保題目已經渲染
+            if(tabId === 'exp8' && !quizRendered) renderQuiz();
         }
-        return () => clearInterval(timer);
-      }, [isCovered, status, jarSize]);
 
-      const handleStart = () => {
-        setIsCovered(true);
-        setStatus('running');
-      };
-
-      const handleReset = () => {
-        setIsCovered(false);
-        setCo2Level(0);
-        setStatus('ready');
-      };
-
-      return (
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* 左側：動畫顯示區 */}
-          <div className="flex-1 bg-white p-6 rounded-2xl border-2 border-gray-200 flex flex-col items-center justify-center min-h-[400px]">
-            <div className="relative flex items-end justify-center w-full h-80 border-b-4 border-gray-700 pb-2">
-              
-              {/* 長蠟燭 */}
-              <div className="absolute left-1/3 flex flex-col items-center justify-end" style={{ height: `${longCandleHeight}%`, bottom: '8px' }}>
-                {!isLongExtinguished && <FlameIcon className="w-8 h-8 text-orange-500 animate-pulse -mb-2" />}
-                <div className="w-6 h-full bg-red-400 rounded-t-sm shadow-inner"></div>
-              </div>
-              
-              {/* 短蠟燭 */}
-              <div className="absolute right-1/3 flex flex-col items-center justify-end" style={{ height: `${shortCandleHeight}%`, bottom: '8px' }}>
-                {!isShortExtinguished && <FlameIcon className="w-8 h-8 text-orange-500 animate-pulse -mb-2" />}
-                <div className="w-6 h-full bg-blue-400 rounded-t-sm shadow-inner"></div>
-              </div>
-
-              {/* 廣口瓶 (依賴選擇的大小) */}
-              <div 
-                className={`absolute bottom-0 border-4 border-blue-200 bg-blue-50/10 rounded-t-3xl transition-all duration-500 overflow-hidden ${isCovered ? 'opacity-100' : 'opacity-0 -translate-y-10'}`}
-                style={{
-                  width: jarSize === 'small' ? '200px' : '300px',
-                  height: jarSize === 'small' ? '250px' : '320px',
-                  borderBottom: 'none'
-                }}
-              >
-                {/* 二氧化碳視覺化 (從上往下長) */}
-                <div 
-                  className="absolute top-0 left-0 w-full bg-gray-500/40 backdrop-blur-sm transition-all duration-100"
-                  style={{ height: `${co2Level}%` }}
-                >
-                  {co2Level > 10 && <div className="text-center mt-2 text-white font-bold text-sm tracking-widest drop-shadow-md">CO₂ 累積中</div>}
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* 右側：操作面板 */}
-          <div className="flex-1 flex flex-col gap-6">
-            <div className="bg-orange-50 p-6 rounded-2xl border border-orange-100">
-              <h3 className="text-xl font-bold mb-4 text-orange-800">實驗控制面板</h3>
-              
-              <div className="mb-6">
-                <label className="block font-bold text-gray-700 mb-2">1. 選擇廣口瓶大小：</label>
-                <div className="flex gap-4">
-                  <button 
-                    disabled={status !== 'ready'}
-                    onClick={() => setJarSize('small')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-bold border-2 transition-all ${jarSize === 'small' ? 'bg-orange-500 text-white border-orange-600 shadow-md' : 'bg-white text-gray-500 hover:border-orange-300 disabled:opacity-50'}`}
-                  >
-                    小廣口瓶
-                  </button>
-                  <button 
-                    disabled={status !== 'ready'}
-                    onClick={() => setJarSize('large')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-bold border-2 transition-all ${jarSize === 'large' ? 'bg-orange-500 text-white border-orange-600 shadow-md' : 'bg-white text-gray-500 hover:border-orange-300 disabled:opacity-50'}`}
-                  >
-                    大廣口瓶
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                {status === 'ready' ? (
-                  <button onClick={handleStart} className="flex-1 bg-green-500 text-white py-3 px-4 rounded-xl font-bold hover:bg-green-600 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
-                    <PlayIcon className="w-5 h-5" /> 蓋上廣口瓶開始
-                  </button>
-                ) : (
-                  <button onClick={handleReset} className="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-xl font-bold hover:bg-gray-300 flex items-center justify-center gap-2 transition-all">
-                    <ResetIcon className="w-5 h-5" /> 重置實驗
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* 結果解說 */}
-            <div className={`p-6 rounded-2xl border transition-all duration-500 ${status === 'finished' ? 'bg-blue-50 border-blue-200 opacity-100' : 'bg-white border-gray-100 opacity-50'}`}>
-              <h3 className="font-bold text-lg mb-2">觀察與結論：</h3>
-              <p className="text-gray-700 mb-2">二氧化碳累積量：<span className="font-mono font-bold text-blue-600">{Math.round(co2Level)}%</span></p>
-              <ul className="space-y-2 mb-4">
-                <li className="flex items-center gap-2">長蠟燭：{isLongExtinguished ? <span className="text-red-500 font-bold flex items-center gap-1"><XCircle className="w-4 h-4"/>已缺氧熄滅</span> : <span className="text-green-500 font-bold flex items-center gap-1"><FlameIcon className="w-4 h-4"/>燃燒中</span>}</li>
-                <li className="flex items-center gap-2">短蠟燭：{isShortExtinguished ? <span className="text-red-500 font-bold flex items-center gap-1"><XCircle className="w-4 h-4"/>已缺氧熄滅</span> : <span className="text-green-500 font-bold flex items-center gap-1"><FlameIcon className="w-4 h-4"/>燃燒中</span>}</li>
-              </ul>
-              {status === 'finished' && (
-                <div className="bg-white p-3 rounded-lg border text-sm text-gray-700 shadow-sm animate-fade-in-up">
-                  <strong>為什麼是高蠟燭先熄滅？</strong><br/>
-                  燃燒產生的熱二氧化碳密度較小會往上升。在密閉瓶中，無路可去的二氧化碳會從上方開始累積往下沉。因此較高的蠟燭會先接觸到二氧化碳而缺氧熄滅！大瓶子空間大，所以累積到蠟燭高度需要較長時間。
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // ==========================================
-    // 實驗 2：燃燒三要素 (選擇題搭配組合實驗)
-    // ==========================================
-    function TriangleExperiment() {
-      const [selections, setSelections] = useState({ fuel: null, heat: null, oxygen: null });
-      const [testResult, setTestResult] = useState(null); // null, 'success', 'fail'
-
-      const options = {
-        fuel: [
-          { id: 'wood', name: '乾燥木柴', valid: true, icon: '🪵' },
-          { id: 'stone', name: '河邊石頭', valid: false, icon: '🪨' }
-        ],
-        heat: [
-          { id: 'lighter', name: '打火機', valid: true, icon: '🔥' },
-          { id: 'ice', name: '冰塊', valid: false, icon: '🧊' }
-        ],
-        oxygen: [
-          { id: 'air', name: '充滿空氣', valid: true, icon: '🌬️' },
-          { id: 'vacuum', name: '抽成真空', valid: false, icon: '🌑' }
-        ]
-      };
-
-      const handleSelect = (category, id) => {
-        setSelections(prev => ({ ...prev, [category]: id }));
-        setTestResult(null); // 變更選擇就重置結果
-      };
-
-      const handleTest = () => {
-        const f = options.fuel.find(o => o.id === selections.fuel)?.valid;
-        const h = options.heat.find(o => o.id === selections.heat)?.valid;
-        const o = options.oxygen.find(o => o.id === selections.oxygen)?.valid;
-        
-        if (f && h && o) setTestResult('success');
-        else setTestResult('fail');
-      };
-
-      const isAllSelected = selections.fuel && selections.heat && selections.oxygen;
-
-      return (
-        <div className="flex flex-col items-center">
-          <p className="text-gray-600 mb-6 text-center max-w-2xl">燃燒必須同時具備三個條件，缺一不可。請在下方的實驗桌上挑選材料，看看你能不能成功生火！</p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mb-8">
-            {/* 可燃物區 */}
-            <div className="bg-amber-50 p-4 rounded-xl border-2 border-amber-200">
-              <h3 className="font-bold text-center mb-4 text-amber-800 flex justify-center items-center gap-2">
-                1. 可燃物 {selections.fuel && <CheckCircle className="w-5 h-5 text-green-500"/>}
-              </h3>
-              <div className="flex flex-col gap-3">
-                {options.fuel.map(opt => (
-                  <button 
-                    key={opt.id} onClick={() => handleSelect('fuel', opt.id)}
-                    className={`p-3 rounded-lg border-2 text-left font-bold flex items-center gap-3 transition-all ${selections.fuel === opt.id ? 'bg-amber-500 text-white border-amber-600 shadow-md' : 'bg-white text-gray-600 hover:border-amber-300'}`}
-                  >
-                    <span className="text-2xl">{opt.icon}</span> {opt.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 熱能區 */}
-            <div className="bg-red-50 p-4 rounded-xl border-2 border-red-200">
-              <h3 className="font-bold text-center mb-4 text-red-800 flex justify-center items-center gap-2">
-                2. 熱能 (達到燃點) {selections.heat && <CheckCircle className="w-5 h-5 text-green-500"/>}
-              </h3>
-              <div className="flex flex-col gap-3">
-                {options.heat.map(opt => (
-                  <button 
-                    key={opt.id} onClick={() => handleSelect('heat', opt.id)}
-                    className={`p-3 rounded-lg border-2 text-left font-bold flex items-center gap-3 transition-all ${selections.heat === opt.id ? 'bg-red-500 text-white border-red-600 shadow-md' : 'bg-white text-gray-600 hover:border-red-300'}`}
-                  >
-                    <span className="text-2xl">{opt.icon}</span> {opt.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 助燃物區 */}
-            <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
-              <h3 className="font-bold text-center mb-4 text-blue-800 flex justify-center items-center gap-2">
-                3. 助燃物 {selections.oxygen && <CheckCircle className="w-5 h-5 text-green-500"/>}
-              </h3>
-              <div className="flex flex-col gap-3">
-                {options.oxygen.map(opt => (
-                  <button 
-                    key={opt.id} onClick={() => handleSelect('oxygen', opt.id)}
-                    className={`p-3 rounded-lg border-2 text-left font-bold flex items-center gap-3 transition-all ${selections.oxygen === opt.id ? 'bg-blue-500 text-white border-blue-600 shadow-md' : 'bg-white text-gray-600 hover:border-blue-300'}`}
-                  >
-                    <span className="text-2xl">{opt.icon}</span> {opt.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="text-center w-full max-w-xl">
-            <button 
-              disabled={!isAllSelected}
-              onClick={handleTest}
-              className={`w-full py-4 rounded-2xl font-black text-xl transition-all ${isAllSelected ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg hover:scale-105' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-            >
-              開始測試燃燒！
-            </button>
-          </div>
-
-          {/* 測試結果區 */}
-          <div className="mt-8 h-40 w-full max-w-md flex items-center justify-center">
-            {testResult === 'success' && (
-              <div className="text-center animate-fade-in-up">
-                <FlameIcon className="w-32 h-32 text-red-500 mx-auto animate-pulse" />
-                <h3 className="text-2xl font-black text-red-600 mt-2">燃燒成功！</h3>
-                <p className="text-gray-600 mt-1">三要素具備，產生了旺盛的火焰。</p>
-              </div>
-            )}
-            {testResult === 'fail' && (
-              <div className="text-center bg-gray-100 p-6 rounded-2xl border-2 border-gray-300 animate-shake">
-                <h3 className="text-xl font-bold text-gray-700 flex items-center justify-center gap-2">
-                  <XCircle className="w-6 h-6 text-red-500" /> 點火失敗
-                </h3>
-                <p className="text-gray-600 mt-2 text-left">
-                  你缺少了：<br/>
-                  {!options.fuel.find(o=>o.id===selections.fuel)?.valid && <span className="text-amber-600 font-bold">- 正確的可燃物 (石頭燒不起來)<br/></span>}
-                  {!options.heat.find(o=>o.id===selections.heat)?.valid && <span className="text-red-600 font-bold">- 足夠的熱能 (冰塊無法達到燃點)<br/></span>}
-                  {!options.oxygen.find(o=>o.id===selections.oxygen)?.valid && <span className="text-blue-600 font-bold">- 助燃物 (真空中沒有氧氣)<br/></span>}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    // ==========================================
-    // 實驗 3：粉塵起火 (調整粉末與火源，吹氣觸發)
-    // ==========================================
-    function DustExperiment() {
-      const [powder, setPowder] = useState('flour'); // flour, sand
-      const [fire, setFire] = useState('none'); // none, small, large
-      const [isBlowing, setIsBlowing] = useState(false);
-      const [explosionLevel, setExplosionLevel] = useState(0); // 0: 無, 1: 小燃燒, 2: 大塵爆
-
-      const handleBlow = () => {
-        setIsBlowing(true);
-        
-        // 判斷結果
-        setTimeout(() => {
-          if (powder === 'sand' || fire === 'none') {
-            setExplosionLevel(0);
-          } else if (powder === 'flour' && fire === 'small') {
-            setExplosionLevel(1); // 蠟燭 + 麵粉 = 小燃燒
-          } else if (powder === 'flour' && fire === 'large') {
-            setExplosionLevel(2); // 噴燈 + 麵粉 = 大爆炸
-          }
-        }, 500); // 延遲一下讓粉塵先飛
-
-        // 恢復原狀
-        setTimeout(() => {
-          setIsBlowing(false);
-          setExplosionLevel(0);
-        }, 3000);
-      };
-
-      return (
-        <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
-          {/* 左側：動畫舞台 */}
-          <div className="relative w-80 h-96 bg-gray-900 rounded-2xl border-4 border-gray-700 overflow-hidden shadow-2xl flex items-end justify-center pb-6">
-            <div className="absolute top-4 left-4 text-gray-500 font-mono text-xs">實驗箱內部</div>
-            
-            {/* 火源顯示 */}
-            <div className="absolute bottom-6 right-8 flex flex-col items-center">
-              {fire === 'small' && <FlameIcon className="w-8 h-8 text-yellow-500 animate-pulse mb-1" />}
-              {fire === 'large' && <FlameIcon className="w-16 h-16 text-blue-400 animate-pulse mb-1" style={{filter: 'drop-shadow(0 0 10px rgba(96, 165, 250, 0.8))'}} />}
-              {fire === 'small' && <div className="w-4 h-12 bg-white rounded-sm"></div>}
-              {fire === 'large' && <div className="w-8 h-12 bg-gray-500 rounded-md"></div>}
-              {fire === 'none' && <div className="text-gray-600 text-sm mt-8">無火源</div>}
-            </div>
-
-            {/* 粉末堆 */}
-            <div className={`absolute bottom-6 left-12 w-16 h-8 rounded-t-full transition-opacity duration-300 ${isBlowing ? 'opacity-0' : 'opacity-100'} ${powder === 'flour' ? 'bg-amber-100' : 'bg-yellow-700'}`}></div>
-
-            {/* 吹氣粉塵飛揚動畫 */}
-            {isBlowing && (
-              <div className={`absolute inset-0 flex items-center justify-center ${powder === 'flour' ? 'bg-amber-100/40' : 'bg-yellow-700/40'}`}>
-                <div className="w-full h-full flex gap-2 flex-wrap p-4 animate-pulse">
-                   {/* 模擬粒子感 */}
-                   {[...Array(20)].map((_, i) => (
-                     <div key={i} className={`w-2 h-2 rounded-full ${powder === 'flour' ? 'bg-white' : 'bg-yellow-800'}`} style={{transform: `translate(${Math.random()*100}px, ${Math.random()*-200}px)`}}></div>
-                   ))}
-                </div>
-              </div>
-            )}
-
-            {/* 爆炸特效 */}
-            {explosionLevel === 1 && (
-              <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none mix-blend-screen">
-                <div className="w-40 h-40 bg-orange-500 rounded-full animate-ping opacity-60"></div>
-                <FlameIcon className="absolute w-32 h-32 text-yellow-400 animate-pulse" />
-              </div>
-            )}
-            
-            {explosionLevel === 2 && (
-              <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none mix-blend-screen bg-red-500/30">
-                <div className="absolute w-full h-full bg-red-500 animate-fire-explosion rounded-full"></div>
-                <div className="font-black text-white text-5xl drop-shadow-[0_0_15px_rgba(255,0,0,1)] scale-150 animate-shake z-50">大塵爆!</div>
-              </div>
-            )}
-          </div>
-
-          {/* 右側：控制面板 */}
-          <div className="max-w-sm w-full flex flex-col gap-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-              <h3 className="font-bold text-gray-800 mb-3">1. 選擇粉末：</h3>
-              <div className="flex gap-2 mb-6">
-                <button onClick={() => setPowder('flour')} className={`flex-1 py-2 rounded-lg font-bold border-2 ${powder === 'flour' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>麵粉 (可燃)</button>
-                <button onClick={() => setPowder('sand')} className={`flex-1 py-2 rounded-lg font-bold border-2 ${powder === 'sand' ? 'bg-yellow-100 border-yellow-600 text-yellow-800' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>乾燥沙子 (不可燃)</button>
-              </div>
-
-              <h3 className="font-bold text-gray-800 mb-3">2. 選擇火源：</h3>
-              <div className="flex gap-2 mb-6 text-sm">
-                <button onClick={() => setFire('none')} className={`flex-1 py-2 rounded-lg font-bold border-2 ${fire === 'none' ? 'bg-gray-200 border-gray-400 text-gray-800' : 'border-gray-200 text-gray-500'}`}>無火源</button>
-                <button onClick={() => setFire('small')} className={`flex-1 py-2 rounded-lg font-bold border-2 ${fire === 'small' ? 'bg-orange-100 border-orange-400 text-orange-800' : 'border-gray-200 text-gray-500'}`}>打火機</button>
-                <button onClick={() => setFire('large')} className={`flex-1 py-2 rounded-lg font-bold border-2 ${fire === 'large' ? 'bg-red-100 border-red-500 text-red-800' : 'border-gray-200 text-gray-500'}`}>高溫噴燈</button>
-              </div>
-
-              <button 
-                onClick={handleBlow}
-                disabled={isBlowing}
-                className="w-full bg-blue-500 text-white py-4 rounded-xl font-black text-lg hover:bg-blue-600 disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-lg"
-              >
-                <WindIcon className="w-6 h-6" /> {isBlowing ? '粉塵飛揚中...' : '用力吹氣！'}
-              </button>
-            </div>
-
-            {/* 結果解說 */}
-            <div className="h-32">
-              {explosionLevel > 0 && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-800 text-sm animate-fade-in-up">
-                  <strong className="text-base flex items-center gap-1"><AlertIcon className="w-5 h-5"/> 發生塵爆現象！</strong>
-                  當可燃粉末（麵粉）散佈在空氣中，與氧氣接觸表面積劇增。此時遇到足夠能量的火源，就會瞬間大面積劇烈燃燒，產生爆炸威力。
-                </div>
-              )}
-              {isBlowing && explosionLevel === 0 && powder === 'sand' && (
-                <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-600 text-sm animate-fade-in-up">
-                  <strong>安全的飛揚：</strong>沙子不是可燃物，所以就算遇到火源，也只會弄髒環境，不會起火。
-                </div>
-              )}
-               {isBlowing && explosionLevel === 0 && powder === 'flour' && fire === 'none' && (
-                <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-600 text-sm animate-fade-in-up">
-                  <strong>缺少熱能：</strong>麵粉雖然可燃且飄散在空中（滿足兩要素），但因為「沒有火源」，所以不會發生危險。
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // ==========================================
-    // 實驗 4：滅火與安全 (廚房油鍋起火互動)
-    // ==========================================
-    function KitchenFire() {
-      // 狀態： burning, water-exploded, covered, extinguished
-      const [fireState, setFireState] = useState('burning');
-      const [toolUsed, setToolUsed] = useState(null);
-
-      const handleUseTool = (tool) => {
-        setToolUsed(tool);
-        if (tool === 'water') {
-          setTimeout(() => setFireState('water-exploded'), 500); // 配合水滴落下的動畫時間
-        } else if (tool === 'lid') {
-          setTimeout(() => setFireState('covered'), 500); // 配合鍋蓋滑動的動畫時間
-        } else if (tool === 'extinguisher') {
-          setFireState('extinguished');
+        // ==========================================
+        // 實驗 1~5 邏輯完全保留
+        // ==========================================
+        let exp1Covered = false, exp1Interval, exp1FlameSize = 100; 
+        function toggleExp1Cover() {
+            exp1Covered = !exp1Covered;
+            const bottle = document.getElementById('exp1-bottle'), btn = document.getElementById('exp1-btn'), flame = document.getElementById('exp1-flame-test');
+            clearInterval(exp1Interval);
+            if (exp1Covered) {
+                bottle.classList.remove('-translate-y-48', 'opacity-0'); btn.innerText = "移開廣口瓶";
+                exp1Interval = setInterval(() => { exp1FlameSize -= 2.5; if(exp1FlameSize <= 0) { exp1FlameSize = 0; clearInterval(exp1Interval); } flame.style.transform = `scale(${exp1FlameSize/100})`; }, 100); 
+            } else {
+                bottle.classList.add('-translate-y-48', 'opacity-0'); btn.innerText = "蓋上廣口瓶";
+                if (exp1FlameSize > 0) { exp1Interval = setInterval(() => { exp1FlameSize += 5; if(exp1FlameSize >= 100) { exp1FlameSize = 100; clearInterval(exp1Interval); } flame.style.transform = `scale(${exp1FlameSize/100})`; }, 50); }
+            }
         }
-      };
+        function resetExp1() { exp1Covered = false; exp1FlameSize = 100; clearInterval(exp1Interval); document.getElementById('exp1-bottle').classList.add('-translate-y-48', 'opacity-0'); document.getElementById('exp1-btn').innerText = "蓋上廣口瓶"; document.getElementById('exp1-flame-test').style.transform = `scale(1)`; }
 
-      const handleReset = () => {
-        setFireState('burning');
-        setToolUsed(null);
-      };
+        function runGasExp(type) {
+            const flame = document.getElementById('exp2-flame'), flaskLiquid = document.getElementById('flask-liquid'), flaskText = document.getElementById('flask-text'), gasPath = document.getElementById('gas-path');
+            gasPath.classList.add('gas-tube'); gasPath.style.stroke = type === 'O2' ? '#86efac' : '#d8b4fe'; 
+            if (type === 'O2') { flaskLiquid.className = "absolute bottom-0 w-full h-1/2 bg-green-100 transition-all duration-1000"; flaskText.innerText = "雙氧水 + 金針菇"; flame.style.transition = "transform 2s ease-in-out"; flame.style.transform = "scale(1.8)"; } 
+            else if (type === 'CO2') { flaskLiquid.className = "absolute bottom-0 w-full h-1/2 bg-gray-200 border-t-2 border-gray-300 transition-all duration-1000"; flaskText.innerText = "小蘇打 + 醋"; flame.style.transition = "transform 2s ease-in-out"; flame.style.transform = "scale(0)"; }
+            setTimeout(() => { gasPath.classList.remove('gas-tube'); gasPath.style.stroke = '#cbd5e1'; }, 2500);
+        }
+        function resetGasExp() { document.getElementById('exp2-flame').style.transform = "scale(1)"; document.getElementById('flask-text').innerText = "空瓶"; document.getElementById('flask-liquid').className = "absolute bottom-0 w-full h-0 bg-transparent"; document.getElementById('gas-path').classList.remove('gas-tube'); document.getElementById('gas-path').style.stroke = '#cbd5e1'; }
 
-      return (
-        <div className="max-w-3xl mx-auto flex flex-col items-center">
-          <h2 className="text-2xl font-bold mb-2">突發狀況：油鍋起火！</h2>
-          <p className="text-gray-600 mb-6 text-center">你在廚房炒菜，突然油鍋燒起來了！時間緊迫，請趕快選擇下方的工具來滅火！</p>
+        let exp4Covered = false;
+        function toggleExp4() {
+            exp4Covered = !exp4Covered;
+            const beaker = document.getElementById('exp4-beaker'), tallFlame = document.getElementById('exp4-tall-flame'), shortFlame = document.getElementById('exp4-short-flame'), btn = document.getElementById('exp4-btn');
+            if(exp4Covered) {
+                btn.innerText = "移開大燒杯"; beaker.classList.remove('-translate-y-64', 'opacity-0');
+                tallFlame.style.transition = "transform 2s linear 1s"; tallFlame.style.transform = "scale(0)";
+                shortFlame.style.transition = "transform 2s linear 4s"; shortFlame.style.transform = "scale(0)";
+            } else { btn.innerText = "蓋上大燒杯"; beaker.classList.add('-translate-y-64', 'opacity-0'); }
+        }
+        function resetExp4() { exp4Covered = false; document.getElementById('exp4-btn').innerText = "蓋上大燒杯"; document.getElementById('exp4-beaker').classList.add('-translate-y-64', 'opacity-0'); document.getElementById('exp4-tall-flame').style.transition = "transform 0.3s linear"; document.getElementById('exp4-tall-flame').style.transform = "scale(1)"; document.getElementById('exp4-short-flame').style.transition = "transform 0.3s linear"; document.getElementById('exp4-short-flame').style.transform = "scale(1)"; }
 
-          {/* 互動舞台 */}
-          <div className="relative w-full max-w-lg h-80 bg-orange-50 rounded-2xl border-4 border-gray-300 flex items-end justify-center pb-10 overflow-hidden mb-8">
+        let currentSelectedItem = null; const filledSlots = { fuel: false, oxygen: false, heat: false };
+        function selectItem(btnElement, type, name) {
+            const allItems = document.getElementById('item-pool').children; for(let i=0; i<allItems.length; i++) allItems[i].classList.remove('ring-4', 'ring-orange-400', 'scale-110');
+            btnElement.classList.add('ring-4', 'ring-orange-400', 'scale-110'); currentSelectedItem = { type: type, name: name, btn: btnElement };
+            document.getElementById('triangle-msg').innerText = `已選取「${name}」，請點擊圖形上對應的圓圈放入。`;
+        }
+        function placeItem(slotType) {
+            const msg = document.getElementById('triangle-msg');
+            if(!currentSelectedItem) { msg.innerText = "請先從上方選擇一個物品！"; return; }
+            if(currentSelectedItem.type === 'wrong') { msg.innerText = `錯誤！「${currentSelectedItem.name}」無法幫助燃燒！`; document.getElementById('triangle-zones').parentElement.classList.add('shake'); setTimeout(()=> document.getElementById('triangle-zones').parentElement.classList.remove('shake'), 500); return; }
+            if(currentSelectedItem.type === slotType) {
+                const slotEl = document.getElementById('slot-' + slotType); slotEl.innerHTML = currentSelectedItem.name; slotEl.classList.remove('bg-white'); slotEl.classList.add('bg-orange-100', 'text-orange-800', 'border-orange-500');
+                filledSlots[slotType] = true; msg.innerText = `正確！「${currentSelectedItem.name}」已就位。`; currentSelectedItem.btn.style.display = 'none'; currentSelectedItem = null;
+                if(filledSlots.fuel && filledSlots.oxygen && filledSlots.heat) { msg.innerText = "太棒了！三要素齊全，引發燃燒！"; msg.className = "text-green-600 font-bold h-6 text-xl text-center"; document.getElementById('triangle-fire').classList.remove('scale-0'); document.getElementById('triangle-fire').classList.add('scale-100'); }
+            } else { msg.innerText = `放錯位置了！「${currentSelectedItem.name}」不屬於這個要素。`; }
+        }
+        function resetTriangle() {
+            filledSlots.fuel = false; filledSlots.oxygen = false; filledSlots.heat = false; currentSelectedItem = null; document.getElementById('triangle-fire').classList.remove('scale-100'); document.getElementById('triangle-fire').classList.add('scale-0'); document.getElementById('triangle-msg').innerText = ""; document.getElementById('triangle-msg').className = "text-red-500 font-bold h-6 text-center";
+            const allItems = document.getElementById('item-pool').children; for(let i=0; i<allItems.length; i++) { allItems[i].classList.remove('ring-4', 'ring-orange-400', 'scale-110'); allItems[i].style.display = 'inline-block'; }
+            const initTexts = { fuel: '可燃物', oxygen: '助燃物', heat: '達到燃點<br>(溫度)' }; ['fuel', 'oxygen', 'heat'].forEach(type => { const slotEl = document.getElementById('slot-' + type); slotEl.innerHTML = initTexts[type]; slotEl.className = `w-24 h-24 bg-white border-4 rounded-full flex items-center justify-center text-sm font-bold transition-colors shadow-md text-center leading-tight`; if(type==='fuel') slotEl.classList.add('border-yellow-400', 'text-yellow-600'); if(type==='oxygen') slotEl.classList.add('border-blue-300', 'text-blue-500'); if(type==='heat') slotEl.classList.add('border-red-300', 'text-red-400'); });
+        }
+
+        function extinguish(scene, action) {
+            const fireEl = document.getElementById(`${scene}-fire`), msgEl = document.getElementById(`${scene}-msg`);
+            if(scene === 'oil') {
+                if(action === 'water') { fireEl.style.transform = "scale(2.5)"; document.getElementById('oil-scene').classList.add('shake'); msgEl.innerText = "❌ 錯誤！水比油重，沉入鍋底變成水蒸氣，會帶著油噴濺引發大爆炸！"; setTimeout(() => document.getElementById('oil-scene').classList.remove('shake'), 500); } 
+                else if(action === 'lid') { document.getElementById('oil-lid').classList.remove('opacity-0', '-translate-y-10'); fireEl.style.transition = "transform 0.5s 0.2s"; fireEl.style.transform = "scale(0)"; msgEl.innerText = "✅ 正確！蓋上鍋蓋能隔絕氧氣（窒息法）。"; }
+            } else if(scene === 'elec') {
+                if(action === 'water') { fireEl.style.transform = "scale(1.5)"; document.getElementById('elec-scene').classList.add('shake'); msgEl.innerText = "❌ 致命錯誤！水會導電，用水潑電線走火會導致你立刻觸電！"; setTimeout(() => document.getElementById('elec-scene').classList.remove('shake'), 500); } 
+                else if(action === 'unplug') { document.getElementById('elec-plug').classList.add('translate-x-12', 'opacity-50'); fireEl.style.transition = "transform 0.5s 0.5s"; fireEl.style.transform = "scale(0)"; msgEl.innerText = "✅ 正確！處理電線走火的第一步絕對是先切斷電源或拔除插頭！"; }
+            }
+        }
+        function resetExp5() { document.getElementById('oil-fire').style.transform = "scale(1)"; document.getElementById('oil-lid').classList.add('opacity-0', '-translate-y-10'); document.getElementById('oil-msg').innerText = ""; document.getElementById('elec-fire').style.transform = "scale(1)"; document.getElementById('elec-plug').classList.remove('translate-x-12', 'opacity-50'); document.getElementById('elec-msg').innerText = ""; }
+
+        // ==========================================
+        // 實驗 6 更新邏輯：加入火勢與掃射動畫
+        // ==========================================
+        let extStep = 0;
+        const requiredSteps = [1, 3, 2, 4]; // 順序：拉(1) -> 瞄(3) -> 壓(2) -> 掃(4)
+        function doExtStep(btnId) {
+            const msg = document.getElementById('ext-msg');
+            const targetStep = requiredSteps[extStep];
+
+            if(btnId === targetStep) {
+                extStep++;
+                document.getElementById(`p-${extStep}`).classList.remove('text-gray-300');
+                document.getElementById(`p-${extStep}`).classList.add('text-red-600');
+                
+                // 動畫效果
+                if(btnId === 1) { document.getElementById('ext-pin').classList.add('-translate-x-20', 'translate-y-10', 'opacity-0'); }
+                if(btnId === 3) { document.getElementById('ext-hose').classList.remove('-rotate-[20deg]'); }
+                if(btnId === 2) { 
+                    document.getElementById('ext-handle').classList.remove('-rotate-12'); 
+                    msg.innerText = "握把已壓下，準備噴射！";
+                }
+                if(btnId === 4) {
+                    // 掃射動畫開始
+                    document.getElementById('ext-hose').classList.add('sweep-anim');
+                    document.getElementById('ext-spray').classList.remove('opacity-0');
+                    document.getElementById('ext-spray').classList.add('sweep-anim');
+                    
+                    // 火勢逐漸變小
+                    const fire = document.getElementById('ext-fire');
+                    fire.style.transform = "scale(0)";
+                    
+                    msg.innerHTML = "<span class='text-green-600 font-bold'>✅ 成功！火勢被撲滅了！切記：拉、瞄、壓、掃！</span>";
+                } else {
+                    if(btnId !== 2) msg.innerText = "";
+                }
+            } else {
+                msg.innerText = "❌ 操作順序錯誤！請重新回想口訣。";
+            }
+        }
+        function resetExt() {
+            extStep = 0;
+            document.getElementById('ext-pin').classList.remove('-translate-x-20', 'translate-y-10', 'opacity-0');
+            document.getElementById('ext-hose').classList.add('-rotate-[20deg]');
+            document.getElementById('ext-hose').classList.remove('sweep-anim');
+            document.getElementById('ext-handle').classList.add('-rotate-12');
+            document.getElementById('ext-spray').classList.add('opacity-0');
+            document.getElementById('ext-spray').classList.remove('sweep-anim');
+            document.getElementById('ext-fire').style.transform = "scale(1)";
+            document.getElementById('ext-msg').innerText = "";
+            for(let i=1; i<=4; i++) {
+                document.getElementById(`p-${i}`).classList.remove('text-red-600');
+                document.getElementById(`p-${i}`).classList.add('text-gray-300');
+            }
+        }
+
+        // ==========================================
+        // 實驗 7 更新邏輯：火場動畫模擬
+        // ==========================================
+        function resetEscapeScene() {
+            // 重置所有動畫與狀態
+            document.getElementById('anim-door').style.transform = "rotateY(0deg)";
+            document.getElementById('anim-person').className = "text-5xl absolute bottom-4 left-1/2 transform -translate-x-1/2 transition-all duration-1000 z-20";
+            document.getElementById('anim-fire-overlay').classList.remove('opacity-90');
+            document.getElementById('anim-smoke-overlay').classList.remove('opacity-90');
+            document.getElementById('anim-safe-overlay').classList.remove('opacity-90');
+            document.getElementById('anim-bathroom').className = "w-1/4 bg-blue-50 border-l-4 border-gray-400 relative z-0 flex flex-col items-center justify-center transition-colors duration-1000";
+            document.getElementById('anim-towel').classList.remove('opacity-100');
+        }
+
+        function playEscape(answer) {
+            resetEscapeScene();
+            const exp = document.getElementById('escape-explanation');
+            exp.classList.remove('hidden', 'bg-red-100', 'bg-yellow-100', 'bg-green-100', 'text-red-800', 'text-yellow-800', 'text-green-800');
             
-            {/* 瓦斯爐背景 */}
-            <div className="absolute bottom-0 w-full h-8 bg-gray-800 rounded-b-xl flex justify-center gap-10 pt-2">
-               <div className="w-8 h-2 bg-red-500 rounded-full"></div>
-            </div>
+            const person = document.getElementById('anim-person');
 
-            {/* 鍋子 */}
-            <div className="relative w-48 h-20 bg-gray-700 rounded-b-3xl border-t-8 border-gray-800 z-10 flex justify-center">
-              <div className="absolute -left-16 top-2 w-16 h-3 bg-gray-800 rounded-l-full rotate-12"></div> {/* 鍋把 */}
-              
-              {/* 正常火勢 */}
-              {fireState === 'burning' && (
-                <div className="absolute bottom-10 flex">
-                  <FlameIcon className="w-24 h-24 text-orange-500 animate-pulse" />
-                  <FlameIcon className="w-16 h-16 text-yellow-400 animate-pulse absolute top-4 left-4" />
-                </div>
-              )}
+            if(answer === 'A') {
+                exp.classList.add('bg-red-100', 'text-red-800');
+                exp.innerHTML = "❌ <b>致命錯誤！</b> 門外已有高溫濃煙，一開門火舌與濃煙瞬間湧入，一氧化碳吸入一兩口就會昏迷。";
+                // 動畫：往右跑 -> 開門 -> 被火燒
+                person.style.transform = "translate(50px, 0)";
+                setTimeout(() => { document.getElementById('anim-door').style.transform = "rotateY(80deg)"; }, 500);
+                setTimeout(() => { document.getElementById('anim-fire-overlay').classList.add('opacity-90'); }, 1000);
 
-              {/* 潑水特效 */}
-              {toolUsed === 'water' && fireState === 'burning' && (
-                 <div className="absolute -top-32 animate-drop-water z-30">
-                   <DropletIcon className="w-16 h-16 text-blue-400" />
-                 </div>
-              )}
+            } else if(answer === 'B') {
+                exp.classList.add('bg-red-100', 'text-red-800');
+                exp.innerHTML = "❌ <b>絕對不行！</b> 浴室塑膠門遇熱會融化，通風口會抽入濃煙。水也無法抵擋濃煙窒息！";
+                // 動畫：往右跑進浴室 -> 浴室門融化(變紅) -> 濃煙火勢進來
+                person.style.transform = "translate(150px, 0)";
+                setTimeout(() => { document.getElementById('anim-bathroom').classList.add('bg-red-500'); }, 1000);
+                setTimeout(() => { document.getElementById('anim-fire-overlay').classList.add('opacity-90'); }, 1500);
 
-              {/* 水爆炸大火球 */}
-              {fireState === 'water-exploded' && (
-                <div className="absolute bottom-0 z-40 w-full flex justify-center items-center">
-                  <div className="absolute w-64 h-64 bg-red-600 rounded-full mix-blend-screen opacity-80 animate-ping"></div>
-                  <FlameIcon className="w-64 h-64 text-yellow-300 absolute bottom-0 transform scale-150 animate-shake drop-shadow-[0_0_20px_rgba(255,0,0,1)]" />
-                  <div className="absolute -top-20 font-black text-white text-3xl drop-shadow-md z-50 whitespace-nowrap bg-red-600/80 p-2 rounded">油水噴濺 轟！</div>
-                </div>
-              )}
+            } else if(answer === 'C') {
+                exp.classList.add('bg-yellow-100', 'text-yellow-800');
+                exp.innerHTML = "⚠️ <b>觀念過時！</b> 找毛巾會浪費寶貴逃生時間，且濕毛巾「無法」阻擋致命的一氧化碳有毒氣體。";
+                // 動畫：跑進浴室 -> 跑出來 -> 充滿濃煙
+                person.style.transform = "translate(150px, 0)";
+                setTimeout(() => { person.style.transform = "translate(0px, 0)"; }, 1000);
+                setTimeout(() => { document.getElementById('anim-smoke-overlay').classList.add('opacity-90'); }, 1800);
 
-              {/* 鍋蓋 */}
-              {(toolUsed === 'lid' || fireState === 'covered') && (
-                <div className={`absolute -top-6 w-52 h-8 bg-gray-400 rounded-t-full border-b-4 border-gray-500 z-30 flex justify-center ${toolUsed === 'lid' && fireState !== 'covered' ? 'animate-slide-lid' : ''}`}>
-                   <div className="w-10 h-4 bg-gray-800 rounded-t-lg -mt-4"></div> {/* 鍋蓋頭 */}
-                </div>
-              )}
+            } else if(answer === 'D') {
+                exp.classList.add('bg-green-100', 'text-green-800');
+                exp.innerHTML = "✅ <b>正確解答！</b> 「關門避難」！木門可暫時擋火，塞門縫阻擋奪命濃煙，在窗邊呼吸新鮮空氣並求救！";
+                // 動畫：門關緊 -> 塞毛巾 -> 往左靠窗 -> 安全
+                document.getElementById('anim-door').style.transform = "rotateY(0deg)"; // Ensure closed
+                setTimeout(() => { document.getElementById('anim-towel').classList.add('opacity-100'); }, 500);
+                setTimeout(() => { person.style.transform = "translate(-100px, 0)"; }, 1000); // go to window
+                setTimeout(() => { document.getElementById('anim-safe-overlay').classList.add('opacity-90'); }, 1500);
+            }
+        }
 
-              {/* 滅火器白煙 */}
-               {fireState === 'extinguished' && (
-                <div className="absolute bottom-10 z-20">
-                  <div className="w-40 h-32 bg-gray-200/80 rounded-full blur-xl animate-pulse"></div>
-                </div>
-              )}
-            </div>
-          </div>
+        // ==========================================
+        // 實驗 8 邏輯：線上測驗系統 (20題)
+        // ==========================================
+        const quizData = [
+            { q: "1. 燃燒的三要素是哪三個？", options: ["可燃物、助燃物、達到燃點", "氧氣、二氧化碳、氮氣", "木柴、水、溫度", "打火機、可燃物、氧氣"], ans: 0 },
+            { q: "2. 發生油鍋起火時，下列哪種滅火方式最正確？", options: ["立刻潑水滅火", "使用電風扇吹熄", "蓋上鍋蓋", "投入大量冰塊"], ans: 2 },
+            { q: "3. 油鍋起火絕對不能用什麼滅火？", options: ["乾粉滅火器", "水", "鍋蓋", "濕抹布覆蓋"], ans: 1 },
+            { q: "4. 電線走火時，第一步應該怎麼做？", options: ["大聲呼救", "拿水桶潑水", "用掃把打火", "拔掉插頭/切斷電源"], ans: 3 },
+            { q: "5. 使用滅火器的第一步驟口訣是什麼？", options: ["瞄", "壓", "拉", "掃"], ans: 2 },
+            { q: "6. 滅火器口訣「拉、瞄、壓、掃」中，「瞄」是指瞄準哪裡？", options: ["火焰最高處", "火源根部", "周圍空氣", "天花板"], ans: 1 },
+            { q: "7. 火場中造成最多人死亡的最大殺手是什麼？", options: ["高溫火焰", "濃煙與有毒氣體", "房屋倒塌", "觸電"], ans: 1 },
+            { q: "8. 遭遇火災且門外已有大量濃煙時，應優先採取什麼行動？", options: ["硬衝出去", "關緊房門避難", "躲進衣櫥", "跳窗逃生"], ans: 1 },
+            { q: "9. 為什麼火災時不能躲在浴室？", options: ["因為會滑倒", "因為水不夠多", "塑膠門遇熱會融化且無新鮮空氣", "因為浴室太小"], ans: 2 },
+            { q: "10. 濕毛巾在火場中能有效阻擋一氧化碳嗎？", options: ["完全可以", "只能阻擋一半", "不能", "看毛巾有多濕"], ans: 2 },
+            { q: "11. 承上題，因為濕毛巾擋不住一氧化碳，所以我們不該浪費時間去浴室找水，而是應該？", options: ["趕快找塑膠袋套頭", "就地關門避難或向下逃生", "躲到床底下", "找大棉被包住自己"], ans: 1 },
+            { q: "12. 實驗中，用大燒杯同時蓋住長短蠟燭，哪一根先熄滅？", options: ["長蠟燭", "短蠟燭", "同時熄滅", "不會熄滅"], ans: 0 },
+            { q: "13. 承上題，為什麼長蠟燭會先熄滅？", options: ["長蠟燭火比較大", "因為熱空氣帶動產生的二氧化碳上升聚集", "長蠟燭品質比較差", "燒杯上方沒有氧氣"], ans: 1 },
+            { q: "14. 實驗中，雙氧水加上金針菇會產生什麼氣體？", options: ["氫氣", "氮氣", "氧氣", "二氧化碳"], ans: 2 },
+            { q: "15. 實驗中，小蘇打加上醋會產生什麼氣體讓火熄滅？", options: ["氧氣", "一氧化碳", "二氧化碳", "水蒸氣"], ans: 2 },
+            { q: "16. 氧氣在燃燒三要素中屬於哪一種？", options: ["可燃物", "助燃物", "達到燃點", "滅火物"], ans: 1 },
+            { q: "17. 發現火災時，第一時間應大聲呼喊什麼以警告家人？", options: ["救命啊", "失火了！", "快來幫忙", "警察來了"], ans: 1 },
+            { q: "18. 住家臥室與客廳通常應該安裝什麼警報器，以利半夜及早發現火災？", options: ["防盜警報器", "住宅用火災警報器(住警器)", "瓦斯漏氣警報器", "地震警報器"], ans: 1 },
+            { q: "19. 發生火災時，絕對不能搭乘什麼設備逃生？", options: ["室內樓梯", "戶外安全梯", "電梯", "緩降機"], ans: 2 },
+            { q: "20. 若身上不慎著火，應立刻採取什麼動作自救？", options: ["到處奔跑呼救", "停、躺、滾", "用手拍打", "找電風扇吹"], ans: 1 }
+        ];
 
-          {/* 工具選擇區 */}
-          {fireState === 'burning' && toolUsed === null ? (
-            <div className="grid grid-cols-3 gap-4 w-full max-w-lg">
-              <button onClick={() => handleUseTool('water')} className="bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 p-4 rounded-2xl flex flex-col items-center gap-2 transition-all hover:scale-105 shadow-sm">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white"><DropletIcon className="w-6 h-6"/></div>
-                <span className="font-bold text-blue-800">一杯水</span>
-              </button>
-              <button onClick={() => handleUseTool('lid')} className="bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 p-4 rounded-2xl flex flex-col items-center gap-2 transition-all hover:scale-105 shadow-sm transform scale-110 shadow-md">
-                <div className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center text-white text-xl font-bold">蓋</div>
-                <span className="font-bold text-gray-800 text-lg">大鍋蓋</span>
-              </button>
-              <button onClick={() => handleUseTool('extinguisher')} className="bg-red-50 hover:bg-red-100 border-2 border-red-200 p-4 rounded-2xl flex flex-col items-center gap-2 transition-all hover:scale-105 shadow-sm">
-                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white text-xl font-bold">滅</div>
-                <span className="font-bold text-red-800">滅火器</span>
-              </button>
-            </div>
-          ) : (
-            <div className="w-full max-w-lg">
-               {fireState === 'water-exploded' && (
-                 <div className="bg-red-100 border-l-4 border-red-600 p-4 rounded-r-xl animate-shake">
-                   <h3 className="font-bold text-red-800 text-lg flex items-center gap-2"><XCircle className="w-6 h-6"/> 絕對不行！超危險！</h3>
-                   <p className="text-red-700 mt-2">油的溫度非常高，水加進去會瞬間沸騰變成水蒸氣，體積膨脹1700倍！這會把燃燒的熱油帶到空中，引發俗稱的「油鍋爆燃」，火勢會瞬間擴大燒毀廚房！</p>
-                 </div>
-               )}
-               {fireState === 'covered' && (
-                 <div className="bg-green-100 border-l-4 border-green-600 p-4 rounded-r-xl animate-fade-in-up">
-                   <h3 className="font-bold text-green-800 text-lg flex items-center gap-2"><CheckCircle className="w-6 h-6"/> 正確做法！危機解除</h3>
-                   <p className="text-green-700 mt-2">蓋上鍋蓋切斷了「氧氣（助燃物）」，運用了窒息法滅火。這是處理初期油鍋起火最快、最安全的步驟！記得還要關閉瓦斯爐喔。</p>
-                 </div>
-               )}
-               {fireState === 'extinguished' && (
-                 <div className="bg-yellow-100 border-l-4 border-yellow-600 p-4 rounded-r-xl animate-fade-in-up">
-                   <h3 className="font-bold text-yellow-800 text-lg flex items-center gap-2"><CheckCircle className="w-6 h-6"/> 火勢撲滅，但要小心</h3>
-                   <p className="text-yellow-700 mt-2">滅火器可以滅火，但如果直接對著油鍋噴射，強大的壓力可能會把熱油噴濺出來燙傷自己。油鍋起火首選還是「蓋鍋蓋」最安全。</p>
-                 </div>
-               )}
-               
-               <button onClick={handleReset} className="mt-6 w-full py-3 bg-gray-800 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-700 transition-all">
-                 <ResetIcon className="w-5 h-5"/> 再試一次
-               </button>
-            </div>
-          )}
-        </div>
-      );
-    }
+        let quizRendered = false;
 
-    // ==========================================
-    // 主應用程式元件 (Tab 控制)
-    // ==========================================
-    function App() {
-      const [activeTab, setActiveTab] = useState('candles');
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = ''; // Clear
+            quizData.forEach((q, index) => {
+                let html = `
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                        <p class="font-bold text-lg text-gray-800 mb-3">${q.q}</p>
+                        <div class="space-y-2 pl-2">
+                `;
+                q.options.forEach((opt, optIndex) => {
+                    html += `
+                        <label class="flex items-center space-x-3 cursor-pointer group">
+                            <input type="radio" name="q${index}" value="${optIndex}" class="quiz-radio hidden">
+                            <div class="w-full p-3 border border-gray-300 rounded-lg hover:bg-blue-50 transition-colors text-gray-700">
+                                ${opt}
+                            </div>
+                        </label>
+                    `;
+                });
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+            quizRendered = true;
+        }
 
-      const tabs = [
-        { id: 'candles', title: '長短蠟燭', icon: <FlameIcon className="w-5 h-5" /> },
-        { id: 'triangle', title: '燃燒三要素', icon: <FlameIcon className="w-5 h-5" /> }, // 簡化 icon 引用
-        { id: 'dust', title: '粉塵起火', icon: <WindIcon className="w-5 h-5" /> },
-        { id: 'safety', title: '廚房滅火', icon: <AlertIcon className="w-5 h-5" /> },
-      ];
+        function submitQuiz() {
+            // 基本資料驗證
+            const sClass = document.getElementById('student-class').value.trim();
+            const sSeat = document.getElementById('student-seat').value.trim();
+            const sName = document.getElementById('student-name').value.trim();
 
-      return (
-        <div className="min-h-screen bg-gray-50 font-sans text-gray-800 pb-12">
-          {/* 頂部 Header */}
-          <header className="bg-gradient-to-r from-orange-600 to-red-600 text-white p-4 shadow-lg sticky top-0 z-50">
-            <div className="max-w-5xl mx-auto flex items-center justify-between">
-              <h1 className="text-xl md:text-2xl font-black flex items-center gap-3">
-                <FlameIcon className="w-8 h-8 text-yellow-300" />
-                火系：空氣與燃燒 - 互動實驗室
-              </h1>
-            </div>
-          </header>
+            if(!sClass || !sSeat || !sName) {
+                alert("請先填寫班級、座號與姓名！");
+                return;
+            }
 
-          <main className="max-w-5xl mx-auto p-4 md:p-6 mt-6">
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-              
-              {/* 導航 Tabs */}
-              <div className="flex border-b bg-gray-50 overflow-x-auto hide-scrollbar">
-                {tabs.map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 flex justify-center items-center gap-2 px-4 py-5 font-bold text-lg transition-all whitespace-nowrap
-                      ${activeTab === tab.id ? 'bg-white text-orange-600 border-b-4 border-orange-500' : 'text-gray-500 hover:bg-orange-50 hover:text-orange-400 border-b-4 border-transparent'}`}
-                  >
-                    {tab.icon} {tab.title}
-                  </button>
-                ))}
-              </div>
+            // 計算分數
+            let totalScore = 0;
+            let resultData = {
+                "class": sClass,
+                "seat": sSeat,
+                "name": sName,
+                "score": 0
+            };
 
-              {/* 內容區塊 */}
-              <div className="p-6 md:p-10 min-h-[500px]">
-                {activeTab === 'candles' && (
-                  <div className="animate-fade-in-up"><CandlesExperiment /></div>
-                )}
-                {activeTab === 'triangle' && (
-                  <div className="animate-fade-in-up"><TriangleExperiment /></div>
-                )}
-                {activeTab === 'dust' && (
-                  <div className="animate-fade-in-up"><DustExperiment /></div>
-                )}
-                {activeTab === 'safety' && (
-                  <div className="animate-fade-in-up"><KitchenFire /></div>
-                )}
-              </div>
-            </div>
-          </main>
-        </div>
-      );
-    }
+            for(let i=0; i<quizData.length; i++) {
+                const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                let isCorrect = 0; // 預設0分
+                if(selected) {
+                    if(parseInt(selected.value) === quizData[i].ans) {
+                        isCorrect = 1; // 1題對得5分，這裡先記是否正確
+                        totalScore += 5;
+                    }
+                }
+                resultData[`q${i+1}`] = isCorrect * 5; // 每題得分 (5 或 0)
+            }
+            resultData["score"] = totalScore;
 
-    // 掛載 React App
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
+            // 顯示結果
+            document.getElementById('res-name').innerText = sName;
+            document.getElementById('res-score').innerText = totalScore;
+            document.getElementById('quiz-result').classList.remove('hidden');
+            document.getElementById('quiz-result').scrollIntoView({ behavior: 'smooth' });
+
+            // 送出資料到 Google Apps Script (示範串接)
+            sendToGoogleSheet(resultData);
+        }
+
+        // ==========================================
+        // 串接 Google Apps Script 範例函數
+        // ==========================================
+        function sendToGoogleSheet(data) {
+            // 注意：這裡請替換成您部署的 Google Apps Script 網頁應用程式 URL
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycb.../exec"; 
+            
+            // 使用 URLSearchParams 將資料轉為表單格式
+            const formData = new URLSearchParams();
+            for (const key in data) {
+                formData.append(key, data[key]);
+            }
+
+            // 實際使用時取消下方程式碼的註解即可發送
+            /*
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => console.log('Success!', response))
+            .catch(error => console.error('Error!', error.message));
+            */
+            console.log("模擬送出資料：", data);
+        }
+
+    </script>
 </body>
 </html>
