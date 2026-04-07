@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <script src="https://cdn.tailwindcss.com"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>校園生態系：五大自然科探索系統</title>
@@ -57,7 +56,15 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="min-h-screen pb-12">
+<body class="min-h-screen pb-12 relative">
+
+    <!-- 全域回首頁浮動按鈕 (可複製至其他頁面使用) -->
+    <a href="index.html" class="fixed bottom-6 right-6 bg-indigo-600 text-white p-4 rounded-full shadow-2xl hover:bg-indigo-700 hover:shadow-indigo-500/50 transition-all z-40 flex items-center justify-center group cursor-pointer border-2 border-white">
+        <i class="fa-solid fa-house text-2xl"></i>
+        <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out pl-0 group-hover:pl-3 font-bold text-lg">
+            回首頁
+        </span>
+    </a>
 
     <!-- 頁首標題區 -->
     <header class="text-center pt-12 pb-8 px-4">
@@ -115,7 +122,7 @@
                 </div>
                 <div class="text-center md:text-left flex-1">
                     <h3 class="font-title text-3xl text-fire-dark mb-2">燃燒與空氣實驗室</h3>
-                    <p class="text-gray-700 font-bold text-lg">觀察長短蠟燭的氣流秘密、認識燃燒三要素、挑戰虛擬滅火與探究粉塵爆炸！<br><span class="text-fire-main text-sm">🔥 結合安全教育的經典必學單元！</span></p>
+                    <p class="text-gray-700 font-bold text-lg">學習燃燒三要素、挑戰虛擬滅火體驗、導正火場逃生觀念！<br><span class="text-fire-main text-sm">🔥 結合安全教育的經典必學單元！</span></p>
                 </div>
                 <div class="mt-4 md:mt-0">
                     <button class="bg-fire-main text-white px-8 py-3 rounded-full font-bold text-xl hover:bg-fire-dark transition shadow-lg bounce-anim">進入實驗 <i class="fa-solid fa-flask ml-2"></i></button>
@@ -138,7 +145,7 @@
 
     <!-- 彈出視窗 Modal (隱藏狀態) -->
     <div id="courseModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white w-full max-w-3xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden transform scale-95 transition-transform" id="modalContentBox">
+        <div class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden transform scale-95 transition-transform" id="modalContentBox">
             
             <!-- Modal 標題區 -->
             <div id="modalHeader" class="p-6 text-white flex justify-between items-center relative">
@@ -172,7 +179,7 @@
         const courseData = {
             metal: {
                 title: "物質探測區",
-                linkUrl: "1.html", // 金系對應 1.html
+                linkUrl: "1.html",
                 headerColor: "bg-metal-main",
                 btnColor: "bg-metal-dark hover:bg-metal-main",
                 iconText: "text-metal-main",
@@ -204,7 +211,7 @@
             },
             wood: {
                 title: "植物生態區",
-                linkUrl: "2.html", // 木系對應 2.html
+                linkUrl: "2.html", 
                 headerColor: "bg-wood-main",
                 btnColor: "bg-wood-dark hover:bg-wood-main",
                 iconText: "text-wood-main",
@@ -241,7 +248,7 @@
             },
             water: {
                 title: "水資源應用區",
-                linkUrl: "3.html", // 水系對應 3.html
+                linkUrl: "3.html", 
                 headerColor: "bg-water-main",
                 btnColor: "bg-water-dark hover:bg-water-main",
                 iconText: "text-water-main",
@@ -276,52 +283,93 @@
             },
             fire: {
                 title: "燃燒與空氣實驗室",
-                linkUrl: "4.html", // 火系對應 4.html
+                linkUrl: "4.html",
                 headerColor: "bg-fire-main",
                 btnColor: "bg-fire-dark hover:bg-fire-main",
                 iconText: "text-fire-main",
                 iconClass: "fa-fire-flame-curved",
                 content: `
                     <div class="space-y-6">
-                        <p class="text-lg text-gray-700 font-bold bg-red-50 p-4 rounded-xl border-l-4 border-fire-main">
-                            免除真實危險！透過高互動視覺化模擬，看見肉眼看不見的氣流與氣體！
+                        <p class="text-lg text-gray-700 font-bold bg-red-50 p-4 rounded-xl border-l-4 border-fire-main shadow-sm">
+                            免除真實危險！透過高互動視覺化模擬，看見肉眼看不見的氣流，並學習正確的防災逃生觀念！
                         </p>
 
-                        <!-- 重點實驗：長短蠟燭 -->
+                        <!-- 1. 經典科學實驗區 -->
                         <div class="border-2 border-red-200 rounded-2xl overflow-hidden shadow-sm">
                             <div class="bg-red-100 p-3 flex items-center justify-between">
-                                <h4 class="font-bold text-fire-dark text-xl"><i class="fa-solid fa-flask mr-2"></i>經典實驗：長短蠟燭之謎</h4>
-                                <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">解決教學痛點</span>
+                                <h4 class="font-bold text-fire-dark text-xl"><i class="fa-solid fa-flask mr-2"></i>基礎科學實驗區</h4>
+                                <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">高互動模擬</span>
                             </div>
-                            <div class="p-4 bg-white text-gray-700">
-                                <p class="mb-3">真實實驗常因瓶子大小，熱空氣上升或冷卻下降造成不同結果。本單元網頁提供<strong>「熱氣流透視眼鏡」</strong>功能：</p>
-                                <ul class="list-disc pl-5 space-y-1 text-sm">
-                                    <li><strong>大瓶子模擬：</strong>清楚展示蠟燭燃燒產生的熱二氧化碳如何上升累積在頂部，導致<span class="text-red-600 font-bold">長蠟燭先熄滅</span>。</li>
-                                    <li><strong>小瓶子模擬：</strong>展示氣流受限冷卻較快，二氧化碳直接沉降，導致結果可能不同。</li>
-                                    <li><strong>動手調參數：</strong>學生可自由調整「容器容量」與「蠟燭高低差」，觀察氣流粒子動畫的變化。</li>
-                                </ul>
+                            <div class="p-4 bg-white text-gray-700 space-y-3">
+                                <div class="flex items-start">
+                                    <i class="fa-solid fa-caret-right text-red-500 mt-1 mr-2"></i>
+                                    <div>
+                                        <strong class="text-gray-800">廣口瓶與氣體反應：</strong>
+                                        <p class="text-sm">操作<span class="text-blue-600 font-bold">雙氧水製氧氣</span>、<span class="text-orange-600 font-bold">小蘇打加醋製備二氧化碳</span>，測試氣體助燃或滅火特性。並觀察不同容量廣口瓶如何影響燃燒時間。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fa-solid fa-caret-right text-red-500 mt-1 mr-2"></i>
+                                    <div>
+                                        <strong class="text-gray-800">經典實驗：長短蠟燭之謎</strong>
+                                        <p class="text-sm text-gray-600 mt-1">真實實驗常因瓶子大小造成不同結果。網頁清楚展示熱氣流累積過程：</p>
+                                        <ul class="list-disc pl-5 mt-1 text-sm text-gray-600">
+                                            <li><strong>大瓶子：</strong>熱二氧化碳上升累積在頂部，<span class="text-red-600 font-bold">長蠟燭先熄滅</span>。</li>
+                                            <li><strong>小瓶子：</strong>氣流受限冷卻較快，二氧化碳沉降，結果可能不同。</li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- 燃燒三要素 -->
-                            <div class="bg-white border-2 border-orange-100 p-4 rounded-2xl shadow-sm">
-                                <h4 class="font-bold text-orange-600 text-lg mb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i>燃燒三要素</h4>
-                                <p class="text-gray-600 text-sm">操作「可燃物、助燃物(氧氣)、達到燃點」的拉桿。觀察生態系中森林大火的發生條件，學習如何移除其中一個要素來滅火。</p>
+                            <!-- 2. 燃燒三要素 -->
+                            <div class="bg-white border-2 border-orange-200 p-4 rounded-2xl shadow-sm hover:border-orange-400 transition-colors">
+                                <h4 class="font-bold text-orange-600 text-lg mb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i>燃燒三要素 <span class="text-sm bg-orange-100 text-orange-600 px-2 py-1 rounded">互動拖曳</span></h4>
+                                <p class="text-gray-600 text-sm">提供水、石頭、木柴、氧氣等物品。玩家須拖曳正確的「可燃物」、「助燃物」與「熱源」填入燃燒三角形。放錯會有提示，全對即可成功點燃火苗！</p>
                             </div>
-                            <!-- 粉塵爆炸 -->
-                            <div class="bg-white border-2 border-yellow-200 p-4 rounded-2xl shadow-sm">
-                                <h4 class="font-bold text-yellow-600 text-lg mb-2"><i class="fa-solid fa-burst mr-2"></i>粉塵大爆炸</h4>
-                                <p class="text-gray-600 text-sm">認識麵粉、玉米粉等粉塵。模擬在密閉空間中，粉塵揚起並遇到火源的連鎖反應，建立深刻的安全觀念。</p>
+                            
+                            <!-- 3. 粉塵大爆炸 -->
+                            <div class="bg-white border-2 border-yellow-200 p-4 rounded-2xl shadow-sm hover:border-yellow-400 transition-colors">
+                                <h4 class="font-bold text-yellow-600 text-lg mb-2"><i class="fa-solid fa-burst mr-2"></i>粉塵實驗室</h4>
+                                <p class="text-gray-600 text-sm">認識麵粉、玉米粉等常見粉塵。模擬在密閉空間中，粉塵揚起並遇到火源的連鎖反應，了解哪些粉塵在哪些條件下會起火。</p>
                             </div>
                         </div>
 
-                        <!-- 安全教育 -->
-                        <div class="bg-gray-800 text-white p-4 rounded-2xl flex items-center shadow-md">
-                            <i class="fa-solid fa-fire-extinguisher text-4xl text-red-400 mr-4"></i>
-                            <div>
-                                <h4 class="font-bold text-xl text-red-300">安全教育：虛擬消防員</h4>
-                                <p class="text-gray-300 text-sm mt-1">面對油鍋起火、電線走火、森林火災，選擇「蓋鍋蓋(窒息法)」、「水(降溫)」或「滅火器」，選錯會給予安全提示喔！</p>
+                        <!-- 4. 防災與安全教育 -->
+                        <div class="bg-gray-800 text-white p-5 rounded-2xl shadow-lg border-b-4 border-red-500">
+                            <div class="flex items-center mb-4 border-b border-gray-600 pb-3">
+                                <i class="fa-solid fa-helmet-safety text-4xl text-yellow-400 mr-4"></i>
+                                <div>
+                                    <h4 class="font-bold text-2xl text-red-300 tracking-wide">防災與安全教育</h4>
+                                    <p class="text-gray-400 text-sm">生命無價，從遊戲中學習正確求生法則</p>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-600 hover:bg-gray-700 transition">
+                                    <strong class="text-orange-300 text-lg"><i class="fa-solid fa-house-fire mr-2"></i>居家滅火挑戰</strong>
+                                    <ul class="list-none mt-2 text-sm text-gray-300 space-y-2">
+                                        <li class="flex items-start">
+                                            <i class="fa-solid fa-fire-burner text-orange-400 mt-1 mr-2"></i>
+                                            <div><strong>油鍋起火：</strong>用水潑會引發「油炸現象」爆炸！正確解答：<span class="text-green-400 font-bold bg-green-900/30 px-1 rounded">蓋上鍋蓋（窒息法）</span>。</div>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <i class="fa-solid fa-plug-circle-bolt text-blue-400 mt-1 mr-2"></i>
+                                            <div><strong>電線走火：</strong>用水潑會導致觸電！正確解答：<span class="text-green-400 font-bold bg-green-900/30 px-1 rounded">拔除插頭（切斷熱源）</span>。</div>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-600 hover:bg-gray-700 transition">
+                                    <strong class="text-red-300 text-lg"><i class="fa-solid fa-spray-can mr-2"></i>滅火器操作體驗</strong>
+                                    <p class="text-sm text-gray-300 mt-2">亂按無效！玩家必須按照台灣消防署推廣口訣順序點擊：<br><span class="text-yellow-400 font-bold text-base tracking-widest mt-1 inline-block bg-black/30 px-3 py-1 rounded">拉、瞄、壓、掃</span><br>才能成功拔出插梢、對準火源噴出乾粉。</p>
+                                </div>
+
+                                <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-600 hover:bg-gray-700 transition">
+                                    <strong class="text-blue-300 text-lg"><i class="fa-solid fa-person-running mr-2"></i>火場逃生觀念導正</strong>
+                                    <p class="text-sm text-gray-300 mt-2">選擇題打破迷思！「躲浴室(塑膠門會融化)」與「濕毛巾摀口鼻(擋不住一氧化碳)」都是錯的。教導現代最重要的保命觀念：<br><span class="text-green-400 font-bold text-base mt-1 inline-block border border-green-500 px-2 py-1 rounded">關門避難、阻擋濃煙</span>。</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -329,11 +377,11 @@
             },
             earth: {
                 title: "地質探索區",
-                linkUrl: "5.html", // 土系對應 5.html
+                linkUrl: "5.html",
                 headerColor: "bg-earth-main",
                 btnColor: "bg-earth-dark hover:bg-earth-main",
                 iconText: "text-earth-main",
-                iconClass: "fa-gem", // Using gem/rock icon
+                iconClass: "fa-gem",
                 content: `
                     <div class="space-y-4">
                         <div class="flex items-center gap-4 bg-orange-50 p-4 rounded-xl border border-earth-light">
@@ -386,7 +434,7 @@
         const modalIcon = document.getElementById('modalIcon');
         const modalIconBox = document.getElementById('modalIconBox');
         const modalBody = document.getElementById('modalBody');
-        const modalActionLink = document.getElementById('modalActionLink'); // 改為 <a> 標籤
+        const modalActionLink = document.getElementById('modalActionLink');
 
         // 打開彈出視窗
         function openModal(elementKey) {
