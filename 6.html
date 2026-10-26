@@ -1,0 +1,1865 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五行自然生態系：五大自然科實驗互動教室</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font: Cute Rounded Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        fire: { DEFAULT: '#FF6B6B', light: '#FFE3E3', dark: '#C53030' },
+                        water: { DEFAULT: '#4DABF7', light: '#E7F5FF', dark: '#1864AB' },
+                        earth: { DEFAULT: '#A9E34B', light: '#F4FCE3', dark: '#5C940D' },
+                        metal: { DEFAULT: '#FCC419', light: '#FFF9DB', dark: '#D9480F' },
+                        wood: { DEFAULT: '#51CF66', light: '#E6FCF5', dark: '#2B8A3E' }
+                    },
+                    fontFamily: {
+                        cute: ['Fredoka', 'Noto Sans TC', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Fredoka', 'Noto Sans TC', sans-serif; background-color: #F8F9FA; }
+        .tab-active { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .bubble { animation: float 3s ease-in-out infinite; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        canvas { touch-action: none; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-800">
+
+    <!-- Top Banner & Ecosystem Nav -->
+    <header class="bg-gradient-to-r from-orange-400 via-amber-300 to-emerald-400 p-4 shadow-lg text-white">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-3 rounded-full text-amber-500 shadow-md text-2xl">
+                    <i class="fa-solid fa-flask-vial"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-wide text-amber-900 drop-shadow-sm">五行自然生態系：五大自然科實驗互動教室</h1>
+                </div>
+            </div>
+            <a href="https://smallfishmoney.github.io/ecosystem/" target="_blank" 
+               class="bg-white text-orange-600 hover:bg-orange-50 px-4 py-2 rounded-full text-sm font-bold shadow-md transition flex items-center gap-2 border-2 border-orange-200">
+                <i class="fa-solid fa-house"></i> 返回五行自然生態系主網
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
+
+        <!-- Navigation Tabs (Five Elements Theme) -->
+        <nav class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <button onclick="switchTab('fire')" id="tab-fire" 
+                class="tab-btn bg-fire text-white p-4 rounded-2xl font-bold shadow-md flex items-center justify-center gap-2 text-lg transition hover:brightness-105 tab-active">
+                <i class="fa-solid fa-fire"></i> 火系：熱的影響與傳播
+            </button>
+            <button onclick="switchTab('water')" id="tab-water" 
+                class="tab-btn bg-water text-white p-4 rounded-2xl font-bold shadow-md flex items-center justify-center gap-2 text-lg transition hover:brightness-105">
+                <i class="fa-solid fa-cloud-showers-heavy"></i> 水系：多變的天氣
+            </button>
+            <!-- 土系直接連結跳轉 -->
+            <a href="https://smallfishmoney.github.io/ecosystem/5.html" id="tab-earth" 
+                class="tab-btn bg-earth text-white p-4 rounded-2xl font-bold shadow-md flex items-center justify-center gap-2 text-lg transition hover:brightness-105 text-center">
+                <i class="fa-solid fa-mountain"></i> 土系：大地變動與岩石
+            </a>
+            <button onclick="switchTab('metal')" id="tab-metal" 
+                class="tab-btn bg-metal text-white p-4 rounded-2xl font-bold shadow-md flex items-center justify-center gap-2 text-lg transition hover:brightness-105">
+                <i class="fa-solid fa-bolt"></i> 金系：電磁與生活
+            </button>
+        </nav>
+
+        <!-- SECTION 1: FIRE (熱的影響與傳播) -->
+        <section id="sec-fire" class="tab-content bg-white rounded-3xl p-6 shadow-xl border-4 border-fire-light flex flex-col gap-6">
+            <div class="flex items-center gap-3 border-b-2 border-fire-light pb-3">
+                <span class="bg-fire text-white px-3 py-1 rounded-full font-bold text-sm">火系探索區</span>
+                <h2 class="text-2xl font-bold text-fire-dark">🔥 1-1 & 1-2 熱的傳播、保溫與散熱生活體驗</h2>
+            </div>
+
+            <!-- Experiment 1: Standard Thermal Expansion Experiments -->
+            <div class="grid md:grid-cols-12 gap-6 bg-orange-50 p-5 rounded-2xl border border-orange-200">
+                <div class="md:col-span-5 flex flex-col justify-between space-y-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-orange-900 mb-2"><i class="fa-solid fa-vial-circle-check"></i> 1-1 熱脹冷縮動態微觀實驗</h3>
+                        <p class="text-xs text-slate-600 mb-3">觀察氣體、液體與固體受熱膨脹與遇冷收縮的現象，以及組成的粒子運動！</p>
+                        
+                        <!-- State Selection -->
+                        <div class="space-y-2">
+                            <label class="font-bold text-xs text-slate-700">1. 選擇三態實驗裝置：</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button id="btn-exp-gas" onclick="setExpansionState('gas')" class="bg-orange-500 text-white p-2 rounded-xl text-xs font-bold shadow ring-2 ring-orange-400 text-center">
+                                    🎈 氣體<br><span class="text-[10px] font-normal">錐形瓶套氣球</span>
+                                </button>
+                                <button id="btn-exp-liquid" onclick="setExpansionState('liquid')" class="bg-white text-slate-700 p-2 rounded-xl text-xs font-bold hover:bg-orange-100 transition text-center border border-orange-200">
+                                    🧪 液體<br><span class="text-[10px] font-normal">錐形瓶插玻璃管</span>
+                                </button>
+                                <button id="btn-exp-solid" onclick="setExpansionState('solid')" class="bg-white text-slate-700 p-2 rounded-xl text-xs font-bold hover:bg-orange-100 transition text-center border border-orange-200">
+                                    🔘 固體<br><span class="text-[10px] font-normal">銅球與銅環實驗</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Thermal Control -->
+                        <div class="mt-4 space-y-2">
+                            <label class="font-bold text-xs text-slate-700 flex justify-between">
+                                <span>2. 水溫/環境溫度：<span id="temp-val" class="text-orange-600 font-extrabold text-sm">25</span> °C</span>
+                                <span id="temp-status-tag" class="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold">常溫狀態</span>
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-blue-600">冰水 (0°C)</span>
+                                <input type="range" id="temp-slider" min="0" max="100" value="25" oninput="updateTemp(this.value)" class="w-full accent-fire cursor-pointer">
+                                <span class="text-xs font-bold text-rose-600">熱水 (100°C)</span>
+                            </div>
+                            <div class="flex gap-2 mt-2">
+                                <button onclick="quickTemp(0)" class="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-bold py-1.5 rounded-lg border border-blue-300">🧊 泡冰水冷卻</button>
+                                <button onclick="quickTemp(25)" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold py-1.5 rounded-lg">🏠 放常溫</button>
+                                <button onclick="quickTemp(90)" class="flex-1 bg-rose-100 hover:bg-rose-200 text-rose-800 text-xs font-bold py-1.5 rounded-lg border border-rose-300">🔥 泡熱水加熱</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Curriculum Note Card -->
+                    <div class="bg-white p-3 rounded-xl border border-orange-200 shadow-sm text-xs space-y-1.5">
+                        <div class="font-bold text-orange-900 border-b border-orange-100 pb-1 flex items-center justify-between">
+                            <span><i class="fa-solid fa-book-open"></i> 1-1 課綱實驗與生活觀察：</span>
+                            <span id="exp-type-badge" class="bg-orange-100 text-orange-800 px-2 py-0.5 rounded text-[10px] font-bold">氣體觀察</span>
+                        </div>
+                        <p id="exp-desc-text" class="text-slate-700 leading-relaxed font-semibold"></p>
+                        <div class="bg-amber-50 p-2 rounded-lg text-amber-900 font-bold border border-amber-200">
+                            <i class="fa-solid fa-lightbulb text-amber-500"></i> 生活中的應用：<span id="exp-app-text" class="font-normal"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Simulation Canvas (Macro + Micro) -->
+                <div class="md:col-span-7 flex flex-col items-center justify-center bg-slate-900 p-4 rounded-2xl shadow-inner border-2 border-slate-700 relative overflow-hidden min-h-[340px]">
+                    <div class="absolute top-3 left-3 bg-slate-800/80 text-white text-[11px] px-2.5 py-1 rounded-full font-bold border border-slate-600 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="canvas-mode-title">氣體：巨觀實驗與粒子微觀排列聯動</span>
+                    </div>
+                    <canvas id="expansion-canvas" width="460" height="260" class="rounded-xl mt-4 cursor-pointer"></canvas>
+                    <div class="mt-2 text-center text-xs text-amber-300 flex items-center gap-2 font-semibold">
+                        <span class="text-slate-400">左圖：經典器材實體變化</span> | <span class="text-amber-300">右圖：組成粒子運動與間距距離</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Experiment 2: 1-2 熱的傳播 (固體傳導、液體對流與氣體對流/熱升冷降) -->
+            <div class="grid md:grid-cols-12 gap-6 bg-rose-50 p-5 rounded-2xl border border-rose-200">
+                <div class="md:col-span-5 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <h3 class="text-xl font-bold text-rose-800"><i class="fa-solid fa-temperature-arrow-up"></i> 1-2 熱的傳播方式實驗（固/液/氣）</h3>
+                        </div>
+                        <div class="mb-3">
+                            <span class="bg-rose-600 text-white text-xs px-2.5 py-1 rounded-full font-bold shadow-sm inline-block">
+                                🔥 核心口訣：熱升冷降
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-600 mb-3">透過對照實驗，觀察「熱傳導」與「熱對流（液體與氣體之熱升冷降）」現象！</p>
+                    </div>
+
+                    <!-- Interactive Control Panel -->
+                    <div class="bg-white p-4 rounded-xl border border-rose-200 shadow-sm space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">選擇 1-2 實驗模式：</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button id="btn-mode-cond" onclick="setTransferExp('cond')" class="bg-rose-500 text-white p-2 rounded-xl text-xs font-bold shadow ring-2 ring-rose-400 text-left">
+                                    🧂 (1) 固體傳導<br><span class="text-[10px] font-normal opacity-90">食鹽燒杯傳熱</span>
+                                </button>
+                                <button id="btn-mode-conv" onclick="setTransferExp('conv')" class="bg-slate-100 text-slate-700 p-2 rounded-xl text-xs font-bold hover:bg-rose-100 transition text-left border border-rose-200">
+                                    💧 (2) 液體對流<br><span class="text-[10px] font-normal opacity-90">紅熱水 vs 藍冰水</span>
+                                </button>
+                                <button id="btn-mode-gasconv" onclick="setTransferExp('gasconv')" class="bg-slate-100 text-slate-700 p-2 rounded-xl text-xs font-bold hover:bg-rose-100 transition text-left border border-rose-200">
+                                    💨 (3) 氣體對流<br><span class="text-[10px] font-normal opacity-90">煙霧雙瓶 A~D 組</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Control Sub-panel: Conduction -->
+                        <div id="subpanel-cond" class="space-y-2">
+                            <label class="block text-xs font-bold text-slate-700">選擇水盆水溫：</label>
+                            <div class="flex gap-2">
+                                <button onclick="runSaltExp('hot')" id="btn-salt-hot" class="flex-1 bg-rose-600 text-white p-2 rounded-xl text-xs font-bold shadow">70°C 熱水盆 (熱傳導)</button>
+                                <button onclick="runSaltExp('cool')" id="btn-salt-cool" class="flex-1 bg-slate-200 text-slate-700 p-2 rounded-xl text-xs font-bold">25°C 常溫水盆</button>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Control Sub-panel: Liquid Convection -->
+                        <div id="subpanel-conv" class="hidden space-y-2">
+                            <label class="block text-xs font-bold text-slate-700">擠出對流測試色素滴管：</label>
+                            <button onclick="injectPipettes()" class="w-full bg-rose-600 hover:bg-rose-700 text-white p-2 rounded-xl text-xs font-bold shadow transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-eye"></i> 注入熱水(紅)與冰水(藍)觀察對流
+                            </button>
+                        </div>
+
+                        <!-- Dynamic Control Sub-panel: Gas Convection -->
+                        <div id="subpanel-gasconv" class="hidden space-y-2">
+                            <label class="block text-xs font-bold text-slate-700">選擇熱瓶與冷瓶擺放方向：</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="setSmokeGroup('AB')" id="btn-smoke-AB" class="bg-amber-600 text-white p-2 rounded-xl text-xs font-bold shadow">熱瓶在上方 (A、B 組)</button>
+                                <button onclick="setSmokeGroup('CD')" id="btn-smoke-CD" class="bg-slate-200 text-slate-700 p-2 rounded-xl text-xs font-bold hover:bg-rose-100">冷瓶在上方 (C、D 組)</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description Card -->
+                    <div class="bg-white p-3 rounded-xl border border-rose-200 shadow-sm text-xs">
+                        <div class="font-bold text-rose-900 border-b border-rose-100 pb-1 mb-1">
+                            <i class="fa-solid fa-microscope"></i> 實驗現象解析：
+                        </div>
+                        <p id="transfer-desc" class="text-slate-700 leading-relaxed font-semibold">請選擇上方實驗模式並開啟觀察。</p>
+                    </div>
+                </div>
+
+                <!-- Right Side: Interactive Simulation Canvas -->
+                <div class="md:col-span-7 flex flex-col items-center justify-center bg-slate-900 p-4 rounded-2xl shadow-inner border-2 border-slate-700 relative overflow-hidden min-h-[340px]">
+                    <div class="absolute top-3 left-3 bg-slate-800/80 text-white text-[11px] px-2.5 py-1 rounded-full font-bold border border-slate-600 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>
+                        <span id="transfer-canvas-title">固體傳導：裝食鹽燒杯浸泡實驗</span>
+                    </div>
+                    <canvas id="transfer-canvas" width="460" height="260" class="rounded-xl mt-4 cursor-pointer"></canvas>
+                    <div class="mt-2 text-center text-xs text-rose-300 flex items-center gap-2 font-semibold">
+                        <span id="transfer-subtext" class="text-rose-200">觀察熱量在媒介中的傳播與流動現象</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Experiment 3: Dynamic Heat Transfer Summary & Insulation/Dissipation Interactive Simulation -->
+            <div class="bg-amber-50 p-5 rounded-2xl border border-amber-200 space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-amber-200 pb-3">
+                    <div>
+                        <h3 class="text-xl font-bold text-amber-900"><i class="fa-solid fa-shield-halved"></i> 傳播三方式統整、保溫與散熱動態互動實驗</h3>
+                        <p class="text-xs text-slate-600">透過動態實驗模擬，觀察傳導、對流與輻射在保溫與散熱中的實時變化！</p>
+                    </div>
+                    <!-- Mode Selector Sub-tabs -->
+                    <div class="flex gap-2 bg-amber-200/60 p-1 rounded-xl text-xs font-bold">
+                        <button onclick="switchHeatSubTab('sim')" id="subtab-sim" class="px-3 py-1.5 rounded-lg bg-white text-amber-900 shadow">🧪 1. 保溫與散熱互動實驗室</button>
+                        <button onclick="switchHeatSubTab('summary')" id="subtab-summary" class="px-3 py-1.5 rounded-lg text-amber-800 hover:bg-white/50">2. 熱的三種傳播統整</button>
+                        <button onclick="switchHeatSubTab('sustain')" id="subtab-sustain" class="px-3 py-1.5 rounded-lg text-amber-800 hover:bg-white/50">3. 永續生活降溫綠建築</button>
+                    </div>
+                </div>
+
+                <!-- Sub-Tab 1: Interactive Heat Insulation & Dissipation Simulator -->
+                <div id="heat-sub-sim" class="grid md:grid-cols-12 gap-6">
+                    <div class="md:col-span-5 space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-amber-900 mb-2">1. 選擇生活保溫 / 散熱實驗裝置：</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button id="btn-device-thermos" onclick="selectHeatDevice('thermos')" class="bg-amber-600 text-white p-2.5 rounded-xl text-xs font-bold shadow text-left flex items-center gap-2">
+                                    <i class="fa-solid fa-bottle-droplet text-lg"></i>
+                                    <div>
+                                        <div>真空保溫瓶</div>
+                                        <div class="text-[10px] font-normal opacity-90">阻隔傳導+對流+輻射</div>
+                                    </div>
+                                </button>
+                                <button id="btn-device-coolbag" onclick="selectHeatDevice('coolbag')" class="bg-white text-slate-700 p-2.5 rounded-xl text-xs font-bold hover:bg-amber-100 transition text-left flex items-center gap-2 border border-amber-200">
+                                    <i class="fa-solid fa-bag-shopping text-lg text-amber-600"></i>
+                                    <div>
+                                        <div>反射保冷袋</div>
+                                        <div class="text-[10px] font-normal opacity-90">鋁箔反射輻射熱</div>
+                                    </div>
+                                </button>
+                                <button id="btn-device-icepack" onclick="selectHeatDevice('icepack')" class="bg-white text-slate-700 p-2.5 rounded-xl text-xs font-bold hover:bg-amber-100 transition text-left flex items-center gap-2 border border-amber-200">
+                                    <i class="fa-solid fa-snowflake text-lg text-cyan-600"></i>
+                                    <div>
+                                        <div>快速冰敷袋</div>
+                                        <div class="text-[10px] font-normal opacity-90">快速接觸熱傳導</div>
+                                    </div>
+                                </button>
+                                <button id="btn-device-fan" onclick="selectHeatDevice('fan')" class="bg-white text-slate-700 p-2.5 rounded-xl text-xs font-bold hover:bg-amber-100 transition text-left flex items-center gap-2 border border-amber-200">
+                                    <i class="fa-solid fa-fan text-lg text-blue-600"></i>
+                                    <div>
+                                        <div>對流循環扇</div>
+                                        <div class="text-[10px] font-normal opacity-90">加速空氣熱對流</div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Experiment Controls & Feature Toggles -->
+                        <div class="bg-white p-3.5 rounded-xl border border-amber-200 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-700">2. 實驗控制與防護開啟：</span>
+                                <button onclick="resetHeatSim()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-[11px] px-2 py-0.5 rounded font-bold">
+                                    <i class="fa-solid fa-rotate-left"></i> 重置溫度
+                                </button>
+                            </div>
+                            
+                            <!-- Toggle Sliders/Switches for Experiment Conditions -->
+                            <div id="sim-controls-container" class="space-y-2 text-xs">
+                                <!-- Dynamic controls inserted by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Live Physics Feedback Panel -->
+                        <div class="bg-amber-100/70 p-3 rounded-xl border border-amber-200 text-xs space-y-1">
+                            <div class="font-bold text-amber-900 border-b border-amber-200 pb-1 flex items-center justify-between">
+                                <span><i class="fa-solid fa-microscope"></i> 熱傳遞實時分析：</span>
+                                <span id="sim-status-badge" class="bg-amber-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">保溫中</span>
+                            </div>
+                            <p id="sim-physics-desc" class="text-slate-700 leading-relaxed font-semibold"></p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Simulation Canvas (Device Thermal Dynamic) -->
+                    <div class="md:col-span-7 flex flex-col items-center justify-center bg-slate-900 p-4 rounded-2xl shadow-inner border-2 border-slate-700 relative overflow-hidden min-h-[340px]">
+                        <div class="absolute top-3 left-3 bg-slate-800/90 text-amber-300 text-[11px] px-2.5 py-1 rounded-full font-bold border border-slate-600 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                            <span id="heat-sim-canvas-title">真空保溫瓶：熱能傳播動態模擬</span>
+                        </div>
+                        <canvas id="heat-sim-canvas" width="420" height="250" class="rounded-xl mt-4 cursor-pointer"></canvas>
+                        <div class="mt-2 text-center text-xs text-amber-300 flex items-center gap-2 font-semibold">
+                            <span>🔥 內部溫度：<strong id="sim-temp-display" class="text-rose-400 text-sm">95.0 °C</strong></span>
+                            <span class="text-slate-500">|</span>
+                            <span>🌡️ 熱散失速率：<strong id="sim-loss-display" class="text-amber-300">極慢</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub-Tab 2: Summary Table -->
+                <div id="heat-sub-summary" class="hidden space-y-4">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left text-slate-800 bg-white rounded-xl shadow-sm border border-amber-200 overflow-hidden">
+                            <thead class="bg-amber-200 text-amber-900 font-bold">
+                                <tr>
+                                    <th class="p-3 w-1/5">傳播方式</th>
+                                    <th class="p-3 w-2/5">統整說明</th>
+                                    <th class="p-3 w-2/5">生活舉例說明</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-amber-100">
+                                <tr>
+                                    <td class="p-3 font-bold text-amber-800 bg-amber-50/50">🔥 傳導</td>
+                                    <td class="p-3">固體受熱後，熱可以藉由微小粒子從高溫處往低溫處傳播。</td>
+                                    <td class="p-3">湯匙放在熱湯中變燙；冰敷袋貼在皮膚上導走熱量。</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold text-amber-800 bg-amber-50/50">💧 💨 對流</td>
+                                    <td class="p-3">熱隨氣體或液體流動的方式傳播熱，受熱變輕上升（熱升冷降）。</td>
+                                    <td class="p-3">煮水時熱水上升冷水下降；冷氣安裝在高處、暖氣放在低處。</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold text-amber-800 bg-amber-50/50">☀️ 輻射</td>
+                                    <td class="p-3">太陽或高溫物體的熱不需要藉助任何介質物質即可直接傳播。</td>
+                                    <td class="p-3">站在陽光下感到溫暖；保冷袋鋁箔反射輻射熱；太陽能板吸收光熱。</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sub-Tab 3: Sustainable Life Applications -->
+                <div id="heat-sub-sustain" class="hidden grid md:grid-cols-3 gap-4">
+                    <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
+                        <div class="text-emerald-700 text-lg font-bold mb-1"><i class="fa-solid fa-solar-panel"></i> 太陽能光電屋頂</div>
+                        <p class="text-xs text-slate-700"><b>說明：</b> 將太陽光能轉換成電能，同時阻隔太陽直射的熱<b>輻射</b>，降低室內溫度。</p>
+                    </div>
+                    <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
+                        <div class="text-emerald-700 text-lg font-bold mb-1"><i class="fa-solid fa-house-chimney-window"></i> 雙層屋頂設計</div>
+                        <p class="text-xs text-slate-700"><b>說明：</b> 利用雙層夾層中的空氣<b>對流</b>帶走熱空氣，形成良好的天然隔熱防護層。</p>
+                    </div>
+                    <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
+                        <div class="text-emerald-700 text-lg font-bold mb-1"><i class="fa-solid fa-tree"></i> 綠色植栽與透水鋪面</div>
+                        <p class="text-xs text-slate-700"><b>說明：</b> 植物遮陽降低<b>傳導與輻射</b>，透水鋪面蒸發水分促進空氣<b>對流</b>與循環。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: WATER (多變的天氣 - 大幅優化版) -->
+        <section id="sec-water" class="tab-content hidden bg-white rounded-3xl p-6 shadow-xl border-4 border-water-light flex flex-col gap-6">
+            <!-- Header Banner -->
+            <div class="flex items-center justify-between border-b-2 border-water-light pb-3">
+                <div class="flex items-center gap-3">
+                    <span class="bg-water text-white px-3 py-1 rounded-full font-bold text-sm shadow-sm">水系探索區</span>
+                    <h2 class="text-2xl font-bold text-water-dark">💧 單元 2 多變的天氣：大自然的水循環與天氣系統</h2>
+                </div>
+                <div class="hidden md:block bg-sky-100 text-sky-800 text-xs px-3 py-1 rounded-full font-bold">
+                    <i class="fa-solid fa-book"></i> 翰林 6上 CH2 國小自然領域
+                </div>
+            </div>
+
+            <!-- Mnemonics Box -->
+            <div class="bg-gradient-to-r from-sky-500 to-blue-600 text-white p-4 md:p-5 rounded-2xl shadow-md space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb text-yellow-300 text-xl"></i> 天氣大考查神器：三秒記憶口訣
+                    </span>
+                    <span class="bg-white/20 text-xs px-2.5 py-1 rounded-full border border-white/30">必背核心重點</span>
+                </div>
+                <div class="grid md:grid-cols-2 gap-3 text-sm">
+                    <div class="bg-white/10 p-3 rounded-xl border border-white/20">
+                        <div class="font-bold text-yellow-200 mb-1">☁️ 口訣一：高空地面與溫差（水的七變化）</div>
+                        <p class="text-xs text-sky-50 leading-relaxed font-semibold">
+                            「空中漂浮<b>雲與霧</b>，雲在高空霧貼地；地面遇冷<b>露與霜</b>，露是水珠霜冰晶；雨雪冰晶降下來，零度以上露與雨！」
+                        </p>
+                    </div>
+                    <div class="bg-white/10 p-3 rounded-xl border border-white/20">
+                        <div class="font-bold text-yellow-200 mb-1">🌀 口訣二：天氣圖與鋒面辨識</div>
+                        <p class="text-xs text-sky-50 leading-relaxed font-semibold">
+                            「<b>冷鋒</b>藍三角冷氣推，降溫驟雨強風吹；<b>暖鋒</b>紅半圓暖氣推，連續陰雨溫漸升；<b>滯留鋒</b>紫相連，梅雨季節下不停！」
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Sub-Tab Navigation inside Water Section -->
+            <div class="flex gap-2 bg-sky-100 p-1.5 rounded-2xl text-xs md:text-sm font-bold">
+                <button onclick="switchWaterSubTab('forms')" id="wsubtab-forms" class="flex-1 py-2.5 rounded-xl bg-white text-sky-900 shadow transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-droplet text-blue-500"></i> 1. 水的三態與七大天氣現象
+                </button>
+                <button onclick="switchWaterSubTab('exp')" id="wsubtab-exp" class="flex-1 py-2.5 rounded-xl text-sky-700 hover:bg-white/60 transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-vial-circle-check text-indigo-600"></i> 2. 霜與露形成對照實驗室
+                </button>
+                <button onclick="switchWaterSubTab('cycle')" id="wsubtab-cycle" class="flex-1 py-2.5 rounded-xl text-sky-700 hover:bg-white/60 transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-arrows-spin text-emerald-600"></i> 3. 綠能水循環動態運作圖
+                </button>
+                <button onclick="switchWaterSubTab('maps')" id="wsubtab-maps" class="flex-1 py-2.5 rounded-xl text-sky-700 hover:bg-white/60 transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-map-location-dot text-rose-500"></i> 4. 衛星雲圖與地面天氣圖
+                </button>
+            </div>
+
+            <!-- WATER SUB-TAB 1: Water Forms Interactive Explorer -->
+            <div id="wsub-forms" class="space-y-4">
+                <div class="bg-sky-50/70 p-4 rounded-2xl border border-sky-200 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="bg-sky-600 text-white p-2 rounded-xl font-bold"><i class="fa-solid fa-filter text-base"></i></span>
+                        <div>
+                            <span class="font-bold text-sky-900 text-sm">按狀態篩選自然現象：</span>
+                            <p class="text-slate-600">點擊下方按鈕，了解雲、霧、雨、露、霜、雪、水蒸氣的形成條件與差異！</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="filterWaterForms('all')" id="btn-wf-all" class="bg-sky-600 text-white px-3 py-1.5 rounded-xl font-bold shadow text-xs">全部 7 種</button>
+                        <button onclick="filterWaterForms('liquid')" id="btn-wf-liquid" class="bg-white text-sky-800 border border-sky-300 px-3 py-1.5 rounded-xl font-bold text-xs hover:bg-sky-100">💧 液態</button>
+                        <button onclick="filterWaterForms('solid')" id="btn-wf-solid" class="bg-white text-sky-800 border border-sky-300 px-3 py-1.5 rounded-xl font-bold text-xs hover:bg-sky-100">❄️ 固態</button>
+                        <button onclick="filterWaterForms('gas')" id="btn-wf-gas" class="bg-white text-sky-800 border border-sky-300 px-3 py-1.5 rounded-xl font-bold text-xs hover:bg-sky-100">💨 氣態</button>
+                    </div>
+                </div>
+
+                <!-- Water Forms Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="water-forms-grid">
+                    <!-- Cards will be dynamically updated or rendered by script -->
+                </div>
+            </div>
+
+            <!-- WATER SUB-TAB 2: Dew & Frost Laboratory Experiment -->
+            <div id="wsub-exp" class="hidden grid md:grid-cols-12 gap-6">
+                <div class="md:col-span-5 space-y-4">
+                    <div class="bg-cyan-50 p-4 rounded-2xl border border-cyan-200 space-y-3">
+                        <h3 class="font-bold text-cyan-900 text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-flask text-cyan-600"></i> 課本標準實驗：霜與露的形成
+                        </h3>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            準備三個燒杯，分別放入「常溫水」、「水+冰塊」以及「冰塊+大量食鹽」，觀察燒杯外壁與杯緣的變化！
+                        </p>
+
+                        <div class="space-y-2">
+                            <button onclick="selectDewExp('room')" id="btn-dexp-room" class="w-full text-left bg-white p-3 rounded-xl border border-cyan-200 hover:bg-cyan-100 transition font-bold text-xs flex items-center justify-between shadow-sm">
+                                <span class="flex items-center gap-2 text-slate-800"><i class="fa-solid fa-glass-water text-cyan-500"></i> 1. 常溫水</span>
+                                <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px]">燒杯水溫 ~25°C</span>
+                            </button>
+                            <button onclick="selectDewExp('dew')" id="btn-dexp-dew" class="w-full text-left bg-white p-3 rounded-xl border border-cyan-200 hover:bg-cyan-100 transition font-bold text-xs flex items-center justify-between shadow-sm">
+                                <span class="flex items-center gap-2 text-blue-700"><i class="fa-solid fa-droplet text-blue-500"></i> 2. 水 + 冰塊</span>
+                                <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[11px]">燒杯水溫 ~2°C</span>
+                            </button>
+                            <button onclick="selectDewExp('frost')" id="btn-dexp-frost" class="w-full text-left bg-white p-3 rounded-xl border border-cyan-200 hover:bg-cyan-100 transition font-bold text-xs flex items-center justify-between shadow-sm">
+                                <span class="flex items-center gap-2 text-indigo-800"><i class="fa-solid fa-snowflake text-indigo-500"></i> 3. 冰塊 + 大量食鹽</span>
+                                <span class="bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded text-[11px] font-bold">燒杯水溫 -9°C</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Experiment Result Card -->
+                    <div class="bg-white p-4 rounded-2xl border border-cyan-200 shadow-sm space-y-2 text-xs">
+                        <div class="font-bold text-cyan-900 border-b pb-1 flex items-center justify-between">
+                            <span><i class="fa-solid fa-clipboard-check text-cyan-600"></i> 實驗觀察紀錄：</span>
+                            <span id="dexp-temp-badge" class="bg-slate-200 text-slate-800 px-2 py-0.5 rounded font-bold text-[10px]">25°C</span>
+                        </div>
+                        <p id="dexp-result-text" class="text-slate-700 leading-relaxed font-semibold">
+                            點擊上方選項以進行模擬實驗。
+                        </p>
+                        <div id="dexp-key-point" class="bg-amber-50 p-2.5 rounded-xl border border-amber-200 text-amber-900 font-bold hidden">
+                            <i class="fa-solid fa-circle-exclamation text-amber-500"></i> 關鍵結論：<span id="dexp-key-text" class="font-normal"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Experiment Simulation Canvas -->
+                <div class="md:col-span-7 flex flex-col items-center justify-center bg-slate-900 p-4 rounded-2xl shadow-inner border-2 border-slate-700 relative overflow-hidden min-h-[340px]">
+                    <div class="absolute top-3 left-3 bg-slate-800/80 text-cyan-300 text-[11px] px-2.5 py-1 rounded-full font-bold border border-slate-600 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                        <span id="dew-canvas-title">露與霜實驗動態模擬</span>
+                    </div>
+                    <canvas id="water-exp-canvas" width="420" height="250" class="rounded-xl mt-4 cursor-pointer"></canvas>
+                    <div class="mt-2 text-center text-xs text-sky-300 font-semibold">
+                        <span id="dew-canvas-sub">觀察燒杯外壁水蒸氣凝結（露）或凝固（霜）過程</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WATER SUB-TAB 3: Dynamic Water Cycle Simulation -->
+            <div id="wsub-cycle" class="hidden space-y-4">
+                <div class="grid md:grid-cols-12 gap-6">
+                    <div class="md:col-span-5 space-y-3">
+                        <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 space-y-2">
+                            <h3 class="font-bold text-emerald-900 text-lg flex items-center gap-2">
+                                <i class="fa-solid fa-rotate text-emerald-600"></i> 地球水循環 (Water Cycle)
+                            </h3>
+                            <p class="text-xs text-slate-700 leading-relaxed">
+                                大自然中的水透過<b>蒸發</b>上升至高空，遇冷<b>凝結</b>成雲霧，當水滴或冰晶變大承受不住時產生<b>降水</b>（雨或雪），最終匯集流回大海與陸地，不斷循環。
+                            </p>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-2xl border border-sky-200 shadow-sm space-y-2 text-xs">
+                            <div class="font-bold text-sky-900 border-b pb-1">💡 水循環四要素點擊說明：</div>
+                            <div class="space-y-1.5">
+                                <div class="p-2 bg-amber-50 rounded-lg border border-amber-200 text-amber-900">
+                                    <b>1. 蒸發 (Evaporation)：</b> 太陽熱能使地表水（海洋、湖泊）變成水蒸氣上升。
+                                </div>
+                                <div class="p-2 bg-sky-50 rounded-lg border border-sky-200 text-sky-900">
+                                    <b>2. 凝結 (Condensation)：</b> 高空水蒸氣遇冷，凝結成小水滴或凝固成小冰晶（聚集成雲）。
+                                </div>
+                                <div class="p-2 bg-blue-50 rounded-lg border border-blue-200 text-blue-900">
+                                    <b>3. 降水 (Precipitation)：</b> 雲中水滴或冰晶過重降落，形成雨或雪。
+                                </div>
+                                <div class="p-2 bg-emerald-50 rounded-lg border border-emerald-200 text-emerald-900">
+                                    <b>4. 匯集 (Collection)：</b> 降水經由河流、地下水流回海洋，重啟循環。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-7 flex flex-col items-center justify-center bg-slate-900 p-4 rounded-2xl shadow-inner border-2 border-slate-700 relative overflow-hidden min-h-[340px]">
+                        <div class="absolute top-3 left-3 bg-slate-800/80 text-emerald-300 text-[11px] px-2.5 py-1 rounded-full font-bold border border-slate-600">
+                            🔄 動態水循環模擬圖
+                        </div>
+                        <canvas id="water-cycle-canvas" width="440" height="260" class="rounded-xl mt-4 cursor-pointer"></canvas>
+                        <div class="mt-2 text-center text-xs text-emerald-300 font-semibold">
+                            蒸發 ➔ 凝結 ➔ 降水 ➔ 匯集（生生不息）
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WATER SUB-TAB 4: Satellite Clouds & Weather Front Maps -->
+            <div id="wsub-maps" class="hidden space-y-4">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <!-- Cold Front / Warm Front / Stationary Front Explorer -->
+                    <div class="bg-blue-50 p-4 rounded-2xl border border-blue-200 space-y-3">
+                        <h4 class="font-bold text-blue-900 text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-wind text-blue-600"></i> 地面天氣圖與重要鋒面
+                        </h4>
+                        <p class="text-xs text-slate-600">當冷氣團與暖氣團相遇時會形成「鋒面」，帶來明顯的天氣變化：</p>
+                        
+                        <div class="space-y-2 text-xs">
+                            <div class="bg-white p-3 rounded-xl border border-blue-200 shadow-sm flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow">
+                                    ▲
+                                </div>
+                                <div>
+                                    <div class="font-bold text-blue-900 text-sm">冷鋒 (Cold Front)</div>
+                                    <p class="text-slate-600 text-[11px]"><b>符號：</b>藍色三角形。<b>現象：</b>冷氣團強大推向暖氣團，通過時氣溫驟降、伴隨強風與陣雨。</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-3 rounded-xl border border-rose-200 shadow-sm flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-rose-600 text-white flex items-center justify-center font-bold text-lg shadow">
+                                    ●
+                                </div>
+                                <div>
+                                    <div class="font-bold text-rose-900 text-sm">暖鋒 (Warm Front)</div>
+                                    <p class="text-slate-600 text-[11px]"><b>符號：</b>紅色半圓形。<b>現象：</b>暖氣團推向冷氣團，通過時氣溫逐漸回升、伴隨廣泛連續性降雨。</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-3 rounded-xl border border-purple-200 shadow-sm flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm shadow">
+                                    ▲●
+                                </div>
+                                <div>
+                                    <div class="font-bold text-purple-900 text-sm">滯留鋒 (Stationary Front)</div>
+                                    <p class="text-slate-600 text-[11px]"><b>符號：</b>紅藍/紫色相間。<b>現象：</b>冷暖氣團勢力相當、擺動緩慢，是台灣 5~6 月<b>梅雨季節</b>主因。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Typhoon & Satellite Info Card -->
+                    <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-200 space-y-3">
+                        <h4 class="font-bold text-indigo-900 text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-cloud-bolt text-indigo-600"></i> 衛星雲圖與颱風等級
+                        </h4>
+                        <div class="bg-white p-3.5 rounded-xl border border-indigo-100 shadow-sm text-xs space-y-2">
+                            <div class="font-bold text-indigo-900 border-b pb-1">🛰️ 衛星雲圖觀察法：</div>
+                            <p class="text-slate-700 leading-relaxed">
+                                • <b>白色雲層區域：</b> 代表雲層越厚越密實，降雨機率越高。<br>
+                                • <b>颱風眼：</b> 強烈颱風中心結構清晰呈眼狀無雲區。
+                            </p>
+                        </div>
+
+                        <div class="bg-white p-3.5 rounded-xl border border-indigo-100 shadow-sm text-xs space-y-2">
+                            <div class="font-bold text-indigo-900 border-b pb-1">🌀 颱風強度等級分級（依近中心最大風速）：</div>
+                            <div class="grid grid-cols-2 gap-2 text-[11px]">
+                                <div class="p-2 bg-slate-100 rounded-lg">
+                                    <b class="text-slate-800">熱帶性低氣壓</b><br>風速 &lt; 17.2 m/s (6~7級)
+                                </div>
+                                <div class="p-2 bg-yellow-100 rounded-lg">
+                                    <b class="text-yellow-900">輕度颱風</b><br>17.2 ~ 32.6 m/s (8~11級)
+                                </div>
+                                <div class="p-2 bg-orange-100 rounded-lg">
+                                    <b class="text-orange-900">中度颱風</b><br>32.7 ~ 50.9 m/s (12~15級)
+                                </div>
+                                <div class="p-2 bg-rose-100 rounded-lg">
+                                    <b class="text-rose-900">強烈颱風</b><br>≥ 51.0 m/s (16級以上)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: EARTH (大地的變動與岩石) -->
+        <section id="sec-earth" class="tab-content hidden bg-white rounded-3xl p-6 shadow-xl border-4 border-earth-light flex flex-col gap-6">
+            <div class="flex items-center gap-3 border-b-2 border-earth-light pb-3">
+                <span class="bg-earth text-white px-3 py-1 rounded-full font-bold text-sm">土系探索區</span>
+                <h2 class="text-2xl font-bold text-earth-dark">🌱 發現大地的奧秘：岩石與土壤</h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="bg-lime-50 p-4 rounded-2xl border border-lime-200">
+                    <h3 class="font-bold text-lime-900 text-lg mb-2"><i class="fa-solid fa-volcano"></i> 火成岩</h3>
+                    <p class="text-xs text-slate-600 mb-2">岩漿冷凝形成。例如：花崗岩、安山岩、玄武岩。</p>
+                    <div class="bg-white p-3 rounded-xl text-center text-xs font-bold text-slate-700">質地堅硬、微晶/顆粒顯著</div>
+                </div>
+                <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
+                    <h3 class="font-bold text-amber-900 text-lg mb-2"><i class="fa-solid fa-layer-group"></i> 沉積岩</h3>
+                    <p class="text-xs text-slate-600 mb-2">泥沙堆積壓實。例如：頁岩、砂岩、礫岩、石灰岩。</p>
+                    <div class="bg-white p-3 rounded-xl text-center text-xs font-bold text-slate-700">常具有明顯層理與化石</div>
+                </div>
+                <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
+                    <h3 class="font-bold text-emerald-900 text-lg mb-2"><i class="fa-solid fa-gears"></i> 變質岩</h3>
+                    <p class="text-xs text-slate-600 mb-2">高溫高壓變質。例如：大理岩(石灰岩變質)、板岩。</p>
+                    <div class="bg-white p-3 rounded-xl text-center text-xs font-bold text-slate-700">紋理結晶緊密呈條紋狀</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: METAL (電磁與生活) -->
+        <section id="sec-metal" class="tab-content hidden bg-white rounded-3xl p-6 shadow-xl border-4 border-metal-light flex flex-col gap-6">
+            <div class="flex items-center gap-3 border-b-2 border-metal-light pb-3">
+                <span class="bg-metal text-white px-3 py-1 rounded-full font-bold text-sm">金系探索區</span>
+                <h2 class="text-2xl font-bold text-metal-dark">⚡ 電磁與生活 (材料與科技)</h2>
+            </div>
+
+            <!-- Experiment: Electromagnet Dynamic -->
+            <div class="grid md:grid-cols-2 gap-6 bg-yellow-50 p-5 rounded-2xl border border-yellow-200">
+                <div>
+                    <h3 class="text-xl font-bold text-amber-800 mb-2"><i class="fa-solid fa-magnet"></i> 實驗：電磁鐵磁力操控實驗</h3>
+                    <p class="text-sm text-slate-600 mb-4">改變線圈圈數與電池數量，觀察吸起迴紋針的數量！</p>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="font-bold text-sm text-slate-700">線圈圈數：<span id="coils-val">20</span> 圈</label>
+                            <input type="range" id="coil-slider" min="10" max="50" value="20" step="10" oninput="updateMagnet()" class="w-full accent-amber-500">
+                        </div>
+                        <div>
+                            <label class="font-bold text-sm text-slate-700">串聯電池數量：<span id="battery-val">1</span> 顆</label>
+                            <input type="range" id="battery-slider" min="1" max="3" value="1" oninput="updateMagnet()" class="w-full accent-amber-500">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center justify-center bg-white p-4 rounded-xl border border-yellow-100 shadow-inner">
+                    <canvas id="magnet-canvas" width="260" height="180" class="rounded-lg bg-slate-800"></canvas>
+                    <p id="magnet-result" class="text-sm font-bold text-amber-900 mt-2">吸引迴紋針數量：4 支</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-300 py-6 text-center text-sm border-t border-slate-700 mt-auto">
+        <p>五行自然生態系：五大自然科實驗互動教室 © 教學軟體網站</p>
+        <p class="text-xs text-slate-500 mt-1">網址：https://smallfishmoney.github.io/ecosystem/</p>
+    </footer>
+
+    <!-- Interactive Scripts -->
+    <script>
+        // Tab Switcher
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('tab-active'));
+            
+            document.getElementById(`sec-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('tab-active');
+        }
+
+        // Sub-Tab Switcher for Heat Transfer Experiments
+        function switchHeatSubTab(sub) {
+            ['sim', 'summary', 'sustain'].forEach(s => {
+                document.getElementById(`heat-sub-${s}`).classList.add('hidden');
+                const btn = document.getElementById(`subtab-${s}`);
+                btn.className = "px-3 py-1.5 rounded-lg text-amber-800 hover:bg-white/50";
+            });
+
+            document.getElementById(`heat-sub-${sub}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`subtab-${sub}`);
+            activeBtn.className = "px-3 py-1.5 rounded-lg bg-white text-amber-900 shadow font-bold";
+        }
+
+        // ==================== FIRE: Experiment 3 (Dynamic Interactive Insulation & Dissipation Simulator) ====================
+        let currentHeatDevice = 'thermos'; // 'thermos', 'coolbag', 'icepack', 'fan'
+        let simTemp = 95.0; // Current Object Temperature
+        let simOptVacuum = true; // Thermos: Vacuum Layer
+        let simOptLid = true;    // Thermos: Lid Closed
+        let simOptFoil = true;   // Coolbag: Aluminum Foil Reflection
+        let simOptFanSpeed = 2;  // Fan: 1 (Slow), 2 (Medium), 3 (Fast)
+
+        const simCanvas = document.getElementById('heat-sim-canvas');
+        const simCtx = simCanvas.getContext('2d');
+
+        function selectHeatDevice(device) {
+            currentHeatDevice = device;
+            ['thermos', 'coolbag', 'icepack', 'fan'].forEach(d => {
+                const btn = document.getElementById(`btn-device-${d}`);
+                if (d === device) {
+                    btn.className = "bg-amber-600 text-white p-2.5 rounded-xl text-xs font-bold shadow text-left flex items-center gap-2";
+                } else {
+                    btn.className = "bg-white text-slate-700 p-2.5 rounded-xl text-xs font-bold hover:bg-amber-100 transition text-left flex items-center gap-2 border border-amber-200";
+                }
+            });
+
+            resetHeatSim();
+            renderSimControls();
+        }
+
+        function resetHeatSim() {
+            if (currentHeatDevice === 'thermos') simTemp = 95.0;
+            else if (currentHeatDevice === 'coolbag') simTemp = 2.0; // Cold beverage inside
+            else if (currentHeatDevice === 'icepack') simTemp = 38.0; // Human Body Skin Temp
+            else if (currentHeatDevice === 'fan') simTemp = 32.0; // Room Air Temp
+        }
+
+        function renderSimControls() {
+            const container = document.getElementById('sim-controls-container');
+            const title = document.getElementById('heat-sim-canvas-title');
+            const physicsDesc = document.getElementById('sim-physics-desc');
+
+            if (currentHeatDevice === 'thermos') {
+                title.innerText = "保溫瓶：雙層真空與瓶盖阻隔熱傳播實驗";
+                physicsDesc.innerHTML = "<b>【保溫原理】</b><br>• <b>雙層真空：</b>抽取夾層空氣，徹底阻隔熱<b>傳導</b>與熱<b>對流</b>。<br>• <b>密閉瓶蓋：</b>阻隔瓶口空氣<b>對流</b>與熱水蒸發。<br>• <b>內膽鍍銀：</b>反射<b>輻射熱</b>。";
+                container.innerHTML = `
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="font-bold text-slate-700">1. 開啟雙層真空夾層 (阻隔傳導/對流)：</span>
+                        <input type="checkbox" id="chk-vacuum" ${simOptVacuum ? 'checked' : ''} onchange="simOptVacuum=this.checked" class="w-4 h-4 accent-amber-600">
+                    </label>
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="font-bold text-slate-700">2. 蓋緊瓶蓋 (阻隔氣體對流)：</span>
+                        <input type="checkbox" id="chk-lid" ${simOptLid ? 'checked' : ''} onchange="simOptLid=this.checked" class="w-4 h-4 accent-amber-600">
+                    </label>
+                `;
+            } else if (currentHeatDevice === 'coolbag') {
+                title.innerText = "保冷袋：鋁箔反射輻射熱與氣泡夾層實驗";
+                physicsDesc.innerHTML = "<b>【保冷保溫原理】</b><br>• <b>亮面鋁箔：</b>將外界環境的<b>輻射熱</b>有效反射掉。<br>• <b>微孔泡棉夾層：</b>減緩熱的<b>傳導</b>，維持袋內低溫。";
+                container.innerHTML = `
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="font-bold text-slate-700">1. 包覆反射鋁箔層 (反射輻射熱)：</span>
+                        <input type="checkbox" id="chk-foil" ${simOptFoil ? 'checked' : ''} onchange="simOptFoil=this.checked" class="w-4 h-4 accent-amber-600">
+                    </label>
+                `;
+            } else if (currentHeatDevice === 'icepack') {
+                title.innerText = "冰敷袋：接觸面熱傳導迅速降溫實驗";
+                physicsDesc.innerHTML = "<b>【散熱降溫原理】</b><br>• <b>熱傳導應用：</b>皮膚高溫處與冰敷袋低溫處直接接觸，熱量快速自皮膚<b>傳導</b>至冰袋，達到迅速局部散熱與退燒消腫效果。";
+                container.innerHTML = `
+                    <div class="text-slate-600 font-semibold">
+                        🧊 冰敷袋（0°C）緊貼皮膚（38°C），熱能將持續透過<b>傳導</b>傳向冰袋！
+                    </div>
+                `;
+            } else if (currentHeatDevice === 'fan') {
+                title.innerText = "循環扇：加速空氣對流帶走熱能實驗";
+                physicsDesc.innerHTML = "<b>【散熱降溫原理】</b><br>• <b>空氣對流：</b>循環扇強烈氣流帶動室內空氣循環，加速<b>對流</b>，迅速帶走發熱物體表面的熱氣。";
+                container.innerHTML = `
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-700 flex justify-between">
+                            <span>循環扇風速設定：</span>
+                            <span id="fan-speed-lbl" class="text-amber-700 font-extrabold">${simOptFanSpeed} 檔 (中風)</span>
+                        </label>
+                        <input type="range" min="1" max="3" value="${simOptFanSpeed}" oninput="simOptFanSpeed=parseInt(this.value); document.getElementById('fan-speed-lbl').innerText=this.value+' 檔'" class="w-full accent-amber-600 cursor-pointer">
+                    </div>
+                `;
+            }
+        }
+
+        function drawHeatSimCanvas() {
+            simCtx.clearRect(0, 0, simCanvas.width, simCanvas.height);
+
+            const displayTemp = document.getElementById('sim-temp-display');
+            const displayLoss = document.getElementById('sim-loss-display');
+            const badge = document.getElementById('sim-status-badge');
+
+            if (currentHeatDevice === 'thermos') {
+                let lossRate = 0.08;
+                if (simOptVacuum) lossRate *= 0.15;
+                if (simOptLid) lossRate *= 0.2;
+
+                simTemp = Math.max(25.0, simTemp - lossRate);
+                displayTemp.innerText = `${simTemp.toFixed(1)} °C`;
+                displayTemp.className = simTemp > 60 ? "text-rose-400 text-sm font-bold" : "text-amber-400 text-sm font-bold";
+
+                if (simOptVacuum && simOptLid) {
+                    displayLoss.innerText = "極慢 (完美保溫)";
+                    displayLoss.className = "text-emerald-400 font-bold";
+                    badge.innerText = "🛡️ 強效保溫中";
+                    badge.className = "bg-emerald-600 text-white px-2 py-0.5 rounded text-[10px] font-bold";
+                } else {
+                    displayLoss.innerText = "快速散熱中";
+                    displayLoss.className = "text-rose-400 font-bold animate-pulse";
+                    badge.innerText = "⚠️ 熱能散失中";
+                    badge.className = "bg-rose-600 text-white px-2 py-0.5 rounded text-[10px] font-bold";
+                }
+
+                simCtx.strokeStyle = '#94A3B8';
+                simCtx.lineWidth = 4;
+                simCtx.strokeRect(160, 50, 100, 160);
+
+                if (simOptVacuum) {
+                    simCtx.fillStyle = 'rgba(56, 189, 248, 0.2)';
+                    simCtx.fillRect(164, 54, 92, 152);
+                    simCtx.fillStyle = '#38BDF8';
+                    simCtx.font = 'bold 10px sans-serif';
+                    simCtx.fillText("真空無空氣 (無傳導/對流)", 167, 130);
+                } else {
+                    simCtx.fillStyle = 'rgba(239, 68, 68, 0.2)';
+                    simCtx.fillRect(164, 54, 92, 152);
+                    simCtx.fillStyle = '#F87171';
+                    simCtx.font = 'bold 10px sans-serif';
+                    simCtx.fillText("含空氣 (熱傳導流失)", 172, 130);
+                }
+
+                const fillH = (simTemp / 100) * 110;
+                simCtx.fillStyle = simTemp > 60 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(245, 158, 11, 0.7)';
+                simCtx.fillRect(180, 200 - fillH, 60, fillH);
+
+                if (simOptLid) {
+                    simCtx.fillStyle = '#475569';
+                    simCtx.fillRect(160, 35, 100, 15);
+                    simCtx.fillStyle = '#E2E8F0';
+                    simCtx.font = 'bold 10px sans-serif';
+                    simCtx.fillText("密閉瓶蓋 (阻對流)", 170, 46);
+                } else {
+                    simCtx.fillStyle = 'rgba(248, 113, 113, 0.6)';
+                    for (let i = 0; i < 5; i++) {
+                        const rx = 180 + Math.sin(Date.now() / 200 + i) * 15 + i * 8;
+                        const ry = 40 - (Date.now() / 20 % 30) - i * 5;
+                        simCtx.beginPath();
+                        simCtx.arc(rx, ry, 4, 0, Math.PI * 2);
+                        simCtx.fill();
+                    }
+                    simCtx.fillStyle = '#EF4444';
+                    simCtx.font = 'bold 10px sans-serif';
+                    simCtx.fillText("未蓋蓋子！空氣對流散熱 ⬆", 150, 25);
+                }
+
+            } else if (currentHeatDevice === 'coolbag') {
+                let heatInflow = simOptFoil ? 0.01 : 0.09;
+                simTemp = Math.min(25.0, simTemp + heatInflow);
+                displayTemp.innerText = `${simTemp.toFixed(1)} °C`;
+                displayTemp.className = "text-cyan-300 font-bold";
+
+                displayLoss.innerText = simOptFoil ? "熱輻射反射 (良好保冷)" : "熱輻射入侵 (快速升溫)";
+                displayLoss.className = simOptFoil ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
+                badge.innerText = simOptFoil ? "🛡️ 輻射反射中" : "⚠️ 吸收外界輻射熱";
+
+                simCtx.fillStyle = simOptFoil ? '#E2E8F0' : '#78350F';
+                simCtx.fillRect(150, 70, 120, 130);
+                simCtx.strokeStyle = simOptFoil ? '#38BDF8' : '#92400E';
+                simCtx.lineWidth = 4;
+                simCtx.strokeRect(150, 70, 120, 130);
+
+                simCtx.fillStyle = '#38BDF8';
+                simCtx.fillRect(180, 120, 60, 60);
+                simCtx.fillStyle = '#FFFFFF';
+                simCtx.font = 'bold 10px sans-serif';
+                simCtx.fillText("冰飲 2°C", 192, 155);
+
+                const rayOffset = (Date.now() / 30) % 30;
+                simCtx.strokeStyle = '#F59E0B';
+                simCtx.lineWidth = 2;
+                for (let i = 0; i < 3; i++) {
+                    const startX = 50 + i * 25 + rayOffset;
+                    simCtx.beginPath();
+                    simCtx.moveTo(startX, 60);
+                    simCtx.lineTo(startX + 60, 120);
+                    simCtx.stroke();
+
+                    if (simOptFoil && startX + 60 >= 150) {
+                        simCtx.strokeStyle = '#38BDF8';
+                        simCtx.beginPath();
+                        simCtx.moveTo(150, 120);
+                        simCtx.lineTo(90, 170);
+                        simCtx.stroke();
+                        simCtx.strokeStyle = '#F59E0B';
+                    }
+                }
+
+                simCtx.fillStyle = '#F59E0B';
+                simCtx.font = 'bold 11px sans-serif';
+                simCtx.fillText("☀️ 外界太陽熱輻射", 40, 45);
+
+            } else if (currentHeatDevice === 'icepack') {
+                simTemp = Math.max(15.0, simTemp - 0.12);
+                displayTemp.innerText = `${simTemp.toFixed(1)} °C`;
+                displayTemp.className = "text-cyan-300 font-bold";
+                displayLoss.innerText = "高溫向低溫傳導中";
+                displayLoss.className = "text-cyan-400 font-bold";
+                badge.innerText = "❄️ 熱傳導快速降溫";
+
+                simCtx.fillStyle = '#FCA5A5';
+                simCtx.fillRect(50, 140, 320, 70);
+                simCtx.fillStyle = '#991B1B';
+                simCtx.font = 'bold 12px sans-serif';
+                simCtx.fillText(`皮膚表面溫度：${simTemp.toFixed(1)}°C (熱能輸出 ➔)`, 60, 180);
+
+                simCtx.fillStyle = '#0284C7';
+                simCtx.fillRect(130, 70, 160, 70);
+                simCtx.strokeStyle = '#BAE6FD';
+                simCtx.lineWidth = 3;
+                simCtx.strokeRect(130, 70, 160, 70);
+
+                simCtx.fillStyle = '#FFFFFF';
+                simCtx.font = 'bold 12px sans-serif';
+                simCtx.fillText("🧊 冰敷袋 (0°C)", 170, 110);
+
+                const arrowY = 140;
+                simCtx.strokeStyle = '#EF4444';
+                simCtx.lineWidth = 3;
+                for (let x = 160; x <= 260; x += 30) {
+                    simCtx.beginPath();
+                    simCtx.moveTo(x, arrowY + 20);
+                    simCtx.lineTo(x, arrowY - 20);
+                    simCtx.stroke();
+
+                    simCtx.fillStyle = '#EF4444';
+                    simCtx.beginPath();
+                    simCtx.arc(x, arrowY - 20, 4, 0, Math.PI * 2);
+                    simCtx.fill();
+                }
+
+            } else if (currentHeatDevice === 'fan') {
+                simTemp = Math.max(26.0, simTemp - simOptFanSpeed * 0.05);
+                displayTemp.innerText = `${simTemp.toFixed(1)} °C`;
+                displayTemp.className = "text-blue-300 font-bold";
+                displayLoss.innerText = `風速 ${simOptFanSpeed} 檔 (熱對流加速)`;
+                displayLoss.className = "text-blue-400 font-bold";
+                badge.innerText = "💨 強效對流中";
+
+                simCtx.save();
+                simCtx.translate(100, 130);
+                simCtx.rotate(Date.now() * 0.01 * simOptFanSpeed);
+                simCtx.fillStyle = '#38BDF8';
+                for (let i = 0; i < 4; i++) {
+                    simCtx.rotate(Math.PI / 2);
+                    simCtx.fillRect(-5, -35, 10, 35);
+                }
+                simCtx.restore();
+
+                simCtx.fillStyle = '#64748B';
+                simCtx.fillRect(95, 160, 10, 50);
+
+                const windX = (Date.now() * 0.2 * simOptFanSpeed) % 180 + 130;
+                simCtx.strokeStyle = '#7DD3FC';
+                simCtx.lineWidth = 2;
+                for (let i = 0; i < 4; i++) {
+                    simCtx.beginPath();
+                    simCtx.moveTo(windX - 30, 90 + i * 25);
+                    simCtx.lineTo(windX, 90 + i * 25);
+                    simCtx.stroke();
+                }
+
+                simCtx.fillStyle = '#F59E0B';
+                simCtx.fillRect(300, 90, 70, 90);
+                simCtx.fillStyle = '#78350F';
+                simCtx.font = 'bold 11px sans-serif';
+                simCtx.fillText("發熱體", 315, 140);
+                simCtx.fillText(`${simTemp.toFixed(1)}°C`, 315, 155);
+            }
+        }
+
+        setInterval(drawHeatSimCanvas, 50);
+        renderSimControls();
+
+        // ==================== FIRE: Experiment 1 ====================
+        let expState = 'gas'; 
+        let expTemp = 25;     
+        const expCanvas = document.getElementById('expansion-canvas');
+        const expCtx = expCanvas.getContext('2d');
+
+        const curriculumData = {
+            gas: {
+                title: "氣體：錐形瓶套氣球實驗",
+                badge: "氣體體積變化最大",
+                desc: "錐形瓶受熱時，瓶內空氣受熱<b>體積變大，氣球膨脹立起</b>；遇冷時，空氣遇冷<b>體積變小，氣球收縮扁平</b>。微觀下，氣體粒子可自由移動，間距變化顯著。",
+                app: "汽車輪胎在冬天降溫遇冷時容易收縮，出現胎壓不足的現象。"
+            },
+            liquid: {
+                title: "液體：錐形瓶插細玻璃管實驗",
+                badge: "液體體積變化中等",
+                desc: "錐形瓶內的水受熱後<b>體積變大，玻璃管水位上升</b>；遇冷後<b>體積變小，玻璃管水位下降</b>。微觀下，液體粒子在範圍內移動，間距隨溫度中等變動。",
+                app: "溫度計（水溫計/酒精溫度計）中的液體會隨溫度升降而上升或下降。"
+            },
+            solid: {
+                title: "固體：金屬銅球與銅環過環實驗",
+                badge: "固體體積變化最小",
+                desc: "銅球受熱時<b>體積膨脹，無法穿過銅環</b>；遇冷時<b>體積縮小，可以順利通過銅環</b>。微觀下，金屬粒子緊密排列，僅在原位微幅振動，間距微幅變動。",
+                app: "瓶蓋緊鎖打不開時，泡入熱水加熱後，瓶蓋膨脹變得容易打開。"
+            }
+        };
+
+        function setExpansionState(state) {
+            expState = state;
+            ['gas', 'liquid', 'solid'].forEach(s => {
+                const btn = document.getElementById(`btn-exp-${s}`);
+                if (s === state) {
+                    btn.className = "bg-orange-500 text-white p-2 rounded-xl text-xs font-bold shadow ring-2 ring-orange-400 text-center";
+                } else {
+                    btn.className = "bg-white text-slate-700 p-2 rounded-xl text-xs font-bold hover:bg-orange-100 transition text-center border border-orange-200";
+                }
+            });
+
+            document.getElementById('canvas-mode-title').innerText = curriculumData[state].title;
+            document.getElementById('exp-type-badge').innerText = curriculumData[state].badge;
+            document.getElementById('exp-desc-text').innerHTML = curriculumData[state].desc;
+            document.getElementById('exp-app-text').innerText = curriculumData[state].app;
+
+            drawExpansion();
+        }
+
+        function updateTemp(val) {
+            expTemp = parseInt(val);
+            document.getElementById('temp-val').innerText = expTemp;
+            
+            const tag = document.getElementById('temp-status-tag');
+            if (expTemp < 15) {
+                tag.innerText = "❄️ 遇冷收縮中";
+                tag.className = "text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold border border-blue-300";
+            } else if (expTemp > 60) {
+                tag.innerText = "🔥 受熱膨脹中";
+                tag.className = "text-xs px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold border border-rose-300 animate-pulse";
+            } else {
+                tag.innerText = "常溫狀態";
+                tag.className = "text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold";
+            }
+
+            drawExpansion();
+        }
+
+        function quickTemp(val) {
+            document.getElementById('temp-slider').value = val;
+            updateTemp(val);
+        }
+
+        function drawExpansion() {
+            expCtx.clearRect(0, 0, expCanvas.width, expCanvas.height);
+
+            expCtx.fillStyle = '#1E293B';
+            expCtx.fillRect(10, 10, 210, 240);
+            expCtx.strokeStyle = '#475569';
+            expCtx.strokeRect(10, 10, 210, 240);
+
+            expCtx.fillStyle = '#0F172A';
+            expCtx.fillRect(230, 10, 220, 240);
+            expCtx.strokeStyle = '#475569';
+            expCtx.strokeRect(230, 10, 220, 240);
+
+            const bathColor = expTemp > 50 ? `rgba(239, 68, 68, ${0.1 + (expTemp-50)/100})` : `rgba(59, 130, 246, ${0.1 + (50-expTemp)/100})`;
+            expCtx.fillStyle = bathColor;
+            expCtx.fillRect(20, 120, 190, 120);
+            expCtx.strokeStyle = expTemp > 50 ? '#EF4444' : '#3B82F6';
+            expCtx.strokeRect(20, 120, 190, 120);
+
+            expCtx.fillStyle = '#94A3B8';
+            expCtx.font = 'bold 10px sans-serif';
+            expCtx.fillText(`燒杯水溫：${expTemp}°C`, 25, 135);
+
+            if (expState === 'gas') {
+                expCtx.strokeStyle = '#CBD5E1';
+                expCtx.lineWidth = 3;
+                expCtx.beginPath();
+                expCtx.moveTo(90, 100);
+                expCtx.lineTo(105, 140);
+                expCtx.lineTo(65, 210);
+                expCtx.lineTo(165, 210);
+                expCtx.lineTo(125, 140);
+                expCtx.lineTo(140, 100);
+                expCtx.closePath();
+                expCtx.stroke();
+
+                const gasFactor = expTemp / 100;
+                if (expTemp < 20) {
+                    const shrinkFactor = (20 - expTemp) / 20;
+                    expCtx.fillStyle = '#FF6B6B';
+                    expCtx.beginPath();
+                    expCtx.ellipse(115, 102 + shrinkFactor * 6, 12 - shrinkFactor * 4, 8 - shrinkFactor * 4, 0, 0, Math.PI * 2);
+                    expCtx.fill();
+                    expCtx.strokeStyle = '#C53030';
+                    expCtx.stroke();
+                } else {
+                    const balloonRadius = 12 + gasFactor * 26;
+                    const thermalJitter = expTemp > 70 ? Math.sin(Date.now() / 150) * 1.5 : 0;
+                    expCtx.fillStyle = '#FF6B6B';
+                    expCtx.beginPath();
+                    expCtx.arc(115 + thermalJitter, 100 - balloonRadius, balloonRadius, 0, Math.PI * 2);
+                    expCtx.fill();
+                    expCtx.strokeStyle = '#C53030';
+                    expCtx.lineWidth = 2;
+                    expCtx.stroke();
+                }
+
+            } else if (expState === 'liquid') {
+                expCtx.strokeStyle = '#CBD5E1';
+                expCtx.lineWidth = 3;
+                expCtx.beginPath();
+                expCtx.moveTo(90, 120);
+                expCtx.lineTo(105, 150);
+                expCtx.lineTo(65, 210);
+                expCtx.lineTo(165, 210);
+                expCtx.lineTo(125, 150);
+                expCtx.lineTo(140, 120);
+                expCtx.closePath();
+                expCtx.stroke();
+
+                expCtx.fillStyle = '#60A5FA';
+                expCtx.fillRect(70, 180, 90, 30);
+
+                expCtx.strokeStyle = '#E2E8F0';
+                expCtx.strokeRect(110, 40, 10, 120);
+
+                const waterHeight = 8 + (expTemp / 100) * 105;
+                expCtx.fillStyle = '#2563EB';
+                expCtx.fillRect(112, 160 - waterHeight, 6, waterHeight);
+
+            } else if (expState === 'solid') {
+                expCtx.strokeStyle = '#D97706';
+                expCtx.lineWidth = 8;
+                expCtx.beginPath();
+                expCtx.arc(115, 140, 25, 0, Math.PI * 2);
+                expCtx.stroke();
+
+                const ballRadius = 23 + (expTemp / 100) * 4.5;
+                const passes = ballRadius <= 25;
+
+                expCtx.fillStyle = passes ? '#B45309' : '#EF4444';
+                expCtx.beginPath();
+                expCtx.arc(115, passes ? 140 : 110, ballRadius, 0, Math.PI * 2);
+                expCtx.fill();
+
+                expCtx.fillStyle = '#FFFFFF';
+                expCtx.font = 'bold 11px sans-serif';
+                expCtx.fillText(passes ? "✅ 能通過銅環" : "❌ 膨脹卡住！", 75, 225);
+            }
+
+            const count = 36;
+            const speed = (expTemp / 100) * 3.5 + 0.3;
+            const gapFactor = (expTemp / 100);
+
+            expCtx.fillStyle = '#CBD5E1';
+            expCtx.font = 'bold 10px sans-serif';
+            expCtx.fillText("粒子排列與運動間距模式：", 240, 28);
+
+            if (expState === 'gas') {
+                expCtx.fillStyle = '#38BDF8';
+                for (let i = 0; i < count; i++) {
+                    const rx = (Math.sin(i * 17 + Date.now()/400) * (60 + gapFactor * 35) + 340) % 200 + 240;
+                    const ry = (Math.cos(i * 31 + Date.now()/400) * (60 + gapFactor * 35) + 130) % 190 + 40;
+                    expCtx.beginPath();
+                    expCtx.arc(rx, ry, 5, 0, Math.PI * 2);
+                    expCtx.fill();
+                }
+            } else if (expState === 'liquid') {
+                expCtx.fillStyle = '#60A5FA';
+                for (let i = 0; i < count; i++) {
+                    const row = Math.floor(i / 6);
+                    const col = i % 6;
+                    const rx = 270 + col * (18 + gapFactor * 6) + (Math.random() - 0.5) * speed;
+                    const ry = 80 + row * (18 + gapFactor * 6) + (Math.random() - 0.5) * speed;
+                    expCtx.beginPath();
+                    expCtx.arc(rx, ry, 6, 0, Math.PI * 2);
+                    expCtx.fill();
+                }
+            } else if (expState === 'solid') {
+                expCtx.fillStyle = '#F59E0B';
+                for (let i = 0; i < count; i++) {
+                    const row = Math.floor(i / 6);
+                    const col = i % 6;
+                    const rx = 280 + col * (19 + gapFactor * 2) + (Math.random() - 0.5) * (speed * 0.4);
+                    const ry = 70 + row * (19 + gapFactor * 2) + (Math.random() - 0.5) * (speed * 0.4);
+                    expCtx.beginPath();
+                    expCtx.arc(rx, ry, 7, 0, Math.PI * 2);
+                    expCtx.fill();
+                }
+            }
+        }
+
+        setInterval(drawExpansion, 50);
+
+        // ==================== FIRE: 1-2 Heat Transfer Simulation ====================
+        const transferCanvas = document.getElementById('transfer-canvas');
+        const transferCtx = transferCanvas.getContext('2d');
+        
+        let transferMode = 'cond'; 
+        let saltWaterTempType = 'hot'; 
+        let saltTemp = 25.0; 
+        
+        let isPipetteInjected = false;
+        let redWaterFlowY = 220;
+
+        let smokeGroup = 'AB'; 
+        let smokeParticles = [];
+
+        function setTransferExp(mode) {
+            transferMode = mode;
+            ['cond', 'conv', 'gasconv'].forEach(m => {
+                document.getElementById(`btn-mode-${m}`).className = "bg-slate-100 text-slate-700 p-2 rounded-xl text-xs font-bold hover:bg-rose-100 transition text-left border border-rose-200";
+                document.getElementById(`subpanel-${m}`).classList.add('hidden');
+            });
+            document.getElementById(`btn-mode-${mode}`).className = "bg-rose-500 text-white p-2 rounded-xl text-xs font-bold shadow ring-2 ring-rose-400 text-left";
+            document.getElementById(`subpanel-${mode}`).classList.remove('hidden');
+
+            if (mode === 'cond') {
+                document.getElementById('transfer-canvas-title').innerText = "固體傳導：裝食鹽燒杯浸泡實驗";
+                document.getElementById('transfer-subtext').innerText = "微小粒子將熱自高溫處傳向低溫處";
+                runSaltExp('hot');
+            } else if (mode === 'conv') {
+                document.getElementById('transfer-canvas-title').innerText = "液體對流：60°C紅熱水 vs 10°C藍冰水";
+                document.getElementById('transfer-subtext').innerText = "熱升冷降：紅色熱水向上流動，藍色冰水沉降底部";
+                isPipetteInjected = false;
+                redWaterFlowY = 220;
+                document.getElementById('transfer-desc').innerHTML = "請點擊上方按鈕，將 <b>60°C 熱水</b> 與 <b>10°C 冰水</b> 滴管深入水箱底部並同時擠出！觀察紅色熱水向上流動、藍色冰水沉在底部的動態。";
+            } else if (mode === 'gasconv') {
+                document.getElementById('transfer-canvas-title').innerText = "氣體對流：雙瓶煙霧實驗 A、B、C、D 組";
+                document.getElementById('transfer-subtext').innerText = "核心口訣：熱升冷降";
+                setSmokeGroup('AB');
+            }
+        }
+
+        function runSaltExp(type) {
+            saltWaterTempType = type;
+            if (type === 'hot') {
+                document.getElementById('btn-salt-hot').className = "flex-1 bg-rose-600 text-white p-2 rounded-xl text-xs font-bold shadow";
+                document.getElementById('btn-salt-cool').className = "flex-1 bg-slate-200 text-slate-700 p-2 rounded-xl text-xs font-bold";
+                saltTemp = 25.0;
+                document.getElementById('transfer-desc').innerText = "在 70°C 熱水中，食鹽中溫度計刻度隨時間上升！證明熱會經由微小粒子從高溫處傳向低溫處，稱為「傳導」。";
+            } else {
+                document.getElementById('btn-salt-cool').className = "flex-1 bg-blue-600 text-white p-2 rounded-xl text-xs font-bold shadow";
+                document.getElementById('btn-salt-hot').className = "flex-1 bg-slate-200 text-slate-700 p-2 rounded-xl text-xs font-bold";
+                saltTemp = 25.0;
+                document.getElementById('transfer-desc').innerText = "在 25°C 常溫水中，食鹽中溫度計刻度保持不變，因無溫差熱量無傳導推動力。";
+            }
+        }
+
+        function injectPipettes() {
+            isPipetteInjected = true;
+            redWaterFlowY = 220;
+            document.getElementById('transfer-desc').innerHTML = "<b>【實驗結果與推論】</b><br>水箱底部熱紅色染料 (60°C) 會<b>向上流動</b>到低溫處；上層較低溫的水 (10°C) 會<b>往下流動</b>。<br>在液體中，熱會從<u>高溫處</u>傳送到<u>低溫處</u>，直到容器內水溫相同，稱為<b>「對流」</b>。（遵循<b>熱升冷降</b>規律）";
+        }
+
+        function setSmokeGroup(group) {
+            smokeGroup = group;
+            smokeParticles = [];
+            
+            const bottles = [
+                { id: 'A', x: 10 },
+                { id: 'B', x: 75 },
+                { id: 'C', x: 140 },
+                { id: 'D', x: 205 }
+            ];
+
+            bottles.forEach(b => {
+                for(let i = 0; i < 15; i++) {
+                    let startY;
+                    if (b.id === 'A') startY = 45 + Math.random() * 35;       
+                    else if (b.id === 'B') startY = 135 + Math.random() * 35; 
+                    else if (b.id === 'C') startY = 135 + Math.random() * 35; 
+                    else if (b.id === 'D') startY = 45 + Math.random() * 35;  
+
+                    smokeParticles.push({
+                        bottle: b.id,
+                        x: b.x + 12 + (Math.random() - 0.5) * 16,
+                        y: startY,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: (Math.random() - 0.5) * 0.5
+                    });
+                }
+            });
+
+            if (group === 'AB') {
+                document.getElementById('btn-smoke-AB').className = "bg-amber-600 text-white p-2 rounded-xl text-xs font-bold shadow";
+                document.getElementById('btn-smoke-CD').className = "bg-slate-200 text-slate-700 p-2 rounded-xl text-xs font-bold hover:bg-rose-100";
+                document.getElementById('transfer-desc').innerHTML = "<b>【熱瓶在上方 (A、B 組)】</b><br>• <b>A瓶 (熱瓶在上，煙在上)：</b> 熱空氣原本就在上方，煙霧留在上瓶不向下流動。<br>• <b>B瓶 (熱瓶在上，煙在下)：</b> 下方為冷瓶，熱空氣不會向下移動。<br>👉 <b>結論：</b>上方為熱瓶時無劇烈對流。";
+            } else {
+                document.getElementById('btn-smoke-CD').className = "bg-amber-600 text-white p-2 rounded-xl text-xs font-bold shadow";
+                document.getElementById('btn-smoke-AB').className = "bg-slate-200 text-slate-700 p-2 rounded-xl text-xs font-bold hover:bg-rose-100";
+                document.getElementById('transfer-desc').innerHTML = "<b>【冷瓶在上方 (C、D 組)】</b><br>• <b>C瓶 (冷瓶在上，煙在下方熱瓶)：</b> 下方熱空氣受熱上升，帶動煙霧向上流動！<br>• <b>D瓶 (冷瓶在上，煙在上方冷瓶)：</b> 上方冷空氣較重帶動煙霧向下降落至熱瓶！<br>👉 <b>結論：</b>遵循<b>熱升冷降</b>規律產生強烈氣體對流。";
+            }
+        }
+
+        function animateTransferCanvas() {
+            transferCtx.clearRect(0, 0, transferCanvas.width, transferCanvas.height);
+
+            if (transferMode === 'cond') {
+                transferCtx.fillStyle = saltWaterTempType === 'hot' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(148, 163, 184, 0.25)';
+                transferCtx.strokeStyle = saltWaterTempType === 'hot' ? '#EF4444' : '#64748B';
+                transferCtx.lineWidth = 3;
+                transferCtx.fillRect(40, 110, 200, 120);
+                transferCtx.strokeRect(40, 110, 200, 120);
+
+                transferCtx.fillStyle = '#FFFFFF';
+                transferCtx.font = 'bold 11px sans-serif';
+                transferCtx.fillText(saltWaterTempType === 'hot' ? '約 70°C 熱水盆' : '約 25°C 常溫水盆', 50, 130);
+
+                transferCtx.strokeStyle = '#CBD5E1';
+                transferCtx.strokeRect(90, 80, 100, 120);
+                transferCtx.fillStyle = '#F8FAFC'; 
+                transferCtx.fillRect(92, 120, 96, 78);
+                transferCtx.fillStyle = '#64748B';
+                transferCtx.fillText('等量食鹽', 115, 150);
+
+                transferCtx.strokeStyle = '#94A3B8';
+                transferCtx.strokeRect(135, 30, 10, 140);
+                
+                if (saltWaterTempType === 'hot' && saltTemp < 68.0) {
+                    saltTemp += 0.2; 
+                }
+                const mercuryH = (saltTemp / 100) * 110;
+                transferCtx.fillStyle = '#EF4444';
+                transferCtx.fillRect(137, 165 - mercuryH, 6, mercuryH);
+                
+                transferCtx.fillStyle = '#EF4444';
+                transferCtx.font = 'bold 12px sans-serif';
+                transferCtx.fillText(`${saltTemp.toFixed(1)}°C`, 152, 60);
+
+            } else if (transferMode === 'conv') {
+                transferCtx.fillStyle = 'rgba(240, 249, 255, 0.9)';
+                transferCtx.strokeStyle = '#38BDF8';
+                transferCtx.lineWidth = 3;
+                transferCtx.fillRect(30, 50, 220, 180);
+                transferCtx.strokeRect(30, 50, 220, 180);
+
+                transferCtx.fillStyle = '#0284C7';
+                transferCtx.font = 'bold 11px sans-serif';
+                transferCtx.fillText("透明水箱 (常溫水)", 90, 70);
+
+                transferCtx.fillStyle = '#EF4444';
+                transferCtx.fillRect(60, 20, 10, 180);
+                transferCtx.beginPath();
+                transferCtx.arc(65, 15, 12, 0, Math.PI * 2);
+                transferCtx.fill();
+                transferCtx.fillStyle = '#FCA5A5';
+                transferCtx.font = 'bold 9px sans-serif';
+                transferCtx.fillText("熱水 60°C", 40, 35);
+
+                transferCtx.fillStyle = '#3B82F6';
+                transferCtx.fillRect(205, 20, 10, 180);
+                transferCtx.beginPath();
+                transferCtx.arc(210, 15, 12, 0, Math.PI * 2);
+                transferCtx.fill();
+                transferCtx.fillStyle = '#93C5FD';
+                transferCtx.fillText("冰水 10°C", 195, 35);
+
+                if (isPipetteInjected) {
+                    if (redWaterFlowY > 90) redWaterFlowY -= 1.5;
+                    
+                    transferCtx.fillStyle = 'rgba(239, 68, 68, 0.65)';
+                    transferCtx.beginPath();
+                    transferCtx.ellipse(85, redWaterFlowY, 35, 20, 0, 0, Math.PI * 2);
+                    transferCtx.fill();
+
+                    transferCtx.strokeStyle = '#DC2626';
+                    transferCtx.lineWidth = 2.5;
+                    transferCtx.beginPath();
+                    transferCtx.moveTo(65, 200);
+                    transferCtx.lineTo(65, redWaterFlowY + 10);
+                    transferCtx.stroke();
+
+                    transferCtx.fillStyle = 'rgba(59, 130, 246, 0.65)';
+                    transferCtx.beginPath();
+                    transferCtx.ellipse(190, 215, 40, 12, 0, 0, Math.PI * 2);
+                    transferCtx.fill();
+
+                    transferCtx.fillStyle = '#B91C1C';
+                    transferCtx.font = 'bold 11px sans-serif';
+                    transferCtx.fillText("熱水上升 ⬆", 40, redWaterFlowY - 10);
+                    
+                    transferCtx.fillStyle = '#1D4ED8';
+                    transferCtx.fillText("冰水沉底 ⬇", 175, 195);
+                } else {
+                    transferCtx.fillStyle = '#64748B';
+                    transferCtx.font = 'bold 11px sans-serif';
+                    transferCtx.fillText("點擊上方按鈕擠出滴管試劑", 70, 140);
+                }
+
+            } else if (transferMode === 'gasconv') {
+                const groups = [
+                    { label: 'A', x: 10, isHotTop: true },
+                    { label: 'B', x: 75, isHotTop: true },
+                    { label: 'C', x: 140, isHotTop: false },
+                    { label: 'D', x: 205, isHotTop: false }
+                ];
+
+                groups.forEach(g => {
+                    transferCtx.fillStyle = '#F59E0B';
+                    transferCtx.font = 'bold 12px sans-serif';
+                    transferCtx.fillText(g.label, g.x + 28, 35);
+
+                    transferCtx.fillStyle = g.isHotTop ? 'rgba(239, 68, 68, 0.2)' : 'rgba(59, 130, 246, 0.2)';
+                    transferCtx.strokeStyle = g.isHotTop ? '#EF4444' : '#3B82F6';
+                    transferCtx.lineWidth = 1.5;
+                    transferCtx.fillRect(g.x + 10, 40, 45, 55);
+                    transferCtx.strokeRect(g.x + 10, 40, 45, 55);
+
+                    transferCtx.strokeStyle = '#94A3B8';
+                    transferCtx.lineWidth = 1;
+                    transferCtx.strokeRect(g.x + 23, 95, 19, 10);
+
+                    transferCtx.fillStyle = g.isHotTop ? 'rgba(59, 130, 246, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+                    transferCtx.strokeStyle = g.isHotTop ? '#3B82F6' : '#EF4444';
+                    transferCtx.lineWidth = 1.5;
+                    transferCtx.fillRect(g.x + 10, 105, 45, 55);
+                    transferCtx.strokeRect(g.x + 10, 105, 45, 55);
+
+                    transferCtx.font = '9px sans-serif';
+                    transferCtx.fillStyle = g.isHotTop ? '#FCA5A5' : '#93C5FD';
+                    transferCtx.fillText(g.isHotTop ? "熱" : "冷", g.x + 27, 52);
+
+                    transferCtx.fillStyle = g.isHotTop ? '#93C5FD' : '#FCA5A5';
+                    transferCtx.fillText(g.isHotTop ? "冷" : "熱", g.x + 27, 117);
+                });
+
+                transferCtx.fillStyle = 'rgba(241, 245, 249, 0.85)';
+                smokeParticles.forEach(p => {
+                    if (p.bottle === 'A' || p.bottle === 'B') {
+                        p.x += (Math.random() - 0.5) * 0.6;
+                        p.y += (Math.random() - 0.5) * 0.6;
+                    } else if (p.bottle === 'C') {
+                        p.y -= 0.8;
+                        p.x += Math.sin(p.y / 10) * 0.8;
+                        if (p.y < 45) {
+                            p.y = 150; 
+                        }
+                    } else if (p.bottle === 'D') {
+                        p.y += 0.8;
+                        p.x += Math.sin(p.y / 10) * 0.8;
+                        if (p.y > 150) {
+                            p.y = 45; 
+                        }
+                    }
+                    transferCtx.beginPath();
+                    transferCtx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+                    transferCtx.fill();
+                });
+
+                transferCtx.fillStyle = '#F59E0B';
+                transferCtx.font = 'bold 11px sans-serif';
+                transferCtx.fillText("🔥 核心口訣：熱升冷降 (A B C D 對照)", 45, 18);
+            }
+
+            requestAnimationFrame(animateTransferCanvas);
+        }
+        animateTransferCanvas();
+
+        setExpansionState('gas');
+
+        // ==================== WATER SECTION ENHANCED LOGIC ====================
+        
+        // Water Sub-Tab Switcher
+        function switchWaterSubTab(sub) {
+            ['forms', 'exp', 'cycle', 'maps'].forEach(s => {
+                document.getElementById(`wsub-${s}`).classList.add('hidden');
+                const btn = document.getElementById(`wsubtab-${s}`);
+                btn.className = "flex-1 py-2.5 rounded-xl text-sky-700 hover:bg-white/60 transition flex items-center justify-center gap-1.5 font-bold";
+            });
+
+            document.getElementById(`wsub-${sub}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`wsubtab-${sub}`);
+            activeBtn.className = "flex-1 py-2.5 rounded-xl bg-white text-sky-900 shadow transition flex items-center justify-center gap-1.5 font-bold";
+        }
+
+        // Water Forms Data (Hanlin 6上 CH2-1 Standard)
+        const waterFormsData = [
+            { id: 'cloud', name: '雲', state: 'liquid', stateText: '液態或固態(水滴/冰晶)', pos: '高空中', icon: 'fa-cloud', color: 'sky', condition: '漂浮在高空中的水蒸氣，遇冷凝結成小水滴或凝固成小冰晶，聚集成雲。' },
+            { id: 'fog', name: '霧', state: 'liquid', stateText: '液態(細微水滴)', pos: '地面附近', icon: 'fa-smog', color: 'slate', condition: '漂浮在地面附近的水蒸氣，溫度降低時凝結產生大量細微水滴。' },
+            { id: 'rain', name: '雨', state: 'liquid', stateText: '液態(降水)', pos: '高空降落', icon: 'fa-cloud-rain', color: 'blue', condition: '雲中的水滴或冰晶愈來愈大，承受不住降下，冰晶融化成水變成雨。' },
+            { id: 'dew', name: '露', state: 'liquid', stateText: '液態(附著)', pos: '地面物體表面', icon: 'fa-droplet', color: 'cyan', condition: '清晨或傍晚，靠近地面的水蒸氣遇冷（高於0°C低於室溫）凝結在物體表面。' },
+            { id: 'frost', name: '霜', state: 'solid', stateText: '固態(冰晶結晶)', pos: '地面物體表面', icon: 'fa-snowflake', color: 'indigo', condition: '寒冬或高山，靠近地面的水蒸氣遇冷（0°C以下）直接凝固在物體表面成冰晶。' },
+            { id: 'snow', name: '雪', state: 'solid', stateText: '固態(降雪)', pos: '高空降落', icon: 'fa-snowflake text-sky-300', color: 'blue', condition: '雲中的冰晶直接降落，途中溫度皆低於0°C沒有融化，直接降落成雪。' },
+            { id: 'vapor', name: '水蒸氣', state: 'gas', stateText: '氣態(無色無味)', pos: '大氣中', icon: 'fa-wind', color: 'amber', condition: '地表水受熱蒸發變成無色無味不可見的氣態水蒸氣。' }
+        ];
+
+        function filterWaterForms(filter) {
+            ['all', 'liquid', 'solid', 'gas'].forEach(f => {
+                const btn = document.getElementById(`btn-wf-${f}`);
+                if (btn) {
+                    btn.className = f === filter ? "bg-sky-600 text-white px-3 py-1.5 rounded-xl font-bold shadow text-xs" : "bg-white text-sky-800 border border-sky-300 px-3 py-1.5 rounded-xl font-bold text-xs hover:bg-sky-100";
+                }
+            });
+
+            const grid = document.getElementById('water-forms-grid');
+            grid.innerHTML = '';
+
+            waterFormsData.forEach(item => {
+                if (filter !== 'all' && item.state !== filter) return;
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-2xl border border-sky-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-2";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between border-b border-sky-100 pb-2 mb-2">
+                            <span class="font-bold text-sky-900 text-lg flex items-center gap-2">
+                                <i class="fa-solid ${item.icon} text-sky-500"></i> ${item.name}
+                            </span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${item.state === 'liquid' ? 'bg-blue-100 text-blue-800' : item.state === 'solid' ? 'bg-indigo-100 text-indigo-800' : 'bg-amber-100 text-amber-800'}">
+                                ${item.stateText}
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-700 leading-relaxed"><b>形成條件：</b>${item.condition}</p>
+                    </div>
+                    <div class="bg-sky-50 p-2 rounded-xl text-[11px] text-sky-800 font-bold flex items-center justify-between">
+                        <span>📍 出現位置：${item.pos}</span>
+                        <i class="fa-solid fa-circle-info text-sky-400"></i>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        filterWaterForms('all');
+
+        // Dew & Frost Interactive Laboratory
+        let activeDewMode = 'room'; // 'room', 'dew', 'frost'
+        const waterExpCanvas = document.getElementById('water-exp-canvas');
+        const waterExpCtx = waterExpCanvas.getContext('2d');
+
+        function selectDewExp(mode) {
+            activeDewMode = mode;
+            ['room', 'dew', 'frost'].forEach(m => {
+                const btn = document.getElementById(`btn-dexp-${m}`);
+                if (m === mode) {
+                    btn.className = "w-full text-left bg-cyan-600 text-white p-3 rounded-xl border border-cyan-500 font-bold text-xs flex items-center justify-between shadow";
+                } else {
+                    btn.className = "w-full text-left bg-white p-3 rounded-xl border border-cyan-200 hover:bg-cyan-100 transition font-bold text-xs flex items-center justify-between shadow-sm";
+                }
+            });
+
+            const resultText = document.getElementById('dexp-result-text');
+            const tempBadge = document.getElementById('dexp-temp-badge');
+            const keyBox = document.getElementById('dexp-key-point');
+            const keyText = document.getElementById('dexp-key-text');
+            const title = document.getElementById('dew-canvas-title');
+
+            if (mode === 'room') {
+                title.innerText = "實驗對照組：常溫水 (25°C)";
+                tempBadge.innerText = "燒杯水溫 ~25°C";
+                tempBadge.className = "bg-slate-200 text-slate-800 px-2 py-0.5 rounded font-bold text-[10px]";
+                resultText.innerHTML = "• <b>現象：</b> 燒杯外壁與杯緣<b>沒有任何變化</b>，無水珠亦無冰晶結晶。<br>• <b>說明：</b> 燒杯水溫與環境室溫相同，空氣中的水蒸氣無法達到凝結條件。";
+                keyBox.classList.add('hidden');
+
+            } else if (mode === 'dew') {
+                title.innerText = "露的形成實驗：水 + 冰塊 (2°C)";
+                tempBadge.innerText = "燒杯水溫 ~2°C";
+                tempBadge.className = "bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold text-[10px]";
+                resultText.innerHTML = "• <b>現象：</b> 燒杯外壁凝結許多<b>透明微小水珠（露）</b>，用手摸會感到濕潤水氣。<br>• <b>說明：</b> 燒杯溫度降低（高於0°C且低於室溫），外壁空氣中的水蒸氣<b>遇冷凝結</b>成液態小水滴。";
+                keyBox.classList.remove('hidden');
+                keyText.innerText = "露形成條件：環境溫度低於室溫，且必須「高於 0°C」。";
+
+            } else if (mode === 'frost') {
+                title.innerText = "霜的形成實驗：冰塊 + 大量食鹽 (-9°C)";
+                tempBadge.innerText = "燒杯水溫 -9°C";
+                tempBadge.className = "bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded font-bold text-[10px]";
+                resultText.innerHTML = "• <b>現象：</b> 燒杯外緣出現<b>白色片狀的冰晶（霜）</b>，杯緣上方也有透明小水滴；用手觸摸時，白色結晶會融化成透明的水。<br>• <b>說明：</b> 食鹽加速冰塊融化吸收大量熱，溫度降至 0°C 以下！空氣中的水蒸氣<b>遇冷凝固</b>直接形成固態冰晶。";
+                keyBox.classList.remove('hidden');
+                keyText.innerText = "霜形成條件：環境溫度必須下降至「0°C 以下」才會凝固成冰晶！";
+            }
+        }
+
+        function drawWaterExpCanvas() {
+            waterExpCtx.clearRect(0, 0, waterExpCanvas.width, waterExpCanvas.height);
+
+            // Beaker
+            waterExpCtx.strokeStyle = '#38BDF8';
+            waterExpCtx.lineWidth = 4;
+            waterExpCtx.strokeRect(150, 40, 120, 160);
+
+            if (activeDewMode === 'room') {
+                // Water
+                waterExpCtx.fillStyle = 'rgba(56, 189, 248, 0.3)';
+                waterExpCtx.fillRect(154, 90, 112, 108);
+
+                waterExpCtx.fillStyle = '#94A3B8';
+                waterExpCtx.font = 'bold 12px sans-serif';
+                waterExpCtx.fillText("常溫水 25°C", 175, 140);
+                waterExpCtx.fillText("（外壁無變化）", 168, 160);
+
+            } else if (activeDewMode === 'dew') {
+                // Ice Water
+                waterExpCtx.fillStyle = 'rgba(147, 197, 253, 0.5)';
+                waterExpCtx.fillRect(154, 80, 112, 118);
+
+                // Ice Cubes inside
+                waterExpCtx.fillStyle = '#FFFFFF';
+                waterExpCtx.fillRect(170, 90, 20, 20);
+                waterExpCtx.fillRect(210, 100, 22, 22);
+
+                waterExpCtx.fillStyle = '#1D4ED8';
+                waterExpCtx.font = 'bold 11px sans-serif';
+                waterExpCtx.fillText("冰水 ~2°C", 185, 145);
+
+                // Dew Drops on outer wall
+                waterExpCtx.fillStyle = '#38BDF8';
+                const time = Date.now() / 200;
+                for (let i = 0; i < 16; i++) {
+                    const dy = 50 + i * 9 + (Math.sin(time + i) * 1.5);
+                    waterExpCtx.beginPath();
+                    waterExpCtx.arc(144, dy, 3.5, 0, Math.PI * 2);
+                    waterExpCtx.arc(276, dy, 3.5, 0, Math.PI * 2);
+                    waterExpCtx.fill();
+                }
+
+                waterExpCtx.fillStyle = '#0284C7';
+                waterExpCtx.font = 'bold 11px sans-serif';
+                waterExpCtx.fillText("💧 外壁水蒸氣凝結成「露水珠」", 120, 225);
+
+            } else if (activeDewMode === 'frost') {
+                // Ice + Salt mixture
+                waterExpCtx.fillStyle = 'rgba(199, 210, 254, 0.7)';
+                waterExpCtx.fillRect(154, 70, 112, 128);
+
+                // Ice & Salt Crystals Inside
+                waterExpCtx.fillStyle = '#FFFFFF';
+                for (let i = 0; i < 8; i++) {
+                    waterExpCtx.fillRect(160 + (i % 3) * 30, 85 + Math.floor(i / 3) * 28, 18, 18);
+                }
+
+                waterExpCtx.fillStyle = '#312E81';
+                waterExpCtx.font = 'bold 11px sans-serif';
+                waterExpCtx.fillText("冰塊+食鹽 -9°C", 168, 145);
+
+                // Frost White Crystals on outer wall
+                waterExpCtx.fillStyle = '#FFFFFF';
+                waterExpCtx.strokeStyle = '#818CF8';
+                waterExpCtx.lineWidth = 1.5;
+
+                for (let i = 0; i < 18; i++) {
+                    const fy = 45 + i * 8;
+                    waterExpCtx.fillRect(140, fy, 8, 6);
+                    waterExpCtx.strokeRect(140, fy, 8, 6);
+
+                    waterExpCtx.fillRect(272, fy, 8, 6);
+                    waterExpCtx.strokeRect(272, fy, 8, 6);
+                }
+
+                waterExpCtx.fillStyle = '#4338CA';
+                waterExpCtx.font = 'bold 11px sans-serif';
+                waterExpCtx.fillText("❄️ 外壁凝固成白色「霜結晶」", 130, 225);
+            }
+
+            requestAnimationFrame(drawWaterExpCanvas);
+        }
+        drawWaterExpCanvas();
+        selectDewExp('room');
+
+        // Dynamic Water Cycle Animation Canvas
+        const cycleCanvas = document.getElementById('water-cycle-canvas');
+        const cycleCtx = cycleCanvas.getContext('2d');
+
+        function drawWaterCycleCanvas() {
+            cycleCtx.clearRect(0, 0, cycleCanvas.width, cycleCanvas.height);
+
+            // Sun (Heat Source for Evaporation)
+            cycleCtx.fillStyle = '#F59E0B';
+            cycleCtx.beginPath();
+            cycleCtx.arc(60, 50, 25, 0, Math.PI * 2);
+            cycleCtx.fill();
+
+            cycleCtx.fillStyle = '#D97706';
+            cycleCtx.font = 'bold 10px sans-serif';
+            cycleCtx.fillText("太陽加熱", 40, 90);
+
+            // Ocean Water (Evaporation Source)
+            cycleCtx.fillStyle = '#0284C7';
+            cycleCtx.fillRect(0, 200, 180, 60);
+            cycleCtx.fillStyle = '#E0F2FE';
+            cycleCtx.font = 'bold 11px sans-serif';
+            cycleCtx.fillText("海洋/湖泊 (水)", 30, 230);
+
+            // Mountain / Land
+            cycleCtx.fillStyle = '#15803D';
+            cycleCtx.beginPath();
+            cycleCtx.moveTo(220, 260);
+            cycleCtx.lineTo(340, 120);
+            cycleCtx.lineTo(440, 260);
+            cycleCtx.closePath();
+            cycleCtx.fill();
+
+            // Evaporation Rising Water Vapor Particles
+            cycleCtx.fillStyle = 'rgba(56, 189, 248, 0.7)';
+            const evapOffset = (Date.now() / 25) % 100;
+            for (let i = 0; i < 5; i++) {
+                const vx = 50 + i * 25;
+                const vy = 190 - evapOffset - (i * 10);
+                if (vy > 60) {
+                    cycleCtx.beginPath();
+                    cycleCtx.arc(vx, vy, 4, 0, Math.PI * 2);
+                    cycleCtx.fill();
+                }
+            }
+
+            cycleCtx.fillStyle = '#0369A1';
+            cycleCtx.font = 'bold 10px sans-serif';
+            cycleCtx.fillText("蒸發 ⬆", 120, 160);
+
+            // High Altitude Clouds (Condensation)
+            cycleCtx.fillStyle = '#FFFFFF';
+            cycleCtx.beginPath();
+            cycleCtx.arc(220, 60, 20, 0, Math.PI * 2);
+            cycleCtx.arc(245, 50, 26, 0, Math.PI * 2);
+            cycleCtx.arc(275, 60, 22, 0, Math.PI * 2);
+            cycleCtx.fill();
+
+            cycleCtx.fillStyle = '#0284C7';
+            cycleCtx.font = 'bold 10px sans-serif';
+            cycleCtx.fillText("遇冷凝結成雲 ☁️", 220, 25);
+
+            // Precipitation (Rain falling over mountain)
+            cycleCtx.strokeStyle = '#38BDF8';
+            cycleCtx.lineWidth = 2;
+            const rainOffset = (Date.now() / 15) % 40;
+            for (let i = 0; i < 6; i++) {
+                const rx = 270 + i * 15;
+                const ry = 80 + rainOffset + i * 5;
+                if (ry < 180) {
+                    cycleCtx.beginPath();
+                    cycleCtx.moveTo(rx, ry);
+                    cycleCtx.lineTo(rx - 4, ry + 10);
+                    cycleCtx.stroke();
+                }
+            }
+
+            cycleCtx.fillStyle = '#1E40AF';
+            cycleCtx.font = 'bold 10px sans-serif';
+            cycleCtx.fillText("降水 (雨/雪) ⬇", 320, 100);
+
+            // Collection / River Flowing Back
+            cycleCtx.strokeStyle = '#38BDF8';
+            cycleCtx.lineWidth = 4;
+            cycleCtx.beginPath();
+            cycleCtx.moveTo(330, 200);
+            cycleCtx.quadraticCurveTo(250, 220, 180, 220);
+            cycleCtx.stroke();
+
+            cycleCtx.fillStyle = '#047857';
+            cycleCtx.font = 'bold 10px sans-serif';
+            cycleCtx.fillText("河流地表水匯集 ➔", 220, 240);
+
+            requestAnimationFrame(drawWaterCycleCanvas);
+        }
+        drawWaterCycleCanvas();
+
+        // ==================== WATER: Dew & Frost Canvas ====================
+        const dewCanvas = document.getElementById('dew-canvas');
+        const dewCtx = dewCanvas.getContext('2d');
+
+        function runWaterExp(type) {
+            dewCtx.clearRect(0, 0, dewCanvas.width, dewCanvas.height);
+            
+            dewCtx.strokeStyle = '#4DABF7';
+            dewCtx.lineWidth = 4;
+            dewCtx.strokeRect(50, 40, 100, 130);
+
+            dewCtx.fillStyle = '#D0EBFF';
+            dewCtx.fillRect(54, 70, 92, 98);
+
+            const resText = document.getElementById('dew-result');
+
+            if (type === 'room') {
+                resText.innerText = '常溫水：外壁無明顯水珠。';
+            } else if (type === 'ice') {
+                resText.innerText = '水加冰塊：外壁水蒸氣凝結成「水珠 (露)」！';
+                dewCtx.fillStyle = '#339AF0';
+                for(let i=0; i<12; i++) {
+                    dewCtx.beginPath();
+                    dewCtx.arc(45, 60 + i*10, 3, 0, Math.PI*2);
+                    dewCtx.arc(155, 65 + i*10, 3, 0, Math.PI*2);
+                    dewCtx.fill();
+                }
+            } else if (type === 'salt') {
+                resText.innerText = '冰塊加食鹽：溫度降至0°C以下，外壁水蒸氣凝華成「白色冰晶 (霜)」！';
+                dewCtx.fillStyle = '#FFFFFF';
+                dewCtx.strokeStyle = '#A5D8FF';
+                dewCtx.lineWidth = 2;
+                for(let i=0; i<15; i++) {
+                    dewCtx.strokeRect(42, 50 + i*8, 6, 6);
+                    dewCtx.strokeRect(152, 55 + i*8, 6, 6);
+                }
+            }
+        }
+        runWaterExp('room');
+
+        // ==================== METAL: Electromagnet Canvas ====================
+        const magnetCanvas = document.getElementById('magnet-canvas');
+        const magnetCtx = magnetCanvas.getContext('2d');
+
+        function updateMagnet() {
+            const coils = parseInt(document.getElementById('coil-slider').value);
+            const battery = parseInt(document.getElementById('battery-slider').value);
+
+            document.getElementById('coils-val').innerText = coils;
+            document.getElementById('battery-val').innerText = battery;
+
+            const clipsCount = Math.floor((coils / 10) * battery * 2);
+            document.getElementById('magnet-result').innerText = `吸引迴紋針數量：${clipsCount} 支`;
+
+            drawMagnet(coils, battery, clipsCount);
+        }
+
+        function drawMagnet(coils, battery, clips) {
+            magnetCtx.clearRect(0, 0, magnetCanvas.width, magnetCanvas.height);
+
+            magnetCtx.fillStyle = '#94A3B8';
+            magnetCtx.fillRect(110, 30, 40, 100);
+
+            magnetCtx.strokeStyle = '#D97706';
+            magnetCtx.lineWidth = 4;
+            for (let i = 0; i < coils / 2; i++) {
+                magnetCtx.beginPath();
+                magnetCtx.arc(130, 40 + i * (80 / (coils / 2)), 22, 0, Math.PI);
+                magnetCtx.stroke();
+            }
+
+            magnetCtx.strokeStyle = '#CBD5E1';
+            magnetCtx.lineWidth = 2;
+            for (let i = 0; i < clips; i++) {
+                const x = 115 + (i % 4) * 8;
+                const y = 135 + Math.floor(i / 4) * 12;
+                magnetCtx.strokeRect(x, y, 6, 10);
+            }
+        }
+        updateMagnet();
+    </script>
+</body>
+</html>
